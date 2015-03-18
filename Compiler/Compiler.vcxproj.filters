@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\common">
+      <UniqueIdentifier>{78cb6bcf-2aeb-4389-b736-0851d9592b41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\exceptions">
+      <UniqueIdentifier>{950c0c71-4793-4aa3-a76a-bab6d942afcb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\includes">
+      <UniqueIdentifier>{19c05301-64e5-48ed-9c8a-91f22faeca03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\common">
+      <UniqueIdentifier>{62597812-7b39-404b-b4c9-6d29ca831dc7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\preprocessor">
+      <UniqueIdentifier>{c0a3670a-e71f-495f-9a60-47175f0ac481}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\preprocessor">
+      <UniqueIdentifier>{e622b602-8d6c-41ac-8897-a9f8aee7b001}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="common\InputBuffer.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="common\Position.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="exception\EndOfFile.h">
+      <Filter>Header Files\exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="exception\Exception.h">
+      <Filter>Header Files\exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="exception\InternalError.h">
+      <Filter>Header Files\exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="exception\InvalidFile.h">
+      <Filter>Header Files\exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="exception\InvalidCharacter.h">
+      <Filter>Header Files\exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="exception\InvalidToken.h">
+      <Filter>Header Files\exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="exception\Unicode.h">
+      <Filter>Header Files\exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="exception\UnsupportedFeature.h">
+      <Filter>Header Files\exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\exceptions.h">
+      <Filter>Header Files\includes</Filter>
+    </ClInclude>
+    <ClInclude Include="common\Unicode.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="common\Token.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="common\TokenType.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="preprocessor\Preprocessor.h">
+      <Filter>Header Files\preprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="preprocessor\Tokens.h">
+      <Filter>Header Files\preprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="preprocessor\Tokenizer.h">
+      <Filter>Header Files\preprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="common\SymbolTable.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="exception\DuplicateSymbol.h">
+      <Filter>Header Files\exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="common\Symbol.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="common\CharClass.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="common\Utils.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="common\NumberParser.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="exception\InvalidCharacterConstant.h">
+      <Filter>Header Files\exceptions</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="common\Unicode.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="preprocessor\Preprocessor.cpp">
+      <Filter>Source Files\preprocessor</Filter>
+    </ClCompile>
+    <ClCompile Include="preprocessor\Tokens.cpp">
+      <Filter>Source Files\preprocessor</Filter>
+    </ClCompile>
+    <ClCompile Include="preprocessor\Tokenizer.cpp">
+      <Filter>Source Files\preprocessor</Filter>
+    </ClCompile>
+    <ClCompile Include="common\CharClass.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="common\NumberParser.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="exception\InvalidCharacterConstant.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
