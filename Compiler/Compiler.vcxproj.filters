@@ -31,6 +31,12 @@
     <Filter Include="Source Files\preprocessor">
       <UniqueIdentifier>{e622b602-8d6c-41ac-8897-a9f8aee7b001}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\type">
+      <UniqueIdentifier>{ed52f4a8-f5c4-461d-9c29-7f1e50b5e4b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\context">
+      <UniqueIdentifier>{4f5def76-f0a8-4728-95e9-600d56c3ac1f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common\InputBuffer.h">
@@ -105,6 +111,27 @@
     <ClInclude Include="exception\InvalidCharacterConstant.h">
       <Filter>Header Files\exceptions</Filter>
     </ClInclude>
+    <ClInclude Include="common\Value.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="type\Type.h">
+      <Filter>Header Files\type</Filter>
+    </ClInclude>
+    <ClInclude Include="preprocessor\Symbol.h">
+      <Filter>Header Files\preprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="context\Context.h">
+      <Filter>Header Files\context</Filter>
+    </ClInclude>
+    <ClInclude Include="preprocessor\Substituer.h">
+      <Filter>Header Files\preprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="preprocessor\Parametrizer.h">
+      <Filter>Header Files\preprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="preprocessor\ShadowChunker.h">
+      <Filter>Header Files\preprocessor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\Unicode.cpp">
@@ -128,5 +155,20 @@
     <ClCompile Include="exception\InvalidCharacterConstant.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="context\Context.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main-preprocessor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="preprocessor\Parametrizer.cpp">
+      <Filter>Source Files\preprocessor</Filter>
+    </ClCompile>
+    <ClCompile Include="preprocessor\Substituer.cpp">
+      <Filter>Source Files\preprocessor</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Text.txt" />
   </ItemGroup>
 </Project>
