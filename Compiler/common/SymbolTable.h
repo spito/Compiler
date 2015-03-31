@@ -8,46 +8,44 @@
 namespace compiler {
     namespace common {
 
-
-        struct SymbolTable {
-
-            void insert( SymbolHandle &&item ) {
-                if ( !_symbols.insert( std::move( item ) ).second )
-                    throw exception::DuplicateSymbol();
+        struct Hasher {
+            template< typename H >
+            auto operator()( const H &h ) const
+                -> decltype ( h.hash() )
+            {
+                return h.hash();
             }
-            bool find( const SymbolHandle &item ) {}
-            void remove( const std::string &name ) {}
+        };
 
+        template<typename S >
+        struct SymbolTable {
+            using Symbol = S;
 
+            void insert( Symbol &&item ) {
+                if ( !_symbols.insert( item ).second )
+                    throw exception::DuplicateSymbol( item );
+            }
+            void assign( Symbol &&item ) {
+                remove( item.name() );
+                insert( std::move( item ) );
+            }
+            const Symbol *find( const Symbol &item ) const {
+                auto i = _symbols.find( item );
+                if ( i == _symbols.end() )
+                    return nullptr;
+                return &*i;
+            }
+            void remove( const Symbol &item ) {
+                _symbols.erase( item );
+            }
+            void clear() {
+                _symbols.clear();
+            }
 
         private:
-            std::unordered_set< SymbolHandle > _symbols;
-
+            std::unordered_set< Symbol, Hasher > _symbols;
         };
 
 
     } // namespace compiler
 } // namespace compiler
-
-namespace std {
-
-    template<>
-    struct hash < compiler::common::SymbolHandle > {
-        size_t operator()( compiler::common::SymbolHandle s ) {
-            return s ? s->hash() : 0;
-        }
-    };
-
-    template<>
-    struct equal_to < compiler::common::SymbolHandle > {
-        using P = compiler::common::SymbolHandle;
-        bool operator()( const P &lhs, const P &rhs ) {
-            if ( lhs == rhs )
-                return true;
-            if ( !lhs || !rhs )
-                return false;
-        }
-    };
-
-} // namespace std
-

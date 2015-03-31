@@ -5,8 +5,12 @@
 namespace compiler {
     namespace common {
 
-        struct Comparable {};
-        struct Orderable {};
+        struct Comparable {
+            using IsComparable = bool;
+        };
+        struct Orderable {
+            using IsOrderable = bool;
+        };
 
         template< typename F >
         struct Defer {
@@ -45,33 +49,66 @@ namespace compiler {
             return Defer< F >( std::move( f ) );
         }
 
+        template< typename T >
+        struct Adaptor {
+            Adaptor( T begin, T end ) :
+                _begin( begin ),
+                _end( end )
+            {}
+
+            T begin() {
+                return _begin;
+            }
+            T begin() const {
+                return _begin;
+            }
+            T end() {
+                return _end;
+            }
+            T end() const {
+                return _end;
+            }
+
+        private:
+            T _begin;
+            T _end;
+        };
+
+        template< typename T >
+        auto revert( T &&container )
+            -> decltype( container.rbegin() )
+        {
+            using Iterator = decltype( container.rbegin() );
+            return Adaptor< Iterator >( container.rbegin(), container.rend() );
+        }
+
     } // namespace common
 } // namespace compiler
 
-template< typename T, typename X >
-auto operator!=( const T &lhs, const X &rhs )
--> typename std::enable_if< std::is_base_of< compiler::common::Comparable, T >, bool >::type
+template< typename T >
+auto operator!=( const T &lhs, const T &rhs )
+-> typename T::IsComparable
 {
     return !( lhs == rhs );
 }
 
-template< typename X, typename T >
-auto operator<=( const X &lhs, const T &rhs )
--> typename std::enable_if< std::is_base_of< compiler::common::Orderable, T >, bool >::type
+template< typename T >
+auto operator<=( const T &lhs, const T &rhs )
+-> typename T::IsOrderable
 {
     return !( rhs < lhs );
 }
 
-template< typename X, typename T >
-auto operator>( const X &lhs, const T &rhs )
--> typename std::enable_if< std::is_base_of< compiler::common::Orderable, T >, bool >::type
+template< typename T >
+auto operator>( const T &lhs, const T &rhs )
+-> typename T::IsOrderable
 {
     return rhs < lhs;
 }
 
-template< typename T, typename X >
-auto operator>=( const T &lhs, const X &rhs )
--> typename std::enable_if< std::is_base_of< compiler::common::Orderable, T >, bool >::type
+template< typename T >
+auto operator>=( const T &lhs, const T &rhs )
+-> typename T::IsOrderable
 {
     return !( lhs < rhs );
 }

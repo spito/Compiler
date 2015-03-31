@@ -18,6 +18,7 @@ namespace compiler {
                 Keyword,
                 String,
                 Char,
+                StringInclude,
                 Space,
                 Eof,
                 Comment,
@@ -27,6 +28,7 @@ namespace compiler {
             std::string _token;
             Type _type;
             Position _position;
+            bool _containsNewLine;
 
             union _N {
                 long long integer;
@@ -39,33 +41,22 @@ namespace compiler {
 
         public:
 
-            Token() :
-                _type( Type::None ),
-                _position()
+            Token( Type t = Type::None, Position p = Position() ) :
+                Token( std::move( t ), std::string(), std::move( p ) )
             {}
-
-            Token( Type t, Position p = Position() ) :
-                _token(),
-                _type( t ),
-                _position( std::move( p ) )
-            {}
-
+            
             Token( Type t, std::string token, Position p = Position() ) :
                 _token( std::move( token ) ),
                 _type( t ),
-                _position( std::move( p ) )
-            {}
-
-            Token( Type t, std::string token, Position p = Position() ) :
-                _token( std::move( token ) ),
-                _type( t ),
-                _position( std::move( p ) )
+                _position( std::move( p ) ),
+                _containsNewLine( false )
             {}
 
             Token( const Token &o ) :
                 _token( o._token ),
                 _type( o._type ),
-                _position( o._position )
+                _position( o._position ),
+                _containsNewLine( o._containsNewLine )
             {
                 if ( _type == Type::Integer )
                     _number.integer = o._number.integer;
@@ -76,7 +67,8 @@ namespace compiler {
             Token( Token &&o ) :
                 _token( std::move( o._token ) ),
                 _type( o._type ),
-                _position( std::move( o._position ) )
+                _position( std::move( o._position ) ),
+                _containsNewLine( o._containsNewLine )
             {
                 if ( _type == Type::Integer )
                     _number.integer = o._number.integer;
@@ -90,6 +82,7 @@ namespace compiler {
                 swap( _type, o._type );
                 swap( _position, o._position );
                 swap( _number, o._number );
+                swap( _containsNewLine, o._containsNewLine );
             }
 
 
@@ -111,6 +104,13 @@ namespace compiler {
             }
             const Position &position() const {
                 return _position;
+            }
+
+            bool &containsNewLine() {
+                return _containsNewLine;
+            }
+            bool containsNewLine() const {
+                return _containsNewLine;
             }
 
             std::string &token() {

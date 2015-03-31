@@ -1,47 +1,56 @@
 #pragma once
 
+#include "Utils.h"
+
 #include <string>
 #include <functional>
 #include <memory>
 
 namespace compiler {
-    namespace common {
+namespace common {
 
-        struct Symbol {
+struct Symbol : Comparable {
 
-            Symbol( std::string name ) :
-                _name( std::move( name ) )
-            {}
+    Symbol( std::string name ) :
+        _name( std::move( name ) )
+    {}
+    Symbol( const Symbol & ) = default;
+    Symbol( Symbol &&other ) :
+        _name( std::move( other._name ) )
+    {}
+    Symbol &operator=( const Symbol & ) = default;
+    Symbol &operator=( Symbol &&other ) {
+        using std::swap;
+        swap( _name, other._name );
+        return *this;
+    }
 
-            virtual ~Symbol() = default;
+    //virtual ~Symbol() = default;
 
-            const std::string &name() const {
-                return _name;
-            }
+    const std::string &name() const {
+        return _name;
+    }
 
-            size_t hash() const {
-                return std::hash< std::string >()( _name );
-            }
+    size_t hash() const {
+        return std::hash< std::string >()( _name );
+    }
 
-            bool operator==( const Symbol &another ) const {
-                return _name == another._name;
-            }
-            bool operator!=( const Symbol &another ) const {
-                return !operator==( another );
-            }
+    bool operator==( const Symbol &another ) const {
+        return _name == another._name;
+    }
 
-        private:
-            std::string _name;
-        };
+private:
+    std::string _name;
+};
 
-        struct Keyword : Symbol {
-            Keyword( std::string name ) :
-                Symbol( std::move( name ) )
-            {}
-        };
+struct Keyword : Symbol {
+    Keyword( std::string name ) :
+        Symbol( std::move( name ) )
+    {}
+};
 
-        using SymbolHandle = std::unique_ptr < Symbol >;
-        using SymbolPtr = Symbol *;
+//using SymbolHandle = std::unique_ptr < Symbol >;
+//using SymbolPtr = Symbol *;
 
-    } // namespace common
+} // namespace common
 } // namespace compiler
