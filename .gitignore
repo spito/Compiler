@@ -14,6 +14,16 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 
+# MSVC binary folders
+Debug/
+Release/
+
+*.vcxproj.user
+*.suo
+*.sdf
+*.opensdf
+
+
 # Windows shortcuts
 *.lnk
 
