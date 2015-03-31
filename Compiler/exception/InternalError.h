@@ -16,6 +16,11 @@ namespace compiler {
                 _msg( "internal error - " + msg ),
                 _position( std::move( p ) )
             {}
+            InternalError( const std::string &msg ) :
+                Exception( "" ),
+                _msg( "internal error - " + msg ),
+                _position( context::position() )
+            {}
 
             const char *what() const COMPILER_NOEXCEPT override{
                 return _msg.c_str();

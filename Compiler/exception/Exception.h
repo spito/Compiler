@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../common/Position.h"
+#include "../context/Context.h"
 
 #include <stdexcept>
 

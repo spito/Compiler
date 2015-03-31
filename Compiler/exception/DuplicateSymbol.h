@@ -7,15 +7,18 @@ namespace compiler {
     namespace exception {
 
         class DuplicateSymbol : public Exception {
-            common::SymbolPtr _old;
-            common::SymbolPtr _new;
+            common::Symbol _symbol;
             common::Position _position;
         public:
-            DuplicateSymbol( common::SymbolPtr oldS, common::SymbolPtr newS, common::Position p ) :
+            DuplicateSymbol( common::Symbol symbol, common::Position p ) :
                 Exception( "duplicate symbol" ),
-                _old( oldS ),
-                _new( newS ),
+                _symbol( std::move( symbol ) ),
                 _position( std::move( p ) )
+            {}
+            DuplicateSymbol( common::Symbol symbol ) :
+                Exception( "duplicate symbol" ),
+                _symbol( std::move( symbol ) ),
+                _position( context::position() )
             {}
 
             common::Position position() const COMPILER_NOEXCEPT override{

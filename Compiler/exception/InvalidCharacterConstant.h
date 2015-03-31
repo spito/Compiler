@@ -14,6 +14,9 @@ namespace compiler {
                 _given( given ),
                 _position( position )
             {}
+            InvalidCharacterConstant( std::string given ) :
+                InvalidCharacterConstant( std::move( given ), context::position() )
+            {}
 
             common::Position position() const COMPILER_NOEXCEPT override {
                 return _position;

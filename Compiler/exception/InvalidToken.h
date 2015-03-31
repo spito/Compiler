@@ -10,19 +10,17 @@ namespace compiler {
 
         class InvalidToken : public Exception {
             common::Token _given;
-            std::vector< common::TokenType * > _expected;
+            std::vector< common::Token > _expected;
         public:
-            InvalidToken( common::Token given, std::vector< common::TokenType * > expected ) :
+            InvalidToken( common::Token given, std::vector< common::Token > expected ) :
                 Exception( "invalid token" ),
                 _given( std::move( given ) ),
                 _expected( std::move( expected ) )
             {}
 
-            InvalidToken( common::Token given, common::TokenType *expected ) :
-                InvalidToken( std::move( given ), std::vector< common::TokenType * >() )
-            {
-                _expected.emplace_back( std::move( expected ) );
-            }
+            InvalidToken( common::Token given ) :
+                InvalidToken( std::move( given ), std::vector< common::Token >() )
+            {}
 
             const common::Token &given() const COMPILER_NOEXCEPT {
                 return _given;
@@ -32,9 +30,9 @@ namespace compiler {
                 return _given.position();
             }
 
-            const std::vector< common::TokenType * > &expected() const COMPILER_NOEXCEPT {
+/*            const std::vector< common::TokenType * > &expected() const COMPILER_NOEXCEPT {
                 return _expected;
-            }
+            }*/
         };
     }
 }
