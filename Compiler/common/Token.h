@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Position.h"
+#include "Utils.h"
+#include "Unicode.h"
 
 #include <string>
 #include <iostream>
@@ -8,7 +10,7 @@
 namespace compiler {
     namespace common {
 
-        struct Token {
+        struct Token : Comparable {
 
             enum class Type {
                 Operator,
@@ -20,15 +22,97 @@ namespace compiler {
                 Char,
                 StringInclude,
                 Space,
+                NewLine,
+                FileBegin,
+                FileEnd,
                 Eof,
-                Comment,
-                None
             };
+
+            enum class Operator {
+
+                BraceOpen, // {
+                BraceClose,
+
+                // rank 1, left to right
+                Increment,
+                Decrement,
+                BracketOpen, // (
+                BracketClose,
+                BracketIndexOpen, // [
+                BracketIndexClose,
+
+                // rank 2, right to left
+                UnaryPlus,
+                UnaryMinus,
+                LogicalNot,
+                BitwiseNote,
+                //TypeCast, // (int)
+                Dereference,
+                AddressOf,
+                //Sizeof, // sizeof(int)
+
+                // rank 3, left to right
+                Multiplication,
+                Division,
+                Modulo,
+
+                // rank 4, left to right
+                Addition,
+                Subtraction,
+
+                // rank 5, left to right
+                BitwiseLeftShift,
+                BitwiseRightShift,
+
+                // rank 6, left to right
+                LessThan,
+                LessThenOrEqual,
+                GreaterThan,
+                GreaterThanOrEqual,
+
+                // rank 7, left to right
+                EqualTo,
+                NotEqualTo,
+
+                // rank 8, left to right
+                BitwiseAnd,
+
+                // rank 9, left to right
+                BitwiseXor,
+
+                // rank 10, left to right
+                BitwiseOr,
+
+                // rank 11, left to right
+                LogicalAnd,
+
+                // rank 12, left to right
+                LogicalOr,
+
+                // rank 13, right to left
+                //TernaryOperator
+
+                // rank 14, right to left
+                Assignment,
+                AssignmentSum,
+                AssignmentDifference,
+                AssignmentProduct,
+                AssignmentQuotient,
+                AssignmentRemainder,
+                AssignmentLeftShift,
+                AssignmentRightShift,
+                AssignmentBitwiseAnd,
+                AssignmentBitwiseXor,
+                AssignmentBitwiseOr,
+
+                // rank 15, left to right
+                Comma,
+            };
+
         private:
             std::string _token;
             Type _type;
             Position _position;
-            bool _containsNewLine;
 
             union _N {
                 long long integer;
@@ -41,22 +125,20 @@ namespace compiler {
 
         public:
 
-            Token( Type t = Type::None, Position p = Position() ) :
+            Token( Type t = Type::Eof, Position p = Position() ) :
                 Token( std::move( t ), std::string(), std::move( p ) )
             {}
             
             Token( Type t, std::string token, Position p = Position() ) :
                 _token( std::move( token ) ),
                 _type( t ),
-                _position( std::move( p ) ),
-                _containsNewLine( false )
+                _position( std::move( p ) )
             {}
 
             Token( const Token &o ) :
                 _token( o._token ),
                 _type( o._type ),
-                _position( o._position ),
-                _containsNewLine( o._containsNewLine )
+                _position( o._position )
             {
                 if ( _type == Type::Integer )
                     _number.integer = o._number.integer;
@@ -67,8 +149,7 @@ namespace compiler {
             Token( Token &&o ) :
                 _token( std::move( o._token ) ),
                 _type( o._type ),
-                _position( std::move( o._position ) ),
-                _containsNewLine( o._containsNewLine )
+                _position( std::move( o._position ) )
             {
                 if ( _type == Type::Integer )
                     _number.integer = o._number.integer;
@@ -82,7 +163,6 @@ namespace compiler {
                 swap( _type, o._type );
                 swap( _position, o._position );
                 swap( _number, o._number );
-                swap( _containsNewLine, o._containsNewLine );
             }
 
 
@@ -106,18 +186,12 @@ namespace compiler {
                 return _position;
             }
 
-            bool &containsNewLine() {
-                return _containsNewLine;
-            }
-            bool containsNewLine() const {
-                return _containsNewLine;
-            }
 
-            std::string &token() {
+            std::string &value() {
                 return _token;
             }
 
-            const std::string &token() const {
+            const std::string &value() const {
                 return _token;
             }
 
@@ -167,20 +241,20 @@ namespace compiler {
             bool operator==( const Token &o ) const {
                 return
                     _type == o._type &&
-                    _position == o._position &&
                     _token == o._token;
             }
 
-            bool operator!=( const Token &o ) const {
-                return !( *this == o );
+            bool identical( const Token &o ) const {
+                return
+                    *this == o &&
+                    _position == o._position;
             }
+
         };
-        inline std::ostream &operator<<( std::ostream &out, Token::Type type ) {
-            /// TODO: implement
-            return out;
-        }
         inline std::ostream &operator<<( std::ostream &out, Token token ) {
-            return out << token.type();
+            if ( token.type() == Token::Type::String )
+                return out << '"' << Unicode::toAscii( token.value() ) << '"';
+            return out << token.value();
         }
     }
 }
