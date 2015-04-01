@@ -90,10 +90,7 @@ public:
 
         char c = _buffer[ _position.position() ];
 
-        if ( c == '\n' )
-            _position.nextLine();
-        else
-            _position.nextChar();
+        refreshPosition( c );
         return c;
     }
 
@@ -103,10 +100,7 @@ public:
             if ( !std::isspace( c ) )
                 break;
 
-            if ( c == '\n' )
-                _position.nextLine();
-            else
-                _position.nextChar();
+            refreshPosition( c );
         }
     }
 
@@ -119,6 +113,13 @@ public:
     }
 
 private:
+
+    void refreshPosition( char c ) {
+        if ( c == '\n' )
+            _position.nextLine();
+        else
+            _position.nextChar();
+    }
 
     void readFile( std::ifstream &file ) {
 
