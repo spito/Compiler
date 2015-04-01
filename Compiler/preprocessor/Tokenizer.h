@@ -4,73 +4,73 @@
 #include "../common/InputBuffer.h"
 
 namespace compiler {
-    namespace preprocessor {
+namespace preprocessor {
 
-        struct Tokenizer {
+struct Tokenizer {
 
-            enum class Class {
-                None,
-                Slash,
-                Number,
-                Word,
-                Space,
-                String,
-                ShortComment,
-                LongComment,
-                SingleOperator,
-                CompoundOperator,
-                Preprocessor,
-            };
+    enum class Class {
+        None,
+        Slash,
+        Number,
+        Word,
+        Space,
+        NewLine,
+        String,
+        ShortComment,
+        LongComment,
+        Operator,
+        Preprocessor,
+    };
 
-            Tokenizer( std::ifstream &file ) :
-                _input( file )
-            {}
+    Tokenizer( std::ifstream &file ) :
+        _input( file )
+    {}
 
-            Tokenizer( const Tokenizer & ) = delete;
-            Tokenizer( Tokenizer &&other ) :
-                _input( std::move( other._input ) )
-            {}
+    Tokenizer( const Tokenizer & ) = delete;
+    Tokenizer( Tokenizer &&other ) :
+        _input( std::move( other._input ) )
+    {}
 
-            void restart( const std::string &content ) {
-                _input.assignContent( content );
-            }
+    void restart( const std::string &content ) {
+        _input.assignContent( content );
+    }
 
-            bool isTokenType( common::Token &, const common::Token::Type );
+    bool isTokenType( common::Token &, const common::Token::Type );
 
-            // destroying
-            void readToken( common::Token &, Class = Class::None );
+    // destroying
+    void readToken( common::Token &, bool = false );
 
-            // not-destroying
-            void lookAtToken( common::Token &, Class = Class::None );
+    // not-destroying
+    void lookAtToken( common::Token &, bool = false );
 
-            common::Position position() const {
-                return _input.position();
-            }
-            void position( common::Position p ) {
-                _input.position( std::move( p ) );
-            }
+    const common::Position &position() const {
+        return _input.position();
+    }
+    void position( common::Position p ) {
+        _input.position( std::move( p ) );
+    }
 
-        private:
+private:
 
-            Class resolveClass( Class = Class::None );
+    Class resolveClass();
 
-            void getToken( common::Token &, Class = Class::None );
+    void getToken( common::Token &, bool );
 
-            void processNumber( common::Token & );
-            void processWord( common::Token & );
-            void processSpace( common::Token & );
-            void processString( common::Token & );
-            void processShortComment( common::Token & );
-            void processLongComment( common::Token & );
-            void processSingleOperator( common::Token & );
-            bool processCompoundOperator( common::Token & );
-            void processSlash( common::Token & );
-            void processSharp( common::Token & );
+    void processNumber( common::Token & );
+    void processWord( common::Token & );
+    void processSpace( common::Token & );
+    void processNewLine( common::Token & );
+    void processString( common::Token & );
+    void processShortComment();
+    void processLongComment();
+    void processOperator( common::Token & );
+    void processSlash();
+    void processSharp( common::Token & );
 
-            common::InputBuffer _input;
-            bool _readyForCommand = true;
+    common::InputBuffer _input;
+    bool _readyForCommand = true;
 
-        };
+};
 
-    } // namespace preprocessor
+} // namespace preprocessor
 } // namespace compiler

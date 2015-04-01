@@ -23,7 +23,7 @@ struct Parametrizer {
         return _ignore;
     }
 
-    std::vector< std::vector< std::string > > result() {
+    std::vector< std::vector< common::Token > > result() {
         return std::move( _result );
     }
 
@@ -71,7 +71,7 @@ private:
 
 
     ShadowChunker::Iterator _it;
-    std::vector< std::vector< std::string > > _result;
+    std::vector< std::vector< common::Token > > _result;
     bool _quit;
     int _braces;
     bool _ignore;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../common/Utils.h"
+#include "../common/Token.h"
 
 #include <deque>
 #include <string>
@@ -20,9 +21,9 @@ struct ShadowChunker {
 
         Iterator() :
             _chunks( nullptr ),
-            _fetcher( [] { return ""; } )
+            _fetcher( [] { return common::Token(); } )
         {}
-        Iterator( std::deque< std::string > &chunks, std::deque< std::string >::iterator it, std::function< std::string() > fetcher ) :
+        Iterator( std::deque< common::Token > &chunks, std::deque< common::Token >::iterator it, std::function< common::Token() > fetcher ) :
             _chunks( &chunks ),
             _it( it ),
             _fetcher( fetcher )
@@ -60,15 +61,15 @@ struct ShadowChunker {
             return _it - i._it;
         }
 
-        std::string &operator*( ) {
+        common::Token &operator*( ) {
             checkValidity();
             return *_it;
         }
-        std::string *operator->( ) {
+        common::Token *operator->( ) {
             checkValidity();
             return _it.operator->( );
         }
-        std::string &operator[]( difference_type n ) {
+        common::Token &operator[]( difference_type n ) {
             Iterator self( *this );
             return *( self += n );
         }
@@ -107,19 +108,19 @@ struct ShadowChunker {
         }
 
 
-        std::deque< std::string > *_chunks;
-        std::deque< std::string >::iterator _it;
-        std::function< std::string() > _fetcher;
+        std::deque< common::Token > *_chunks;
+        std::deque< common::Token >::iterator _it;
+        std::function< common::Token() > _fetcher;
 
     };
 
-    ShadowChunker( std::string initial, std::function< std::string() > fetcher ) :
+    ShadowChunker( common::Token initial, std::function< common::Token() > fetcher ) :
         _fetcher( std::move( fetcher ) )
     {
         _chunks.push_back( std::move( initial ) );
     }
 
-    const std::string &top() const {
+    const common::Token &top() const {
         return _chunks.front();
     }
 
@@ -135,7 +136,7 @@ struct ShadowChunker {
         _chunks.erase( _chunks.begin(), _chunks.begin() + n );
     }
 
-    void prepend( const std::vector< std::string > &items ) {
+    void prepend( const std::vector< common::Token > &items ) {
         _chunks.insert( _chunks.begin(), items.begin(), items.end() );
     }
 
@@ -147,8 +148,8 @@ struct ShadowChunker {
     }
 
 private:
-    std::deque< std::string > _chunks;
-    std::function< std::string() > _fetcher;
+    std::deque< common::Token > _chunks;
+    std::function< common::Token() > _fetcher;
 
 
 

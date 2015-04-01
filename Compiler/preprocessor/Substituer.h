@@ -10,14 +10,16 @@ namespace compiler {
 namespace preprocessor {
 
 struct UsedSymbol : common::Symbol {
-    //using Base = common::Symbol;
-    UsedSymbol( std::string name ) :
-        Symbol( std::move( name ) ),
-        _arguments( nullptr )
-    {}
 
-    UsedSymbol( std::string name, const std::vector< std::vector< std::string > > &arguments ) :
-        Symbol( std::move( name ) ),
+    UsedSymbol( common::Token token ) :
+        Symbol( token.value() ),
+        _token( token ),
+        _arguments( nullptr )
+        {}
+
+    UsedSymbol( common::Token token, const std::vector< std::vector< common::Token > > &arguments ) :
+        Symbol( token.value() ),
+        _token( token ),
         _arguments( &arguments )
     {}
 
@@ -25,8 +27,12 @@ struct UsedSymbol : common::Symbol {
         return _arguments != nullptr;
     }
 
-    const std::vector< std::vector< std::string > > &arguments() const {
+    const std::vector< std::vector< common::Token > > &arguments() const {
         return *_arguments;
+    }
+
+    const common::Token &token() const {
+        return _token;
     }
 
     bool operator==( const UsedSymbol &other ) const {
@@ -37,7 +43,8 @@ struct UsedSymbol : common::Symbol {
     }
 
 private:
-    const std::vector< std::vector< std::string > > *_arguments;
+    common::Token _token;
+    const std::vector< std::vector< common::Token > > *_arguments;
 };
 
 struct Substituer {
@@ -48,15 +55,18 @@ struct Substituer {
     {}
 
 
-    void run( ShadowChunker &chunks ) {
+    void run( ShadowChunker &chunks, common::Position position ) {
         _used.clear();
         _chunks = &chunks;
         _join = false;
         _stringify = false;
         substitute();
+
+        for ( auto &token : _result )
+            token.position() = position;
     }
 
-    const std::string &result() const {
+    std::vector< common::Token > &result() {
         return _result;
     }
 
@@ -64,13 +74,13 @@ private:
 
     int substitute();
 
-    void prepareForJoin( std::vector< std::string > & );
-    void addChunk( std::vector< std::string > &, const std::string & );
-    void stringify( std::vector< std::string > &, const std::vector< std::string > & );
-    void join( std::vector< std::string > &, const std::vector< std::string > & );
-    void recursion( UsedSymbol &&, const std::vector< std::string > &, int = 0 );
+    void prepareForJoin( std::vector< common::Token > & );
+    void addChunk( std::vector< common::Token > &, const common::Token & );
+    void stringify( std::vector< common::Token > &, const std::vector< common::Token > & );
+    void join( std::vector< common::Token > &, const std::vector< common::Token > & );
+    void recursion( UsedSymbol &&, const std::vector< common::Token > &, int = 0 );
 
-    std::string _result;
+    std::vector< common::Token > _result;
     std::shared_ptr< SymbolTable > _symbols;
     common::SymbolTable< UsedSymbol > _used;
     ShadowChunker *_chunks;

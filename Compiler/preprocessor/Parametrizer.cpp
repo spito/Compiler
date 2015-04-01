@@ -8,62 +8,62 @@ namespace preprocessor {
 
 /* states */
 auto Parametrizer::stStart() -> States {
-    if ( *_it == "(" )
+    if ( _it->value() == "(" )
         return toInside();
-    if ( common::isSpace( _it->c_str() ) )
+    if ( _it->type() == common::Token::Type::Space )
         return toSpace();
     return toIgnore();
 }
 
 auto Parametrizer::stSpace() -> States {
-    if ( *_it == "(" )
+    if ( _it->value() == "(" )
         return toInside();
     return toError();
 }
 auto Parametrizer::stInside() -> States {
-    if ( *_it == ")" )
+    if ( _it->value() == ")" )
         return toQuit();
     _result.emplace_back(); // open parameter
-    if ( common::isSpace( _it->c_str() ) )
+    if ( _it->type() == common::Token::Type::Space )
         return toSpaceInside();
-    if ( *_it == "(" )
+    if ( _it->value() == "(" )
         return toCompoundParam();
-    if ( *_it == "," )
+    if ( _it->value() == "," )
         return toError();
     return toParam();
 }
 auto Parametrizer::stSpaceInside() -> States {
-    if ( *_it == "," )
+    if ( _it->value() == "," )
         return toError();
-    if ( *_it == "(" )
+    if ( _it->value() == "(" )
         return toCompoundParam();
     return toParam();
 }
 auto Parametrizer::stParam() -> States {
-    if ( *_it == "," )
+    if ( _it->value() == "," )
         return toComma();
-    if ( *_it == ")" )
+    if ( _it->value() == ")" )
         return toQuit();
-    if ( *_it == "(" )
+    if ( _it->value() == "(" )
         return toCompoundParam();
     return toParam();
 }
 auto Parametrizer::stCompoundParam() -> States {
-    if ( *_it == "(" )
+    if ( _it->value() == "(" )
         return toCompoundParamOpenBrace();
-    if ( _braces && *_it == ")" )
+    if ( _braces && _it->value() == ")" )
         return toCompoundParamCloseBrace();
-    if ( *_it == ")" )
+    if ( _it->value() == ")" )
         return toParam();
     return toCompoundParam();
 }
 auto Parametrizer::stComma() -> States {
-    if ( *_it == "," || *_it == ")" )
+    if ( _it->value() == "," || _it->value() == ")" )
         return toError();
     _result.emplace_back(); // open parameter
-    if ( *_it == "(" )
+    if ( _it->value() == "(" )
         return toCompoundParam();
-    if ( common::isSpace( _it->c_str() ) )
+    if ( _it->type() == common::Token::Type::Space )
         return toSpaceInside();
     return toParam();
 }
@@ -89,7 +89,7 @@ auto Parametrizer::toCompoundParam() -> States {
     return States::CompoundParam;
 }
 auto Parametrizer::toComma() -> States {
-    if ( common::isSpace( _result.back().back().c_str() ) )
+    if ( _result.back().back().type() == common::Token::Type::Space )
         _result.back().pop_back();
     return States::Comma;
 }
@@ -109,8 +109,9 @@ auto Parametrizer::toError() -> States {
 auto Parametrizer::toQuit() -> States {
     if ( !_result.empty() &&
          !_result.back().empty() &&
-         common::isSpace( _result.back().back().c_str() ) ) {
-        _result.back().pop_back();
+         _result.back().back().type() == common::Token::Type::Space )
+    {
+             _result.back().pop_back();
     }
     _quit = true;
     return States::Quit;
