@@ -1,10 +1,10 @@
-#include "preprocessor/Preprocessor.h"
+#include "preprocessor/Output.h"
 
 int main() {
     try {
-        compiler::preprocessor::Preprocessor p( "Text.txt" );
-        std::ofstream f( "out.txt" );
-        f << p.content();
+        auto p = compiler::preprocessor::Preprocessor::start( "Text.txt" );
+        compiler::preprocessor::Output o( p );
+        o.save( "out.txt" );
     }
     catch ( compiler::exception::Exception &e ) {
         std::cout << "Exception: " << e.what() <<

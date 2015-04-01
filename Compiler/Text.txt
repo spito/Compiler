@@ -1,8 +1,8 @@
-#define X(a,b) (a,b)=(a,b)
+#define X(g,b) (g,b)=(g,b)
 X(a,X(b,c));
-
-#define D dddd
+#define D a tramtadada
 D
 #undef D
-D
+#define C(a) #a
+D C(ahoj)
 
