@@ -42,6 +42,9 @@ namespace compiler {
             InvalidCharacter( char given, char expected, common::Position p ) :
                 InvalidCharacter( given, std::string( 1, expected ), std::move( p ) )
             {}
+            InvalidCharacter( char given, char expected ) :
+                InvalidCharacter( given, std::string( 1, expected ), context::position() )
+            {}
 
             InvalidCharacter( char given, common::Position p ) :
                 InvalidCharacter( given, "", std::move( p ) )
