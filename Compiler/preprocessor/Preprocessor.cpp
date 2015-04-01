@@ -8,50 +8,19 @@
 namespace compiler {
 namespace preprocessor {
 
-void Preprocessor::saveToFile( const std::string &name ) const {
-    std::ofstream out( name.c_str() );
-
-    out << content();
+Preprocessor Preprocessor::start( const std::string &name ) {
+    context::file( name );
+    return Preprocessor( name );
 }
-
-
+    
 Preprocessor::Preprocessor( const std::string &name ) :
     _tokenizer( std::ifstream( name.c_str() ) ),
-    _symbols( std::make_shared< common::SymbolTable< Symbol > >() )
+    _symbols( std::make_shared< common::SymbolTable< Symbol > >() ),
+    _name( &context::file() )
 {
+    context::position( &position() );
     setPredefined();
-    removeComments(); // phase 1
-    processText(); // phase 2
-}
-
-void Preprocessor::nextPhase() {
-    _tokenizer.restart( _content );
-    _content.clear();
-}
-
-void Preprocessor::removeComments() {
-
-    common::Token token;
-
-    while ( true ) {
-        _tokenizer.readToken( token );
-
-        if ( token.type() == common::Token::Type::Eof )
-            break;
-
-        if ( token.type() != common::Token::Type::Comment ) {
-            _content += token.token();
-            continue;
-        }
-
-        for ( char c : token.token() ) {
-            if ( common::isNewLine( c ) )
-                _content += c;
-            else
-                _content += ' ';
-        }
-    }
-    nextPhase();
+    processText();
 }
 
 void Preprocessor::processText() {
@@ -59,51 +28,53 @@ void Preprocessor::processText() {
     common::Token token;
 
     bool quit = false;
-
+    _store.push( common::Token( common::Token::Type::FileBegin ) );
     while ( !quit ) {
         _tokenizer.readToken( token );
-
         switch ( token.type() ) {
+        case common::Token::Type::NewLine:
+            _ready = true;
+            break;
         case common::Token::Type::Word:
         {
             Substituer substituer( _symbols );
-            ShadowChunker chunker( token.token(), [&] {
+            ShadowChunker chunker( token, [&] {
                 common::Token token;
-                _tokenizer.readToken( token );
-                return token.token();
+                _tokenizer.readToken( token, true );
+                return token;
             } );
-            substituer.run( chunker );
-            _content += substituer.result();
+            substituer.run( chunker, token.position() );
+            _store.push( substituer.result() );
+            _ready = false;
         }
-        break;
-        case common::Token::Type::Space:
-            _content += token.token();
             break;
         case common::Token::Type::Operator:
-            if ( token.token() == "#" ) {
+            if ( token.value() == "#" ) {
                 if ( _ready ) {
+                    _ready = false;
                     invokeExpression();
                     break;
                 }
                 else
                     throw exception::InvalidToken( token );
             }
-            if ( token.token() == "##" )
+            if ( token.value() == "##" )
                 throw exception::InvalidToken( token );
         case common::Token::Type::Char:
         case common::Token::Type::Integer:
         case common::Token::Type::Real:
         case common::Token::Type::String:
         case common::Token::Type::StringInclude:
-            _content += token.token();
+            _store.push( std::move( token ) );
+            _ready = false;
             break;
         case common::Token::Type::Eof:
+            _store.push( common::Token( common::Token::Type::FileEnd ) );
             quit = true;
             continue;
         default:
             throw exception::InvalidToken( token );
         }
-        _ready = token.containsNewLine();
     }
 
 }
@@ -111,22 +82,20 @@ void Preprocessor::processText() {
 void Preprocessor::invokeExpression() {
     common::Token token;
     common::Position before;
-    do {
-        before = position();
-        _tokenizer.readToken( token );
-    } while ( token.type() == common::Token::Type::Space );
+
+    _tokenizer.readToken( token );
 
     if ( token.type() != common::Token::Type::Word )
         throw exception::InvalidToken( token );
 
-    if ( token.token() == "define" )
+    if ( token.value() == "define" )
         processDefine();
-    else if ( token.token() == "pragma" )
+    else if ( token.value() == "pragma" )
         processPragma();
-    else if ( token.token() == "undef" )
+    else if ( token.value() == "undef" )
         processUndef();
     else
-        throw exception::InvalidCharacterConstant( token.token(), before );
+        throw exception::InvalidCharacterConstant( token.value(), before );
 }
 
 void Preprocessor::includeFile( std::string )
@@ -141,14 +110,12 @@ void Preprocessor::processDefine() {
 
     common::Token token;
     std::string name;
-    std::vector< std::string > value;
-    std::vector< std::string > params;
-    bool isInteger = false;
-    int integer;
+    std::vector< common::Token > value;
+    std::vector< common::Token > params;
 
     common::Position before = position();
 
-    _tokenizer.readToken( token );
+    _tokenizer.readToken( token, true );
     if ( token.type() != common::Token::Type::Space )
         throw exception::InvalidToken( token );
 
@@ -156,56 +123,45 @@ void Preprocessor::processDefine() {
     if ( token.type() != common::Token::Type::Word )
         throw exception::InvalidToken( token );
 
-    Symbol symbol( token.token() );
+    Symbol symbol( token.value() );
 
-    _tokenizer.readToken( token );
+    _tokenizer.lookAtToken( token );
 
     // parse formal parameters
-    if ( token.type() == common::Token::Type::Operator && token.token() == "(" ) {
-
+    if ( token.type() == common::Token::Type::Operator && token.value() == "(" ) {
+        _tokenizer.readToken( token );
         while ( true ) {
 
             _tokenizer.readToken( token );
-            if ( token.type() == common::Token::Type::Space )
-                _tokenizer.readToken( token );
 
             if ( token.type() != common::Token::Type::Word )
                 throw exception::InvalidToken( token );
-            params.push_back( token.token() );
+            params.push_back( token );
 
             _tokenizer.readToken( token );
-            if ( token.type() == common::Token::Type::Space )
-                _tokenizer.readToken( token );
-            
+
             if ( token.type() == common::Token::Type::Operator ) {
-                if ( token.token() == "," )
+                if ( token.value() == "," )
                     continue;
-                if ( token.token() == ")" )
+                if ( token.value() == ")" )
                     break;
             }
             throw exception::InvalidToken( token );
         }
-        _tokenizer.readToken( token );
     }
 
-    if ( token.type() != common::Token::Type::Space )
-        throw exception::InvalidToken( token );
-
-    while ( !token.containsNewLine() ) {
+    while ( true ) {
         _tokenizer.lookAtToken( token );
 
-        if ( token.containsNewLine() )
+        if ( token.type() == common::Token::Type::NewLine )
             break;
         _tokenizer.readToken( token );
 
-        isInteger = value.empty() && token.type() == common::Token::Type::Integer;
-        if ( isInteger )
-            integer = int( token.integer() );
-        value.push_back( token.token() );
+        value.push_back( token );
     }
 
-    if ( isInteger )
-        symbol = Symbol( name, integer );
+    if ( value.size() == 1 && value.back().type() == common::Token::Type::Integer )
+        symbol = Symbol( name, value.back() );
     else if ( !params.empty() )
         symbol = Symbol( name, params, value );
     else if ( !value.empty() )
@@ -223,17 +179,13 @@ void Preprocessor::processUndef() {
     std::string name;
 
     _tokenizer.readToken( token );
-    if ( token.type() != common::Token::Type::Space )
-        throw exception::InvalidToken( token );
-
-    _tokenizer.readToken( token );
     if ( token.type() != common::Token::Type::Word )
         throw exception::InvalidToken( token );
 
-    name = token.token();
+    name = token.value();
 
     _tokenizer.lookAtToken( token );
-    if ( !token.containsNewLine() )
+    if ( token.type() != common::Token::Type::NewLine )
         throw exception::InvalidToken( token );
 
     _symbols->remove( name );

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../common/SymbolTable.h"
+#include "../common/TokenStore.h"
 #include "Tokenizer.h"
 #include "Symbol.h"
 
@@ -12,20 +13,22 @@ namespace preprocessor {
 
 struct Preprocessor {
 
-    Preprocessor( const std::string & );
+    static Preprocessor start( const std::string & );
 
-
-    void saveToFile( const std::string & ) const;
     size_t size() const {
-        return _content.size();
+        return _store.size();
     }
-    const char *content() const {
-        return _content.c_str();
+
+    const common::TokenStore &store() const {
+        return _store;
+    }
+    common::TokenStore &store() {
+        return _store;
     }
 
     Preprocessor( const Preprocessor & ) = delete;
     Preprocessor( Preprocessor &&other ) :
-        _content( std::move( other._content ) ),
+        _store( std::move( other._store ) ),
         _tokenizer( std::move( other._tokenizer ) ),
         _symbols( std::move( other._symbols ) )
     {}
@@ -34,10 +37,8 @@ struct Preprocessor {
 private:
 
     Preprocessor( const std::string &, std::shared_ptr< common::SymbolTable< Symbol > > );
+    Preprocessor( const std::string & );
 
-    void nextPhase();
-
-    void removeComments();
 
     void processText();
     void invokeExpression();
@@ -50,18 +51,19 @@ private:
     void includeSystemFile( std::string );
     void setPredefined();
 
-    common::Position position() const {
+    const common::Position &position() const {
         return _tokenizer.position();
     }
     void position( common::Position p ) {
         _tokenizer.position( std::move( p ) );
     }
 
-    std::string _content;
+    common::TokenStore _store;
 
     Tokenizer _tokenizer;
     std::shared_ptr< common::SymbolTable< Symbol > > _symbols;
-    bool _ready;
+    bool _ready = true;
+    const std::string *_name;
 
 };
 

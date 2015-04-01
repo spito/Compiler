@@ -2,7 +2,6 @@
 
 #include "../common/Symbol.h"
 #include "../includes/exceptions.h"
-#include "../context/Context.h"
 
 #include <vector>
 
@@ -25,19 +24,19 @@ namespace compiler {
                 _kind( Kind::Nothing )
             {}
 
-            Symbol( std::string name, int value ) :
+            Symbol( std::string name, common::Token token ) :
                 Base( std::move( name ) ),
-                _kind( Kind::Integer ),
-                _integer( value )
+                _kind( token.type() == common::Token::Type::Integer ? Kind::Integer : Kind::String ),
+                _integer( token.integer() )
             {
-                _value.push_back( std::to_string( value ) );
+                _value.push_back( std::move( token ) );
             }
-            Symbol( std::string name, std::vector< std::string > value ) :
+            Symbol( std::string name, std::vector< common::Token > value ) :
                 Base( std::move( name ) ),
                 _kind( Kind::String ),
                 _value( std::move( value ) )
             {}
-            Symbol( std::string name, std::vector< std::string > parametres, std::vector< std::string > value ) :
+            Symbol( std::string name, std::vector< common::Token > parametres, std::vector< common::Token > value ) :
                 Base( std::move( name ) ),
                 _kind( Kind::Function ),
                 _value( std::move( value ) ),
@@ -63,15 +62,15 @@ namespace compiler {
                 return _kind;
             }
 
-            int integer() const {
+            long long integer() const {
                 if ( _kind != Kind::Integer )
                     throw exception::InternalError( "Invalid usage of symbol (not an integer)" );
                 return _integer;
             }
-            const std::vector< std::string > &value() const {
+            const std::vector< common::Token > &value() const {
                 return _value;
             }
-            const std::vector< std::string > &parametres() const {
+            const std::vector< common::Token > &parametres() const {
                 if ( _kind != Kind::Function )
                     throw exception::InternalError( "Invalid usage of symbol (not a function)" );
                 return _parametres;
@@ -106,9 +105,9 @@ namespace compiler {
             
         private:
             Kind _kind;
-            int _integer;
-            std::vector< std::string > _value;
-            std::vector< std::string > _parametres;
+            long long _integer;
+            std::vector< common::Token > _value;
+            std::vector< common::Token > _parametres;
         };
 
     } // namespace preprocessor
