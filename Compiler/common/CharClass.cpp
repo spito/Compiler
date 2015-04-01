@@ -13,13 +13,11 @@ enum {
     SHORT_COMMENT_2 = 0x20,
     LONG_COMMENT_1 = 0x40,
     LONG_COMMENT_2 = 0x80,
-    SINGLE_OPERATOR = 0x100,
-    COMPOUND_OPERATOR_BEGIN = 0x200,
-    PREPROCESSOR_SIGN = 0x400,
-    WORD_LATER = 0x800,
-    COMPOUND_OPERATOR_LATER = 0x1000,
-    SLASH = 0x2000,
-    NEW_LINE = 0x4000
+    OPERATOR = 0x100,
+    PREPROCESSOR_SIGN = 0x200,
+    WORD_LATER = 0x400,
+    SLASH = 0x800,
+    NEW_LINE = 0x1000
 };
 
 static const int characters[] = {
@@ -56,21 +54,21 @@ static const int characters[] = {
     NOTHING, // 0x1E Record Separator
     NOTHING, // 0x1F Unit Separator
     SPACE, // space
-    SINGLE_OPERATOR, // !
+    OPERATOR, // !
     STRING, // "
     PREPROCESSOR_SIGN, // #
     NOTHING, // $
-    SINGLE_OPERATOR | COMPOUND_OPERATOR_LATER, // %
-    SINGLE_OPERATOR | COMPOUND_OPERATOR_BEGIN | COMPOUND_OPERATOR_LATER, // &
+    OPERATOR, // %
+    OPERATOR, // &
     STRING, // '
-    SINGLE_OPERATOR, // (
-    SINGLE_OPERATOR, // )
-    SINGLE_OPERATOR | COMPOUND_OPERATOR_LATER | LONG_COMMENT_2, // *
-    SINGLE_OPERATOR | COMPOUND_OPERATOR_BEGIN | COMPOUND_OPERATOR_LATER, // +
-    SINGLE_OPERATOR, // ,
-    SINGLE_OPERATOR | COMPOUND_OPERATOR_BEGIN | COMPOUND_OPERATOR_LATER | NUMBER, // -
-    SINGLE_OPERATOR | COMPOUND_OPERATOR_BEGIN | COMPOUND_OPERATOR_LATER, // .
-    SINGLE_OPERATOR | COMPOUND_OPERATOR_LATER | SHORT_COMMENT_1 | SHORT_COMMENT_2 | LONG_COMMENT_1, // /
+    OPERATOR, // (
+    OPERATOR, // )
+    OPERATOR | LONG_COMMENT_2, // *
+    OPERATOR, // +
+    OPERATOR, // ,
+    OPERATOR | NUMBER, // -
+    OPERATOR, // .
+    OPERATOR | SHORT_COMMENT_1 | SHORT_COMMENT_2 | LONG_COMMENT_1, // /
     NUMBER | WORD_LATER, // 0
     NUMBER | WORD_LATER, // 1
     NUMBER | WORD_LATER, // 2
@@ -81,12 +79,12 @@ static const int characters[] = {
     NUMBER | WORD_LATER, // 7
     NUMBER | WORD_LATER, // 8
     NUMBER | WORD_LATER, // 9
-    SINGLE_OPERATOR, // :
-    SINGLE_OPERATOR, // ;
-    STRING | SINGLE_OPERATOR | COMPOUND_OPERATOR_BEGIN | COMPOUND_OPERATOR_LATER, // <
-    SINGLE_OPERATOR | COMPOUND_OPERATOR_BEGIN | COMPOUND_OPERATOR_LATER, // =
-    SINGLE_OPERATOR | COMPOUND_OPERATOR_BEGIN | COMPOUND_OPERATOR_LATER, // >
-    SINGLE_OPERATOR, // ?
+    OPERATOR, // :
+    OPERATOR, // ;
+    STRING | OPERATOR, // <
+    OPERATOR, // =
+    OPERATOR, // >
+    OPERATOR, // ?
     NOTHING, // @
     WORD_BEGIN | WORD_LATER, // A
     WORD_BEGIN | WORD_LATER, // B
@@ -114,10 +112,10 @@ static const int characters[] = {
     WORD_BEGIN | WORD_LATER, // X
     WORD_BEGIN | WORD_LATER, // Y
     WORD_BEGIN | WORD_LATER, // Z
-    SINGLE_OPERATOR, // [
+    OPERATOR, // [
     SLASH, // \ 
-    SINGLE_OPERATOR, // ]
-    SINGLE_OPERATOR | COMPOUND_OPERATOR_LATER, // ^
+    OPERATOR, // ]
+    OPERATOR, // ^
     WORD_BEGIN | WORD_LATER, // _
     NOTHING, // `
     WORD_BEGIN | WORD_LATER, // a
@@ -145,10 +143,10 @@ static const int characters[] = {
     WORD_BEGIN | WORD_LATER, // x
     WORD_BEGIN | WORD_LATER, // y
     WORD_BEGIN | WORD_LATER, // z
-    SINGLE_OPERATOR, // {
-    SINGLE_OPERATOR | COMPOUND_OPERATOR_BEGIN | COMPOUND_OPERATOR_LATER, // |
-    SINGLE_OPERATOR, // }
-    SINGLE_OPERATOR, // ~
+    OPERATOR, // {
+    OPERATOR, // |
+    OPERATOR, // }
+    OPERATOR, // ~
     NOTHING // 0x7F Delete
 };
 
@@ -182,14 +180,8 @@ bool isLongComment( int c1, int c2 ) {
         isCharClass( c1, LONG_COMMENT_1 ) &&
         isCharClass( c2, LONG_COMMENT_2 );
 }
-bool isSingleOperator( int c ) {
-    return isCharClass( c, SINGLE_OPERATOR );
-}
-bool isCompoundOperatorBegin( int c ) {
-    return isCharClass( c, COMPOUND_OPERATOR_BEGIN );
-}
-bool isCompounfOperatorLater( int c ) {
-    return isCharClass( c, COMPOUND_OPERATOR_LATER );
+bool isOperator( int c ) {
+    return isCharClass( c, OPERATOR );
 }
 bool isPreprocessorSign( int c ) {
     return isCharClass( c, PREPROCESSOR_SIGN );
