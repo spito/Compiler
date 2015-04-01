@@ -37,6 +37,9 @@
     <Filter Include="Header Files\context">
       <UniqueIdentifier>{4f5def76-f0a8-4728-95e9-600d56c3ac1f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\context">
+      <UniqueIdentifier>{c21c063e-e633-4b99-aada-2177f6078ab4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common\InputBuffer.h">
@@ -120,9 +123,6 @@
     <ClInclude Include="preprocessor\Symbol.h">
       <Filter>Header Files\preprocessor</Filter>
     </ClInclude>
-    <ClInclude Include="context\Context.h">
-      <Filter>Header Files\context</Filter>
-    </ClInclude>
     <ClInclude Include="preprocessor\Substituer.h">
       <Filter>Header Files\preprocessor</Filter>
     </ClInclude>
@@ -131,6 +131,18 @@
     </ClInclude>
     <ClInclude Include="preprocessor\ShadowChunker.h">
       <Filter>Header Files\preprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="common\TokenStore.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="preprocessor\Output.h">
+      <Filter>Header Files\preprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="context\Position.h">
+      <Filter>Header Files\context</Filter>
+    </ClInclude>
+    <ClInclude Include="context\File.h">
+      <Filter>Header Files\context</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -155,9 +167,6 @@
     <ClCompile Include="exception\InvalidCharacterConstant.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="context\Context.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="main-preprocessor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -166,6 +175,12 @@
     </ClCompile>
     <ClCompile Include="preprocessor\Substituer.cpp">
       <Filter>Source Files\preprocessor</Filter>
+    </ClCompile>
+    <ClCompile Include="preprocessor\Output.cpp">
+      <Filter>Source Files\preprocessor</Filter>
+    </ClCompile>
+    <ClCompile Include="context\Context.cpp">
+      <Filter>Source Files\context</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

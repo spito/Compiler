@@ -75,11 +75,13 @@
     <ClInclude Include="common\Symbol.h" />
     <ClInclude Include="common\SymbolTable.h" />
     <ClInclude Include="common\Token.h" />
+    <ClInclude Include="common\TokenStore.h" />
     <ClInclude Include="common\TokenType.h" />
     <ClInclude Include="common\Unicode.h" />
     <ClInclude Include="common\Utils.h" />
     <ClInclude Include="common\Value.h" />
-    <ClInclude Include="context\Context.h" />
+    <ClInclude Include="context\File.h" />
+    <ClInclude Include="context\Position.h" />
     <ClInclude Include="exception\DuplicateSymbol.h" />
     <ClInclude Include="exception\EndOfFile.h" />
     <ClInclude Include="exception\Exception.h" />
@@ -91,6 +93,7 @@
     <ClInclude Include="exception\Unicode.h" />
     <ClInclude Include="exception\UnsupportedFeature.h" />
     <ClInclude Include="includes\exceptions.h" />
+    <ClInclude Include="preprocessor\Output.h" />
     <ClInclude Include="preprocessor\Parametrizer.h" />
     <ClInclude Include="preprocessor\Preprocessor.h" />
     <ClInclude Include="preprocessor\ShadowChunker.h" />
@@ -107,6 +110,7 @@
     <ClCompile Include="context\Context.cpp" />
     <ClCompile Include="exception\InvalidCharacterConstant.cpp" />
     <ClCompile Include="main-preprocessor.cpp" />
+    <ClCompile Include="preprocessor\Output.cpp" />
     <ClCompile Include="preprocessor\Parametrizer.cpp" />
     <ClCompile Include="preprocessor\Preprocessor.cpp" />
     <ClCompile Include="preprocessor\Substituer.cpp" />
