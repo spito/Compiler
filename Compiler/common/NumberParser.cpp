@@ -133,6 +133,7 @@ NumberParser::States NumberParser::stateDigits( char c ){
     }
     else if ( c == 'e' || c == 'E' ) {
         state = States::E;
+        _isReal = true;
         _isE = true;
     }
     else {
@@ -218,40 +219,19 @@ NumberParser::States NumberParser::stateEDigits( char c ){
 }
 
 void NumberParser::postProcessing(){
-    if ( !_isReal ) {
-        // try to remain number as an integer
+    if ( _isReal ) {
+
         if ( _isExponentMinus ) {
-            auto ex = _exponent;
-            while ( ex ) {
-                // reduction is possible
-                if ( _integer % 10 == 0 ) {
-                    _integer /= 10;
-                    --ex;
-                }
-                else
-                    break;
-            }
-            if ( ex ) {
-                _real = static_cast<long double>( _integer );
-                _isReal = true;
+            while ( _exponent ) {
+                _real /= 10;
+                --_exponent;
             }
         }
         else {
             while ( _exponent ) {
-                _integer *= 10;
+                _real *= 10;
                 --_exponent;
             }
-        }
-    }
-    // not else!
-    if ( _isReal ) {
-        void( *op )( long double & ) = []( long double &r ) { r *= 10; };
-        if ( _isExponentMinus )
-            op = []( long double &r ) { r /= 10; };
-
-        while ( _exponent ) {
-            op( _real );
-            --_exponent;
         }
     }
 }
