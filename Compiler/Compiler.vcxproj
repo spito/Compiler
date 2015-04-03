@@ -69,8 +69,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="common\CharClass.h" />
-    <ClInclude Include="common\InputBuffer.h" />
-    <ClInclude Include="common\NumberParser.h" />
+    <ClInclude Include="common\Operator.h" />
     <ClInclude Include="common\Position.h" />
     <ClInclude Include="common\Symbol.h" />
     <ClInclude Include="common\SymbolTable.h" />
@@ -93,6 +92,10 @@
     <ClInclude Include="exception\Unicode.h" />
     <ClInclude Include="exception\UnsupportedFeature.h" />
     <ClInclude Include="includes\exceptions.h" />
+    <ClInclude Include="preprocessor\Global.h" />
+    <ClInclude Include="preprocessor\InputBuffer.h" />
+    <ClInclude Include="preprocessor\NumberParser.h" />
+    <ClInclude Include="preprocessor\OperatorParser.h" />
     <ClInclude Include="preprocessor\Output.h" />
     <ClInclude Include="preprocessor\Parametrizer.h" />
     <ClInclude Include="preprocessor\Preprocessor.h" />
@@ -101,21 +104,25 @@
     <ClInclude Include="preprocessor\Symbol.h" />
     <ClInclude Include="preprocessor\Tokenizer.h" />
     <ClInclude Include="preprocessor\Tokens.h" />
+    <ClInclude Include="preprocessor\Worker.h" />
     <ClInclude Include="type\Type.h" />
+    <ClInclude Include="what.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\CharClass.cpp" />
-    <ClCompile Include="common\NumberParser.cpp" />
     <ClCompile Include="common\Unicode.cpp" />
     <ClCompile Include="context\Context.cpp" />
     <ClCompile Include="exception\InvalidCharacterConstant.cpp" />
     <ClCompile Include="main-preprocessor.cpp" />
+    <ClCompile Include="preprocessor\NumberParser.cpp" />
+    <ClCompile Include="preprocessor\OperatorParser.cpp" />
     <ClCompile Include="preprocessor\Output.cpp" />
     <ClCompile Include="preprocessor\Parametrizer.cpp" />
     <ClCompile Include="preprocessor\Preprocessor.cpp" />
     <ClCompile Include="preprocessor\Substituer.cpp" />
     <ClCompile Include="preprocessor\Tokenizer.cpp" />
     <ClCompile Include="preprocessor\Tokens.cpp" />
+    <ClCompile Include="preprocessor\Worker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Text.txt" />

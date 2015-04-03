@@ -42,9 +42,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="common\InputBuffer.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
     <ClInclude Include="common\Position.h">
       <Filter>Header Files\common</Filter>
     </ClInclude>
@@ -108,9 +105,6 @@
     <ClInclude Include="common\Utils.h">
       <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="common\NumberParser.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
     <ClInclude Include="exception\InvalidCharacterConstant.h">
       <Filter>Header Files\exceptions</Filter>
     </ClInclude>
@@ -144,6 +138,25 @@
     <ClInclude Include="context\File.h">
       <Filter>Header Files\context</Filter>
     </ClInclude>
+    <ClInclude Include="common\Operator.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="preprocessor\NumberParser.h">
+      <Filter>Header Files\preprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="preprocessor\OperatorParser.h">
+      <Filter>Header Files\preprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="preprocessor\InputBuffer.h">
+      <Filter>Header Files\preprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="preprocessor\Worker.h">
+      <Filter>Header Files\preprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="what.h" />
+    <ClInclude Include="preprocessor\Global.h">
+      <Filter>Header Files\preprocessor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\Unicode.cpp">
@@ -159,9 +172,6 @@
       <Filter>Source Files\preprocessor</Filter>
     </ClCompile>
     <ClCompile Include="common\CharClass.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="common\NumberParser.cpp">
       <Filter>Source Files\common</Filter>
     </ClCompile>
     <ClCompile Include="exception\InvalidCharacterConstant.cpp">
@@ -181,6 +191,15 @@
     </ClCompile>
     <ClCompile Include="context\Context.cpp">
       <Filter>Source Files\context</Filter>
+    </ClCompile>
+    <ClCompile Include="preprocessor\OperatorParser.cpp">
+      <Filter>Source Files\preprocessor</Filter>
+    </ClCompile>
+    <ClCompile Include="preprocessor\NumberParser.cpp">
+      <Filter>Source Files\preprocessor</Filter>
+    </ClCompile>
+    <ClCompile Include="preprocessor\Worker.cpp">
+      <Filter>Source Files\preprocessor</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
