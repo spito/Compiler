@@ -32,7 +32,8 @@ public:
     Position( Position &&o ) :
         _rawPosition( o._rawPosition ),
         _line( o._line ),
-        _column( o._column )
+        _column( o._column ),
+        _file( o._file )
     {}
 
     Position &operator=( Position p ) {
@@ -89,6 +90,7 @@ public:
         swap( _rawPosition, p._rawPosition );
         swap( _line, p._line );
         swap( _column, p._column );
+        swap( _file, p._file );
     }
 
     bool operator==( const Position &p ) const {
