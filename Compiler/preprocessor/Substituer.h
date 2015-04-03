@@ -5,6 +5,7 @@
 #include "ShadowChunker.h"
 #include "Symbol.h"
 #include "Parametrizer.h"
+#include "Tokenizer.h"
 
 namespace compiler {
 namespace preprocessor {
@@ -49,26 +50,23 @@ private:
 
 struct Substituer {
     using SymbolTable = common::SymbolTable < Symbol > ;
-    Substituer( std::shared_ptr< SymbolTable > symbols ) :
+    Substituer( SymbolTable &symbols, common::Token initial, Tokenizer &tokenizer ) :
+        _position( initial.position() ),
         _symbols( symbols ),
-        _chunks( nullptr )
-    {}
-
-
-    void run( ShadowChunker &chunks, common::Position position ) {
-        _used.clear();
-        _chunks = &chunks;
-        _join = false;
-        _stringify = false;
+        _chunks( std::move( initial ), [&] { return tokenizer.readToken(); } ),
+        _join( false ),
+        _stringify( false )
+    {
         substitute();
 
         for ( auto &token : _result )
-            token.position() = position;
+            token.position() = _position;
     }
 
     std::vector< common::Token > &result() {
         return _result;
     }
+
 
 private:
 
@@ -80,10 +78,11 @@ private:
     void join( std::vector< common::Token > &, const std::vector< common::Token > & );
     void recursion( UsedSymbol &&, const std::vector< common::Token > &, int = 0 );
 
+    common::Position _position;
     std::vector< common::Token > _result;
-    std::shared_ptr< SymbolTable > _symbols;
+    SymbolTable &_symbols;
     common::SymbolTable< UsedSymbol > _used;
-    ShadowChunker *_chunks;
+    ShadowChunker _chunks;
     bool _join = false;
     bool _stringify = false;
 

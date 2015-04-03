@@ -15,9 +15,7 @@ static ptrdiff_t grabParameterIndex( const Symbol &symbol, const common::Token &
 
 void Substituer::prepareForJoin( std::vector< common::Token > &items ) {
     while ( !items.empty() ) {
-        if ( items.back().type() == common::Token::Type::Space )
-            items.pop_back();
-        else if ( items.back().type() == common::Token::Type::Word )
+        if ( items.back().type() == common::Token::Type::Word )
             break;
         else
             throw exception::InternalError( "malformed source - word has to be before ##" );
@@ -27,11 +25,9 @@ void Substituer::prepareForJoin( std::vector< common::Token > &items ) {
 }
 
 void Substituer::addChunk( std::vector< common::Token > &items, const common::Token &chunk ){
-    if ( _stringify && chunk.type() != common::Token::Type::Space )
+    if ( _stringify )
         throw exception::InvalidCharacterConstant( "#" );
     else if ( _join ) {
-        if ( chunk.type() != common::Token::Type::Space )
-            return;
         items.back().value() += chunk.value();
         _join = false;
     }
@@ -64,8 +60,8 @@ void Substituer::recursion( UsedSymbol &&symbol, const std::vector< common::Toke
     }
     _used.insert( UsedSymbol( symbol ) );
     if ( toPop )
-        _chunks->pop( toPop );
-    _chunks->prepend( items );
+        _chunks.pop( toPop );
+    _chunks.prepend( items );
     for ( int eaten = 0; eaten < int( items.size() ); )
         eaten += substitute();
     _used.remove( symbol );
@@ -73,10 +69,10 @@ void Substituer::recursion( UsedSymbol &&symbol, const std::vector< common::Toke
 
 int Substituer::substitute() {
 
-    common::Token token = _chunks->top();
-    _chunks->pop();
+    common::Token token = _chunks.top();
+    _chunks.pop();
 
-    auto symbol = _symbols->find( token.value() );
+    auto symbol = _symbols.find( token.value() );
 
     if ( !symbol ) {
         _result.push_back( std::move( token ) );
@@ -84,7 +80,7 @@ int Substituer::substitute() {
     }
 
     if ( symbol->kind() == Symbol::Kind::Function ) {
-        Parametrizer parametrizer( _chunks->begin() );
+        Parametrizer parametrizer( _chunks.begin() );
         if ( parametrizer.ignored() ) {
             _result.push_back( std::move( token ) );
             return 1;
@@ -93,11 +89,11 @@ int Substituer::substitute() {
         std::vector< common::Token > items;
         for ( const auto &chunk : symbol->value() ) {
 
-            if ( chunk.value() == "#" && !_stringify ) {
+            if ( chunk.isOperator( common::Operator::Sharp ) && !_stringify ) {
                 _stringify = true;
                 continue;
             }
-            else if ( chunk.value() == "##" ) {
+            else if ( chunk.isOperator( common::Operator::TwoShaprs ) ) {
                 _join = true;
                 prepareForJoin( items );
                 continue;
