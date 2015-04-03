@@ -126,6 +126,7 @@ static const int characters[] = {
     WORD_BEGIN | WORD_LATER, // f
     WORD_BEGIN | WORD_LATER, // g
     WORD_BEGIN | WORD_LATER, // h
+    WORD_BEGIN | WORD_LATER, // i
     WORD_BEGIN | WORD_LATER, // j
     WORD_BEGIN | WORD_LATER, // k
     WORD_BEGIN | WORD_LATER, // l
