@@ -1,78 +1,59 @@
-#include "Tokenizer.h"
 #include "../common/utils.h"
 #include "../common/CharClass.h"
-#include "../common/NumberParser.h"
+#include "Tokenizer.h"
+#include "NumberParser.h"
+#include "OperatorParser.h"
 
 namespace compiler {
 namespace preprocessor {
 
-bool Tokenizer::isTokenType( common::Token &token, const common::Token::Type type ) {
-    common::Position before = position();
-    getToken( token, true );
-    if ( token.type() == type )
-        return true;
-
-    position( before );
-    return false;
+common::Token Tokenizer::readToken( bool acceptSpaces ) {
+    return getToken( acceptSpaces );
 }
 
-void Tokenizer::readToken( common::Token &token, bool acceptSpaces ) {
-    getToken( token, acceptSpaces );
+common::Token Tokenizer::lookAtToken( bool acceptSpaces ) {
+    common::Position before = position();
+    auto d = common::make_defer( [&] { position( before ); } );
+    return getToken( acceptSpaces );
 }
 
-void Tokenizer::lookAtToken( common::Token &token, bool acceptSpaces ) {
-    common::Position before = position();
-    getToken( token, acceptSpaces );
-    position( before );
-}
-
-void Tokenizer::getToken( common::Token &token, bool acceptSpaces ) {
+common::Token Tokenizer::getToken( bool acceptSpaces ) {
     common::Position before = position();
 
-    if ( _input.eof() ) {
-        token = common::Token( common::Token::Type::Eof, before );
-        return;
-    }
-    bool quit = false;
-    while ( !quit ) {
-        quit = true;
+    if ( _input.eof() )
+        return common::Token( common::Token::Type::Eof, before );
 
+    while ( true ) {
+        
         Class tClass = resolveClass();
         switch ( tClass ) {
         case Class::Preprocessor:
-            processSharp( token );
+            return processSharp();
             break;
         case Class::Slash: /// TODO: inspect again
             processSlash();
-            quit = false;
             break;
         case Class::String:
-            processString( token );
-            break;
+            return processString();
         case Class::Number:
-            processNumber( token );
-            break;
+            return processNumber();
         case Class::Operator:
-            processOperator( token );
-            break;
+            return processOperator();
         case Class::NewLine:
-            processNewLine( token );
-            break;
+            return processNewLine();
         case Class::Space:
-            processSpace( token );
-            quit = acceptSpaces;
+            if ( acceptSpaces )
+                return processSpace();
+            processSpace();
             break;
         case Class::ShortComment:
             processShortComment();
-            quit = false;
             break;
         case Class::LongComment:
             processLongComment();
-            quit = false;
             break;
         case Class::Word:
-            processWord( token );
-            break;
+            return processWord();
         default:
             throw exception::InvalidCharacter( _input.look(), before );
         }
@@ -107,37 +88,55 @@ Tokenizer::Class Tokenizer::resolveClass() {
     return Class::None;
 }
 
-void Tokenizer::processNumber( common::Token &token ) {
+common::Token Tokenizer::processNumber() {
     common::Position before = position();
-    common::NumberParser p( _input );
+    NumberParser p( _input );
 
-    p.run();
-
-    if ( p.isReal() ) {
-        token = common::Token( common::Token::Type::Real, p.token(), before );
+    common::Token token( p.isReal() ?
+                         common::Token::Type::Real :
+                         common::Token::Type::Integer,
+                         std::move( p.value() ),
+                         before );
+    if ( p.isReal() )
         token.real() = p.real();
-    }
-    else {
-        token = common::Token( common::Token::Type::Integer, p.token(), before );
+    else
         token.integer() = p.integer();
-    }
+    return token;
 }
 
-void Tokenizer::processWord( common::Token &token ) {
+common::Token Tokenizer::processOperator() {
+    common::Position before = position();
+
+    OperatorParser p( _input );
+
+    common::Token token( common::Token::Type::Operator, std::move( p.value() ), before );
+    token.op() = p.op();
+    return token;
+}
+
+
+common::Token Tokenizer::processWord() {
     std::string rawToken;
 
     common::Position before = position();
 
     while ( true ) {
+
+        if ( common::isSlash( _input.look() ) && common::isNewLine( _input.look( 1 ) ) ) {
+            _input.read();
+            _input.read();
+            continue;
+        }
+
         if ( !common::isWordLater( _input.look() ) )
             break;
 
         rawToken += _input.read();
     }
-    token = common::Token( common::Token::Type::Word, std::move( rawToken ), before );
+    return common::Token( common::Token::Type::Word, std::move( rawToken ), before );
 }
 
-void Tokenizer::processSpace( common::Token &token ) {
+common::Token Tokenizer::processSpace() {
     std::string rawToken;
     common::Position before = position();
 
@@ -147,10 +146,10 @@ void Tokenizer::processSpace( common::Token &token ) {
             break;
         rawToken += _input.read();
     }
-    token = common::Token( common::Token::Type::Space, std::move( rawToken ), before );
+    return common::Token( common::Token::Type::Space, std::move( rawToken ), before );
 }
 
-void Tokenizer::processString( common::Token &token ) {
+common::Token Tokenizer::processString() {
     std::string rawToken;
     bool special = false;
 
@@ -169,9 +168,9 @@ void Tokenizer::processString( common::Token &token ) {
 
         if ( special ) {
             switch ( c ) {
+            case '\\':
             case '"':
             case '\'':
-            case '\\':
             case '/':
                 rawToken.push_back( c );
                 break;
@@ -190,8 +189,7 @@ void Tokenizer::processString( common::Token &token ) {
             case 't':
                 rawToken.push_back( '\t' );
                 break;
-            case '\n':
-                rawToken.push_back( '\n' );
+            case '\n': // just skip this newline
                 break;
             default:
                 throw exception::InvalidCharacter( c, "\"\\/bfnrt", p );
@@ -208,16 +206,16 @@ void Tokenizer::processString( common::Token &token ) {
             rawToken.push_back( c );
     }
     if ( quots == '"' )
-        token = common::Token( common::Token::Type::String, std::move( rawToken ), before );
-    else if ( quots == '\'' ) {
+        return common::Token( common::Token::Type::String, std::move( rawToken ), before );
+    if ( quots == '\'' ) {
         if ( rawToken.size() != 1 )
             throw exception::InvalidCharacterConstant( std::move( rawToken ), before );
-        token = common::Token( common::Token::Type::Char, std::move( rawToken ), before );
+        return common::Token( common::Token::Type::Char, std::move( rawToken ), before );
     }
-    else if ( quots == '<' )
-        token = common::Token( common::Token::Type::StringInclude, std::move( rawToken ), before );
-    else
-        throw exception::InvalidCharacter( quots, before );
+    if ( quots == '<' )
+        return common::Token( common::Token::Type::StringInclude, std::move( rawToken ), before );
+
+    throw exception::InvalidCharacter( quots, before );
 }
 
 void Tokenizer::processShortComment() {
@@ -267,14 +265,6 @@ void Tokenizer::processLongComment() {
     }
 }
 
-void Tokenizer::processOperator( common::Token &token ) {
-    common::Position before = position();
-    std::string rawToken;
-    rawToken += _input.read();
-    token = common::Token( common::Token::Type::Operator, std::move( rawToken ), before );
-}
-
-
 void Tokenizer::processSlash() {
 
     _input.read(); // erase slash \ 
@@ -286,7 +276,7 @@ void Tokenizer::processSlash() {
     throw exception::InvalidCharacter( _input.look(), '\n' );
 }
 
-void Tokenizer::processSharp( common::Token &token ) {
+common::Token Tokenizer::processSharp() {
     common::Position before = position();
 
     std::string rawToken;
@@ -297,12 +287,17 @@ void Tokenizer::processSharp( common::Token &token ) {
     if ( rawToken.empty() || rawToken.size() > 2 )
         throw exception::InvalidCharacterConstant( std::move( rawToken ), before );
 
-    token = common::Token( common::Token::Type::Operator, std::move( rawToken ), before );
+    common::Token token( common::Token::Type::Operator, std::move( rawToken ), before );
+    token.op() =
+        token.value().size() == 1 ?
+        common::Operator::Sharp :
+        common::Operator::TwoShaprs;
+    return token;
 }
 
-void Tokenizer::processNewLine( common::Token &token ) {
-    token = common::Token( common::Token::Type::NewLine, "\n", position() );
+common::Token Tokenizer::processNewLine() {
     _input.read();
+    return common::Token( common::Token::Type::NewLine, "\n", position() );
 }
 
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Tokens.h"
-#include "../common/InputBuffer.h"
+#include "InputBuffer.h"
 
 namespace compiler {
 namespace preprocessor {
@@ -35,13 +35,11 @@ struct Tokenizer {
         _input.assignContent( content );
     }
 
-    bool isTokenType( common::Token &, const common::Token::Type );
-
     // destroying
-    void readToken( common::Token &, bool = false );
-
+    common::Token readToken( bool = false );
+    
     // not-destroying
-    void lookAtToken( common::Token &, bool = false );
+    common::Token lookAtToken( bool = false );
 
     const common::Position &position() const {
         return _input.position();
@@ -54,20 +52,20 @@ private:
 
     Class resolveClass();
 
-    void getToken( common::Token &, bool );
+    common::Token getToken( bool );
 
-    void processNumber( common::Token & );
-    void processWord( common::Token & );
-    void processSpace( common::Token & );
-    void processNewLine( common::Token & );
-    void processString( common::Token & );
+    common::Token processNumber();
+    common::Token processWord();
+    common::Token processSpace();
+    common::Token processNewLine();
+    common::Token processString();
     void processShortComment();
     void processLongComment();
-    void processOperator( common::Token & );
+    common::Token processOperator();
     void processSlash();
-    void processSharp( common::Token & );
+    common::Token processSharp();
 
-    common::InputBuffer _input;
+    InputBuffer _input;
     bool _readyForCommand = true;
 
 };
