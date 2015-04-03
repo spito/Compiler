@@ -36,30 +36,23 @@ private:
     enum class States {
         Quit,
         Start,
-        Space,
         Inside,
-        SpaceInside,
         Param,
         CompoundParam,
         Comma,
-        //CompoundParamEnd,
         Error
     };
 
     void parametrize();
 
     States stStart();
-    States stSpace();
     States stInside();
-    States stSpaceInside();
     States stParam();
     States stCompoundParam();
     States stComma();
     void stError();
 
-    States toSpace();
     States toInside();
-    States toSpaceInside();
     States toParam();
     States toCompoundParam();
     States toComma();
@@ -68,6 +61,8 @@ private:
     States toError();
     States toQuit();
     States toIgnore();
+
+    bool is( common::Operator );
 
 
     ShadowChunker::Iterator _it;

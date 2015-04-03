@@ -5,80 +5,67 @@
 namespace compiler {
 namespace preprocessor {
 
+using Operator = common::Operator;
+
+
+bool Parametrizer::is( Operator op ) {
+    return _it->isOperator( op );
+}
+
 
 /* states */
 auto Parametrizer::stStart() -> States {
-    if ( _it->value() == "(" )
+    if ( is( Operator::BracketOpen ) )
         return toInside();
-    if ( _it->type() == common::Token::Type::Space )
-        return toSpace();
     return toIgnore();
 }
 
-auto Parametrizer::stSpace() -> States {
-    if ( _it->value() == "(" )
-        return toInside();
-    return toError();
-}
 auto Parametrizer::stInside() -> States {
-    if ( _it->value() == ")" )
+    if ( is( Operator::BracketClose ) )
         return toQuit();
     _result.emplace_back(); // open parameter
-    if ( _it->type() == common::Token::Type::Space )
-        return toSpaceInside();
-    if ( _it->value() == "(" )
+
+    if ( is( Operator::BracketOpen ) )
         return toCompoundParam();
-    if ( _it->value() == "," )
+    if ( is( Operator::Comma ) )
         return toError();
     return toParam();
 }
-auto Parametrizer::stSpaceInside() -> States {
-    if ( _it->value() == "," )
-        return toError();
-    if ( _it->value() == "(" )
-        return toCompoundParam();
-    return toParam();
-}
+
 auto Parametrizer::stParam() -> States {
-    if ( _it->value() == "," )
+    if ( is( Operator::Comma ) )
         return toComma();
-    if ( _it->value() == ")" )
+    if ( is( Operator::BracketClose ) )
         return toQuit();
-    if ( _it->value() == "(" )
+    if ( is( Operator::BracketOpen ) )
         return toCompoundParam();
     return toParam();
 }
+
 auto Parametrizer::stCompoundParam() -> States {
-    if ( _it->value() == "(" )
+    if ( is( Operator::BracketOpen ) )
         return toCompoundParamOpenBrace();
-    if ( _braces && _it->value() == ")" )
+    if ( _braces && is( Operator::BracketClose ) )
         return toCompoundParamCloseBrace();
-    if ( _it->value() == ")" )
+    if ( is( Operator::BracketClose ) )
         return toParam();
     return toCompoundParam();
 }
 auto Parametrizer::stComma() -> States {
-    if ( _it->value() == "," || _it->value() == ")" )
+    if ( is( Operator::Comma ) || is( Operator::BracketClose ) )
         return toError();
     _result.emplace_back(); // open parameter
-    if ( _it->value() == "(" )
+
+    if ( is( Operator::BracketOpen ) )
         return toCompoundParam();
-    if ( _it->type() == common::Token::Type::Space )
-        return toSpaceInside();
     return toParam();
 }
 void Parametrizer::stError() {
     throw exception::InternalError( "malformed input" );
 }
 /* transitions */
-auto Parametrizer::toSpace() -> States {
-    return States::Space;
-}
 auto Parametrizer::toInside() -> States {
     return States::Inside;
-}
-auto Parametrizer::toSpaceInside() -> States {
-    return States::SpaceInside;
 }
 auto Parametrizer::toParam() -> States {
     _result.back().push_back( *_it );
@@ -127,10 +114,8 @@ void Parametrizer::parametrize() {
     for ( ; !_quit; ++_it, ++_consumed ) {
         switch ( state ) {
         case States::Start: state = stStart(); break;
-        case States::Space: state = stSpace(); break;
         case States::Inside: state = stInside(); break;
         case States::Param: state = stParam(); break;
-        case States::SpaceInside: state = stSpaceInside(); break;
         case States::Comma: state = stComma(); break;
         case States::CompoundParam: state = stCompoundParam(); break;
         case States::Quit: break;
