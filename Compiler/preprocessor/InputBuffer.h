@@ -7,16 +7,16 @@
 #include <iterator>
 #include <iomanip>
 
-#include "Position.h"
+#include "../common/Position.h"
 #include "../includes/exceptions.h"
 
 namespace compiler {
-namespace common {
+namespace preprocessor {
 
 class InputBuffer {
     size_t _size;
     std::unique_ptr< char[] > _buffer;
-    Position _position;
+    common::Position _position;
 public:
     InputBuffer( const InputBuffer & ) = delete;
     InputBuffer( InputBuffer &&other ) :
@@ -104,11 +104,11 @@ public:
         }
     }
 
-    const Position &position() const {
+    const common::Position &position() const {
         return _position;
     }
 
-    void position( Position p ) {
+    void position( common::Position p ) {
         _position = std::move( p );
     }
 
@@ -139,5 +139,6 @@ private:
         _size = size_t( c - _buffer.get() );
     }
 };
-}
-}
+
+} // namespace preprocessor
+} // namespace compiler

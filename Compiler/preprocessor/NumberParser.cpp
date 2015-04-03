@@ -2,13 +2,13 @@
 #include "../includes/exceptions.h"
 
 namespace compiler {
-namespace common {
+namespace preprocessor {
 
 void NumberParser::run() {
     prepare();
 
     States state = States::Init;
-    Position before;
+    common::Position before;
     while ( true ) {
         before = _input.position();
 
@@ -81,7 +81,7 @@ NumberParser::States NumberParser::stateInit( char c ) {
     else {
         throw exception::InvalidCharacter( c, "-0123456789", _input.position() );
     }
-    _rawToken.push_back( c );
+    _value.push_back( c );
     return state;
 }
 
@@ -97,7 +97,7 @@ NumberParser::States NumberParser::stateMinus( char c ) {
     else {
         throw exception::InvalidCharacter( c, "0123456789", _input.position() );
     }
-    _rawToken.push_back( c );
+    _value.push_back( c );
     return state;
 }
 
@@ -115,7 +115,7 @@ NumberParser::States NumberParser::stateZero( char c ) {
     else {
         return States::Quit;
     }
-    _rawToken.push_back( c );
+    _value.push_back( c );
     return state;
 }
 
@@ -139,7 +139,7 @@ NumberParser::States NumberParser::stateDigits( char c ){
     else {
         return States::Quit;
     }
-    _rawToken.push_back( c );
+    _value.push_back( c );
     return state;
 }
 
@@ -151,7 +151,7 @@ NumberParser::States NumberParser::statePoint( char c ){
     else {
         throw exception::InvalidCharacter( c, "0123456789", _input.position() );
     }
-    _rawToken.push_back( c );
+    _value.push_back( c );
     return States::DecimalDigits;
 }
 
@@ -169,7 +169,7 @@ NumberParser::States NumberParser::stateDecimalDigits( char c ){
     else {
         return States::Quit;
     }
-    _rawToken.push_back( c );
+    _value.push_back( c );
     return state;
 }
 
@@ -190,7 +190,7 @@ NumberParser::States NumberParser::stateE( char c ){
     else {
         throw exception::InvalidCharacter( c, "+-0123456789", _input.position() );
     }
-    _rawToken.push_back( c );
+    _value.push_back( c );
     return state;
 }
 
@@ -202,7 +202,7 @@ NumberParser::States NumberParser::stateEplusMinus( char c ){
     else {
         throw exception::InvalidCharacter( c, "0123456789", _input.position() );
     }
-    _rawToken.push_back( c );
+    _value.push_back( c );
     return States::EDigits;
 }
 
@@ -214,7 +214,7 @@ NumberParser::States NumberParser::stateEDigits( char c ){
     else {
         return States::Quit;
     }
-    _rawToken.push_back( c );
+    _value.push_back( c );
     return States::EDigits;
 }
 
@@ -242,10 +242,11 @@ void NumberParser::prepare(){
     _isE = false;
     _isExponentMinus = false;
     _denominator = 10.0;
-    _rawToken.clear();
+    _value.clear();
     _exponent = 0;
     _integer = 0;
     _real = 0.0;
 }
-}
-}
+
+} // namespace preprocessor
+} // namespace compiler

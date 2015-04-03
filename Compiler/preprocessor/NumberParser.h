@@ -3,7 +3,7 @@
 #include "InputBuffer.h"
 
 namespace compiler {
-namespace common {
+namespace preprocessor {
 
 // Deterministic finite automaton for processing numbers
 class NumberParser {
@@ -29,7 +29,7 @@ class NumberParser {
     States _state;
     double _denominator;
 
-    std::string _rawToken;
+    std::string _value;
     long long _exponent;
     long long _integer;
     long double _real;
@@ -42,16 +42,16 @@ public:
         _isExponentMinus( false ),
         _state( States::Init ),
         _denominator( 1.0 ),
-        _rawToken(),
+        _value(),
         _exponent( 0 ),
         _integer( 0 ),
         _real( 0.0 )
-    {}
+    {
+        run();
+    }
 
     NumberParser( const NumberParser & ) = delete;
     NumberParser &operator=( const NumberParser & ) = delete;
-
-    void run();
 
     long long integer() const {
         return _integer;
@@ -67,10 +67,15 @@ public:
         return _isReal;
     }
 
-    const std::string &token() {
-        return _rawToken;
+    const std::string &value() const {
+        return _value;
+    }
+    std::string &value() {
+        return _value;
     }
 private:
+    void run();
+
     States stateInit( char );
     States stateMinus( char );
     States stateZero( char );
@@ -84,5 +89,6 @@ private:
     void postProcessing();
     void prepare();
 };
-}
-}
+
+} // namespace preprocessor
+} // namespace compiler
