@@ -21,10 +21,19 @@ struct TokenStore {
 
 
     void push( Token &&token ) {
-        _tokens.push_back( std::move( token ) );
+        if ( !_tokens.empty() &&
+             _tokens.back().type() == Token::Type::String &&
+             token.type() == Token::Type::String )
+        {
+            _tokens.back().value() += token.value();
+        }
+        else
+            _tokens.push_back( std::move( token ) );
     }
     void push( std::vector< Token > &tokens ) {
-        std::move( tokens.begin(), tokens.end(), std::back_inserter( _tokens ) );
+        for ( auto &token : tokens ) {
+            push( std::move( token ) );
+        }
         tokens.clear();
     }
 
