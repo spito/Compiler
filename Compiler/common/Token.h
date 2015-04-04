@@ -18,7 +18,6 @@ struct Token : Comparable {
         Integer,
         Real,
         Word,
-        Keyword,
         String,
         Char,
         StringInclude,
@@ -113,11 +112,9 @@ public:
         return _position;
     }
 
-
     std::string &value() {
         return _token;
     }
-
     const std::string &value() const {
         return _token;
     }
@@ -188,7 +185,7 @@ public:
     }
 
 };
-inline std::ostream &operator<<( std::ostream &out, Token token ) {
+inline std::ostream &operator<<( std::ostream &out, const Token &token ) {
     if ( token.type() == Token::Type::String )
         return out << '"' << Unicode::toAscii( token.value() ) << '"';
     return out << token.value();
