@@ -119,6 +119,9 @@ struct ShadowChunker {
     {
         _chunks.push_back( std::move( initial ) );
     }
+    ShadowChunker() :
+        _fetcher( [] { return common::Token(); } )
+    {}
 
     const common::Token &top() const {
         return _chunks.front();
@@ -137,7 +140,10 @@ struct ShadowChunker {
     }
 
     void prepend( const std::vector< common::Token > &items ) {
-        _chunks.insert( _chunks.begin(), items.begin(), items.end() );
+        prepend( items.begin(), items.end() );
+    }
+    void prepend( std::vector< common::Token >::const_iterator begin, std::vector< common::Token >::const_iterator end ) {
+        _chunks.insert( _chunks.begin(), begin, end );
     }
 
     Iterator begin() {
