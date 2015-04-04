@@ -9,12 +9,13 @@ namespace preprocessor {
 
 struct Parametrizer {
 
-    Parametrizer( ShadowChunker::Iterator it ) :
+    Parametrizer( ShadowChunker::Iterator it, bool ignoreInvalid = false ) :
         _it( it ),
         _quit( false ),
         _braces( 0 ),
         _ignore( false ),
-        _consumed( 0 )
+        _consumed( 0 ),
+        _ignoreInvalid( ignoreInvalid )
     {
         parametrize();
     }
@@ -63,7 +64,9 @@ private:
     States toIgnore();
 
     bool is( common::Operator );
+    bool check();
 
+    void push();
 
     ShadowChunker::Iterator _it;
     std::vector< std::vector< common::Token > > _result;
@@ -71,6 +74,7 @@ private:
     int _braces;
     bool _ignore;
     int _consumed;
+    bool _ignoreInvalid;
 };
 
 

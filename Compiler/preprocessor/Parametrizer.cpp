@@ -11,6 +11,16 @@ using Operator = common::Operator;
 bool Parametrizer::is( Operator op ) {
     return _it->isOperator( op );
 }
+bool Parametrizer::check() {
+    return _it->type() != common::Token::Type::Eof;
+}
+
+void Parametrizer::push() {
+    //common::Token token( *_it );
+    //if ( token.type() == common::Token::Type::Word )
+    //    token.type() = common::Token::Type::Special;
+    _result.back().push_back( *_it );
+}
 
 
 /* states */
@@ -21,6 +31,8 @@ auto Parametrizer::stStart() -> States {
 }
 
 auto Parametrizer::stInside() -> States {
+    if ( !check() )
+        return toError();
     if ( is( Operator::BracketClose ) )
         return toQuit();
     _result.emplace_back(); // open parameter
@@ -33,6 +45,8 @@ auto Parametrizer::stInside() -> States {
 }
 
 auto Parametrizer::stParam() -> States {
+    if ( !check() )
+        return toError();
     if ( is( Operator::Comma ) )
         return toComma();
     if ( is( Operator::BracketClose ) )
@@ -43,6 +57,8 @@ auto Parametrizer::stParam() -> States {
 }
 
 auto Parametrizer::stCompoundParam() -> States {
+    if ( !check() )
+        return toError();
     if ( is( Operator::BracketOpen ) )
         return toCompoundParamOpenBrace();
     if ( _braces && is( Operator::BracketClose ) )
@@ -52,7 +68,7 @@ auto Parametrizer::stCompoundParam() -> States {
     return toCompoundParam();
 }
 auto Parametrizer::stComma() -> States {
-    if ( is( Operator::Comma ) || is( Operator::BracketClose ) )
+    if ( !check() || is( Operator::Comma ) || is( Operator::BracketClose ) )
         return toError();
     _result.emplace_back(); // open parameter
 
@@ -68,38 +84,32 @@ auto Parametrizer::toInside() -> States {
     return States::Inside;
 }
 auto Parametrizer::toParam() -> States {
-    _result.back().push_back( *_it );
+    push();
     return States::Param;
 }
 auto Parametrizer::toCompoundParam() -> States {
-    _result.back().push_back( *_it );
+    push();
     return States::CompoundParam;
 }
 auto Parametrizer::toComma() -> States {
-    if ( _result.back().back().type() == common::Token::Type::Space )
-        _result.back().pop_back();
     return States::Comma;
 }
 auto Parametrizer::toCompoundParamOpenBrace() ->States {
-    _result.back().push_back( *_it );
+    push();
     ++_braces;
     return States::CompoundParam;
 }
 auto Parametrizer::toCompoundParamCloseBrace() ->States {
-    _result.back().push_back( *_it );
+    push();
     --_braces;
     return States::CompoundParam;
 }
 auto Parametrizer::toError() -> States {
+    if ( _ignoreInvalid )
+        return toIgnore();
     return States::Error;
 }
 auto Parametrizer::toQuit() -> States {
-    if ( !_result.empty() &&
-         !_result.back().empty() &&
-         _result.back().back().type() == common::Token::Type::Space )
-    {
-             _result.back().pop_back();
-    }
     _quit = true;
     return States::Quit;
 }
