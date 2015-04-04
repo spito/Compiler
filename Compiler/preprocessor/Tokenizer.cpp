@@ -94,10 +94,10 @@ common::Token Tokenizer::processNumber() {
     common::Position before = position();
     NumberParser p( _input );
 
-    common::Token token( p.isReal() ?
+    common::Token token( std::move( p.value() ),
+                         p.isReal() ?
                          common::Token::Type::Real :
                          common::Token::Type::Integer,
-                         std::move( p.value() ),
                          before );
     if ( p.isReal() )
         token.real() = p.real();
@@ -111,7 +111,7 @@ common::Token Tokenizer::processOperator() {
 
     OperatorParser p( _input );
 
-    common::Token token( common::Token::Type::Operator, std::move( p.value() ), before );
+    common::Token token( std::move( p.value() ), common::Token::Type::Operator, before );
     token.op() = p.op();
     return token;
 }
@@ -135,7 +135,7 @@ common::Token Tokenizer::processWord() {
 
         rawToken += _input.read();
     }
-    return common::Token( common::Token::Type::Word, std::move( rawToken ), before );
+    return common::Token( std::move( rawToken ), common::Token::Type::Word, before );
 }
 
 common::Token Tokenizer::processSpace() {
@@ -148,7 +148,7 @@ common::Token Tokenizer::processSpace() {
             break;
         rawToken += _input.read();
     }
-    return common::Token( common::Token::Type::Space, std::move( rawToken ), before );
+    return common::Token( std::move( rawToken ), common::Token::Type::Space, before );
 }
 
 common::Token Tokenizer::processString() {
@@ -208,14 +208,14 @@ common::Token Tokenizer::processString() {
             rawToken.push_back( c );
     }
     if ( quots == '"' )
-        return common::Token( common::Token::Type::String, std::move( rawToken ), before );
+        return common::Token( std::move( rawToken ), common::Token::Type::String, before );
     if ( quots == '\'' ) {
         if ( rawToken.size() != 1 )
             throw exception::InvalidCharacterConstant( std::move( rawToken ), before );
-        return common::Token( common::Token::Type::Char, std::move( rawToken ), before );
+        return common::Token( std::move( rawToken ), common::Token::Type::Char, before );
     }
     if ( quots == '<' )
-        return common::Token( common::Token::Type::StringInclude, std::move( rawToken ), before );
+        return common::Token( std::move( rawToken ), common::Token::Type::StringInclude, before );
 
     throw exception::InvalidCharacter( quots, before );
 }
@@ -288,7 +288,7 @@ common::Token Tokenizer::processSharp() {
     if ( rawToken.empty() || rawToken.size() > 2 )
         throw exception::InvalidCharacterConstant( std::move( rawToken ), before );
 
-    common::Token token( common::Token::Type::Operator, std::move( rawToken ), before );
+    common::Token token( std::move( rawToken ), common::Token::Type::Operator, before );
     token.op() =
         token.value().size() == 1 ?
         common::Operator::Sharp :
@@ -298,7 +298,7 @@ common::Token Tokenizer::processSharp() {
 
 common::Token Tokenizer::processNewLine() {
     _input.read();
-    return common::Token( common::Token::Type::NewLine, "\n", position() );
+    return common::Token( "\n", common::Token::Type::NewLine, position() );
 }
 
 

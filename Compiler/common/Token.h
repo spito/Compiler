@@ -48,10 +48,10 @@ private:
 public:
 
     Token( Type t = Type::Eof, Position p = Position() ) :
-        Token( std::move( t ), std::string(), std::move( p ) )
+        Token( std::string(), t, std::move( p ) )
     {}
 
-    Token( Type t, std::string token, Position p = Position() ) :
+    Token( std::string token, Type t = Type::Word, Position p = Position() ) :
         _token( std::move( token ) ),
         _type( t ),
         _position( std::move( p ) )
