@@ -114,10 +114,9 @@ inline void swap( ::compiler::common::Position &lhs, ::compiler::common::Positio
 }
 
 inline std::ostream &operator<<( std::ostream &out, const ::compiler::common::Position &p ) {
-    out << "[" <<
-        p.position() << "; " <<
-        p.line() << "; " <<
-        p.column() << "]";
+    return out << p.file() << ": " <<
+        p.line() << ":" <<
+        p.column();
     return out;
 }
 
