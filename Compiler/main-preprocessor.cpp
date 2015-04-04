@@ -2,7 +2,7 @@
 
 int main() {
     try {
-        auto p = compiler::preprocessor::Preprocessor::start( "Text.txt" );
+        compiler::preprocessor::Preprocessor p( "Text.txt" );
         compiler::preprocessor::Output o( p );
         o.save( "out.txt" );
     }
