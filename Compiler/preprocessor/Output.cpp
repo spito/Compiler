@@ -46,7 +46,9 @@ void Output::save( const char *name ) {
 
         if ( token.type() == common::Token::Type::FileBegin ) {
             stack.push( Frame( 1, token.position().file() ) );
-            file << "\n# " << stack.top().line() << " " <<
+            if ( stack.size() > 1 )
+                file << '\n';
+            file << "# " << stack.top().line() << " " <<
                 stack.top().file() << " 1" << std::endl;
             continue;
         }
