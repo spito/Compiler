@@ -20,9 +20,6 @@ common::Token Tokenizer::lookAtToken( bool acceptSpaces ) {
 common::Token Tokenizer::getToken( bool acceptSpaces ) {
     common::Position before = position();
 
-    if ( _input.eof() )
-        return common::Token( common::Token::Type::Eof, before );
-
     while ( true ) {
         
         Class tClass = resolveClass();
@@ -30,7 +27,7 @@ common::Token Tokenizer::getToken( bool acceptSpaces ) {
         case Class::Preprocessor:
             return processSharp();
             break;
-        case Class::Slash: /// TODO: inspect again
+        case Class::Slash:
             processSlash();
             break;
         case Class::String:
@@ -54,6 +51,8 @@ common::Token Tokenizer::getToken( bool acceptSpaces ) {
             break;
         case Class::Word:
             return processWord();
+        case Class::Eof:
+            return common::Token( common::Token::Type::Eof, before );
         default:
             throw exception::InvalidCharacter( _input.look(), before );
         }
@@ -62,6 +61,9 @@ common::Token Tokenizer::getToken( bool acceptSpaces ) {
 }
 
 Tokenizer::Class Tokenizer::resolveClass() {
+    if ( _input.eof() )
+        return Class::Eof;
+
     char c = _input.look();
     char next = _input.look( 1 );
 
@@ -245,11 +247,10 @@ void Tokenizer::processLongComment() {
     common::Position before = position();
 
     while ( true ) {
-
-        char c = _input.read();
-
         if ( _input.eof() )
             throw exception::EndOfFile( "", position() );
+
+        char c = _input.read();
 
         if ( common::isSlash( c ) && common::isNewLine( _input.look( 1 ) ) ) {
             _input.read();

@@ -20,6 +20,7 @@ struct Tokenizer {
         LongComment,
         Operator,
         Preprocessor,
+        Eof,
     };
 
     Tokenizer( std::ifstream &file ) :
