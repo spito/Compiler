@@ -15,9 +15,22 @@ struct Symbol : common::Symbol {
     enum class Kind {
         Nothing,
         Integer,
-        String,
-        Function
+        Macro,
+        Function,
+        Special,
+        Defined,
     };
+
+    static Symbol makeSpecial( std::string name ) {
+        Symbol s( std::move( name ) );
+        s._kind = Kind::Special;
+        return s;
+    }
+    static Symbol makeDefined() {
+        Symbol s( "defined", { common::Token( "x" ) }, {} );
+        s._kind = Kind::Defined;
+        return s;
+    }
 
     Symbol( std::string name ) :
         Base( std::move( name ) ),
@@ -26,14 +39,14 @@ struct Symbol : common::Symbol {
 
     Symbol( std::string name, common::Token token ) :
         Base( std::move( name ) ),
-        _kind( token.type() == common::Token::Type::Integer ? Kind::Integer : Kind::String ),
+        _kind( token.type() == common::Token::Type::Integer ? Kind::Integer : Kind::Macro ),
         _integer( token.integer() )
     {
         _value.push_back( std::move( token ) );
     }
     Symbol( std::string name, std::vector< common::Token > value ) :
         Base( std::move( name ) ),
-        _kind( Kind::String ),
+        _kind( Kind::Macro ),
         _value( std::move( value ) )
     {}
     Symbol( std::string name, std::vector< common::Token > parametres, std::vector< common::Token > value ) :
@@ -71,7 +84,7 @@ struct Symbol : common::Symbol {
         return _value;
     }
     const std::vector< common::Token > &parametres() const {
-        if ( _kind != Kind::Function )
+        if ( _kind != Kind::Function && _kind != Kind::Defined )
             throw exception::InternalError( "Invalid usage of symbol (not a function)" );
         return _parametres;
     }
@@ -90,10 +103,12 @@ struct Symbol : common::Symbol {
 
         switch ( kind() ) {
         case Symbol::Kind::Nothing:
+        case Symbol::Kind::Special:
+        case Symbol::Kind::Defined:
             return true;
         case Symbol::Kind::Integer:
             return integer() == other.integer();
-        case Symbol::Kind::String:
+        case Symbol::Kind::Macro:
             return value() == other.value();
         case Symbol::Kind::Function:
             return value() == other.value() &&

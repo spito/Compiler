@@ -15,7 +15,9 @@ Preprocessor::Preprocessor( const std::string &name ) {
 
 
 void Preprocessor::setPredefined() {
-
+    _global.symbols.assign( Symbol::makeDefined() );
+    _global.symbols.assign( Symbol::makeSpecial( "__FILE__" ) );
+    _global.symbols.assign( Symbol::makeSpecial( "__LINE__" ) );
 }
 
 } // namespace preprocessor

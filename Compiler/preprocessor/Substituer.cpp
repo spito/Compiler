@@ -40,7 +40,7 @@ void Substituer::stringify( std::vector< Token > &items, const std::vector< Toke
 
 void Substituer::join( std::vector< Token > &items, const std::vector< Token > &toJoin ){
     _join = false;
-    Token result( Type::Word, items.back().value() );
+    Token result( items.back().value() );
     result.value() += toJoin.front().value();
     items.back() = result;
 
@@ -49,7 +49,8 @@ void Substituer::join( std::vector< Token > &items, const std::vector< Token > &
 }
 
 void Substituer::merge( std::vector< Token > &destination, std::vector< Token > &source ) {
-    std::move( source.begin(), source.end(), std::back_inserter( destination ) );
+    if ( !source.empty() )
+        std::move( source.begin(), source.end(), std::back_inserter( destination ) );
 }
 
 std::vector< Token > Substituer::recursion( UsedSymbol &&symbol, std::vector< Token > items ) {
@@ -83,65 +84,122 @@ std::vector< Token > Substituer::substitute( int *consumed ) {
 
     auto symbol = _symbols.find( token.value() );
 
-    if ( !symbol ) {
+    if ( !symbol || ( !_insideExpression && symbol->kind() == Symbol::Kind::Defined ) ) {
         if ( consumed )
             *consumed = 1;
         return{ token };
     }
 
-    if ( symbol->kind() == Symbol::Kind::Function ) {
-        std::vector< std::vector< Token > > actualParams;
-        savePosition();
-        Parametrizer parametrizer( _chunks.begin(), limited() );
-        if ( parametrizer.ignored() ) {
-            restorePosition();
-            if ( consumed )
-                *consumed = 1;
-            return{ token };
-        }
-
-        actualParams = parametrizer.result();
-        _chunks.pop( parametrizer.consumed() );
+    switch ( symbol->kind() ) {
+    case Symbol::Kind::Integer:
+        return substituteInteger( *symbol, consumed );
+    case Symbol::Kind::Macro:
+        return substituteMacro( std::move( token ), *symbol, consumed );
+    case Symbol::Kind::Special:
+        return substituteSpecial( *symbol, consumed );
+    case Symbol::Kind::Defined:
+    case Symbol::Kind::Function:
+        return substituteFunction( std::move( token ), *symbol, consumed );
+    case Symbol::Kind::Nothing:
         if ( consumed )
-            *consumed = 1 + parametrizer.consumed();
-
-        std::vector< Token > items;
-        for ( const auto &chunk : symbol->value() ) {
-
-            if ( chunk.isOperator( Operator::Sharp ) ) {
-                if ( _join )
-                    throw exception::InternalError( "malformed source - # cannot follow ##" );
-                _stringify = true;
-                continue;
-            }
-            if ( chunk.isOperator( Operator::TwoShaprs ) ) {
-                _join = true;
-                if ( _stringify )
-                    throw exception::InternalError( "malformed source - ## cannot follow #" );
-                if ( items.empty() || items.back().type() != common::Token::Type::Word )
-                    throw exception::InternalError( "malformed source - word has to be before ##" );
-                continue;
-            }
-
-            ptrdiff_t index = grabParameterIndex( *symbol, chunk );
-            if ( index < 0 ) {
-                addChunk( items, chunk );
-                continue;
-            }
-
-            if ( _stringify )
-                stringify( items, actualParams[ index ] );
-            else if ( _join )
-                join( items, actualParams[ index ] );
-            else
-                merge( items, Substituer( *this, actualParams[ index ].begin(), actualParams[ index ].end() ).result() );
-        }
-        return recursion( UsedSymbol( token, actualParams ), std::move( items ) );
+            *consumed = 1;
+        return{};
+    default:
+        throw exception::InternalError( "unknown kind of symbol" );
     }
+}
+
+std::vector< Token > Substituer::substituteMacro( Token token, const Symbol &symbol, int *consumed ) {
     if ( consumed )
         *consumed = 1;
-    return recursion( UsedSymbol( token ), symbol->value() );
+    return recursion( UsedSymbol( std::move( token ) ), symbol.value() );
 }
+
+std::vector< Token > Substituer::substituteInteger( const Symbol &symbol, int *consumed ) {
+    if ( consumed )
+        *consumed = 1;
+    return{ symbol.value().front() };
+}
+
+std::vector< Token > Substituer::substituteFunction( Token token, const Symbol &symbol, int *consumed ) {
+    std::vector< std::vector< Token > > actualParams;
+    savePosition();
+    Parametrizer parametrizer( _chunks.begin(), limited() );
+    if ( parametrizer.ignored() ) {
+        restorePosition();
+        if ( consumed )
+            *consumed = 1;
+        return{ token };
+    }
+
+    actualParams = parametrizer.result();
+    _chunks.pop( parametrizer.consumed() );
+    if ( consumed )
+        *consumed = 1 + parametrizer.consumed();
+
+    if ( actualParams.size() != symbol.parametres().size() )
+        throw exception::InternalError( "malformed source - insufficient number of parametres passed into the function macro" );
+
+    if ( symbol.kind() == Symbol::Kind::Defined ) {
+        if ( actualParams.front().size() != 1 )
+            throw exception::InternalError( "only one macro name can be passed into defined operator" );
+
+        Token t( "0", Type::Integer );
+        t.integer() = 0;
+        if ( _symbols.find( actualParams.front().front().value() ) ) {
+            t.value() = "1";
+            t.integer() = 1;
+        }
+        return{ t };
+    }
+
+    std::vector< Token > items;
+    for ( const auto &chunk : symbol.value() ) {
+
+        if ( chunk.isOperator( Operator::Sharp ) ) {
+            if ( _join )
+                throw exception::InternalError( "malformed source - # cannot follow ##" );
+            _stringify = true;
+            continue;
+        }
+        if ( chunk.isOperator( Operator::TwoShaprs ) ) {
+            _join = true;
+            if ( _stringify )
+                throw exception::InternalError( "malformed source - ## cannot follow #" );
+            if ( items.empty() || items.back().type() != common::Token::Type::Word )
+                throw exception::InternalError( "malformed source - word has to be before ##" );
+            continue;
+        }
+
+        ptrdiff_t index = grabParameterIndex( symbol, chunk );
+        if ( index < 0 ) {
+            addChunk( items, chunk );
+            continue;
+        }
+        else if ( _stringify )
+            stringify( items, actualParams[ index ] );
+        else if ( _join )
+            join( items, actualParams[ index ] );
+        else
+            merge( items, Substituer( *this, actualParams[ index ].begin(), actualParams[ index ].end() ).result() );
+    }
+    return recursion( UsedSymbol( token, actualParams ), std::move( items ) );
+}
+
+std::vector< Token > Substituer::substituteSpecial( const Symbol &symbol, int *consumed ) {
+    if ( consumed )
+        *consumed = 1;
+
+    if ( symbol.name() == "__FILE__" )
+        return{ Token( _position.file(), Type::String ) };
+    if ( symbol.name() == "__LINE__" ) {
+        Token t( std::to_string( _position.line() ), Type::Integer );
+        t.integer() = _position.line();
+        return{ t };
+    }
+    return{};
+}
+
 
 } // namespace preprocessor
 } // namespace compiler

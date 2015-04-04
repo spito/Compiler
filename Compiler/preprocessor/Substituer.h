@@ -61,6 +61,18 @@ struct Substituer {
         for ( auto &token : _result )
             token.position() = _position;
     }
+    Substituer( SymbolTable &symbols,
+                common::Position position,
+                std::vector< common::Token >::const_iterator begin,
+                std::vector< common::Token >::const_iterator end ) :
+        _tokenizer( nullptr ),
+        _symbols( symbols ),
+        _chunks( ShadowChunker() ),
+        _insideExpression( true )
+    {
+        _chunks.prepend( begin, end );
+        _result = substitute();
+    }
 
     std::vector< common::Token > &result() {
         return _result;
@@ -72,6 +84,7 @@ private:
                 std::vector< common::Token >::const_iterator begin,
                 std::vector< common::Token >::const_iterator end ) :
         _tokenizer( nullptr ),
+        _position( self._position ),
         _symbols( self._symbols ),
         _used( self._used ),
         _chunks( ShadowChunker() )
@@ -82,6 +95,13 @@ private:
 
 
     std::vector< common::Token > substitute( int * = nullptr );
+    std::vector< common::Token > substituteMacro( common::Token, const Symbol &, int * );
+    std::vector< common::Token > substituteInteger( const Symbol &, int * );
+    std::vector< common::Token > substituteFunction( common::Token, const Symbol &, int * );
+    std::vector< common::Token > substituteSpecial( const Symbol &, int * );
+
+
+
 
     void addChunk( std::vector< common::Token > &, const common::Token & );
     void stringify( std::vector< common::Token > &, const std::vector< common::Token > & );
@@ -109,6 +129,7 @@ private:
     ShadowChunker _chunks;
     bool _join = false;
     bool _stringify = false;
+    bool _insideExpression = false;
     std::vector< common::Token > _result;
     common::Position _savedPosition;
 };
