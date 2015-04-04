@@ -3,7 +3,11 @@
 namespace compiler {
 namespace preprocessor {
 
-static ptrdiff_t grabParameterIndex( const Symbol &symbol, const common::Token &name ) {
+using Token = common::Token;
+using Type = common::Token::Type;
+using Operator = common::Operator;
+
+static ptrdiff_t grabParameterIndex( const Symbol &symbol, const Token &name ) {
     ptrdiff_t index = 0;
     for ( const auto &param : symbol.parametres() ) {
         if ( param == name )
@@ -13,20 +17,9 @@ static ptrdiff_t grabParameterIndex( const Symbol &symbol, const common::Token &
     return -1;
 }
 
-void Substituer::prepareForJoin( std::vector< common::Token > &items ) {
-    while ( !items.empty() ) {
-        if ( items.back().type() == common::Token::Type::Word )
-            break;
-        else
-            throw exception::InternalError( "malformed source - word has to be before ##" );
-    }
-    if ( items.empty() )
-        throw exception::InternalError( "malformed source - word has to be before ##" );
-}
-
-void Substituer::addChunk( std::vector< common::Token > &items, const common::Token &chunk ){
+void Substituer::addChunk( std::vector< Token > &items, const Token &chunk ){
     if ( _stringify )
-        throw exception::InvalidCharacterConstant( "#" );
+        throw exception::InternalError( "malformed source - parameter has to be after #" );
     else if ( _join ) {
         items.back().value() += chunk.value();
         _join = false;
@@ -35,8 +28,8 @@ void Substituer::addChunk( std::vector< common::Token > &items, const common::To
         items.push_back( chunk );
 }
 
-void Substituer::stringify( std::vector< common::Token > &items, const std::vector< common::Token > &toString ) {
-    common::Token result( common::Token::Type::String );
+void Substituer::stringify( std::vector< Token > &items, const std::vector< Token > &toString ) {
+    Token result( Type::String );
 
     for ( const auto &s : toString )
         result.value() += s.value();
@@ -45,57 +38,88 @@ void Substituer::stringify( std::vector< common::Token > &items, const std::vect
     _stringify = false;
 }
 
-void Substituer::join( std::vector< common::Token > &items, const std::vector< common::Token > &toJoin ){
+void Substituer::join( std::vector< Token > &items, const std::vector< Token > &toJoin ){
     _join = false;
-    common::Token result( common::Token::Type::Word, items.back().value() );
+    Token result( Type::Word, items.back().value() );
     result.value() += toJoin.front().value();
     items.back() = result;
-    items.insert( items.end(), toJoin.begin() + 1, toJoin.end() );
+
+    if ( toJoin.size() > 1 )
+        merge( items, Substituer( *this, toJoin.begin() + 1, toJoin.end() ).result() );
 }
 
-void Substituer::recursion( UsedSymbol &&symbol, const std::vector< common::Token > &items, int toPop ) {
-    if ( _used.find( symbol ) ) {
-        _result.push_back( symbol.token() );
-        return;
-    }
+void Substituer::merge( std::vector< Token > &destination, std::vector< Token > &source ) {
+    std::move( source.begin(), source.end(), std::back_inserter( destination ) );
+}
+
+std::vector< Token > Substituer::recursion( UsedSymbol &&symbol, std::vector< Token > items ) {
+    if ( _used.find( symbol ) )
+        return{ symbol.token() };
+
     _used.insert( UsedSymbol( symbol ) );
-    if ( toPop )
-        _chunks.pop( toPop );
+
     _chunks.prepend( items );
-    for ( int eaten = 0; eaten < int( items.size() ); )
-        eaten += substitute();
+    std::vector< Token > result;
+
+    for ( int eaten = 0; eaten < int( items.size() ); ) {
+        int consumed;
+        merge( result, substitute( &consumed ) );
+        eaten += consumed;
+    }
     _used.remove( symbol );
+    return result;
 }
 
-int Substituer::substitute() {
+std::vector< Token > Substituer::substitute( int *consumed ) {
 
-    common::Token token = _chunks.top();
+    Token token = _chunks.top();
     _chunks.pop();
+
+    if ( token.type() != Type::Word ) {
+        if ( consumed )
+            *consumed = 1;
+        return{ token };
+    }
 
     auto symbol = _symbols.find( token.value() );
 
     if ( !symbol ) {
-        _result.push_back( std::move( token ) );
-        return 1;
+        if ( consumed )
+            *consumed = 1;
+        return{ token };
     }
 
     if ( symbol->kind() == Symbol::Kind::Function ) {
-        Parametrizer parametrizer( _chunks.begin() );
+        std::vector< std::vector< Token > > actualParams;
+        savePosition();
+        Parametrizer parametrizer( _chunks.begin(), limited() );
         if ( parametrizer.ignored() ) {
-            _result.push_back( std::move( token ) );
-            return 1;
+            restorePosition();
+            if ( consumed )
+                *consumed = 1;
+            return{ token };
         }
-        auto actualParams = parametrizer.result();
-        std::vector< common::Token > items;
+
+        actualParams = parametrizer.result();
+        _chunks.pop( parametrizer.consumed() );
+        if ( consumed )
+            *consumed = 1 + parametrizer.consumed();
+
+        std::vector< Token > items;
         for ( const auto &chunk : symbol->value() ) {
 
-            if ( chunk.isOperator( common::Operator::Sharp ) && !_stringify ) {
+            if ( chunk.isOperator( Operator::Sharp ) ) {
+                if ( _join )
+                    throw exception::InternalError( "malformed source - # cannot follow ##" );
                 _stringify = true;
                 continue;
             }
-            else if ( chunk.isOperator( common::Operator::TwoShaprs ) ) {
+            if ( chunk.isOperator( Operator::TwoShaprs ) ) {
                 _join = true;
-                prepareForJoin( items );
+                if ( _stringify )
+                    throw exception::InternalError( "malformed source - ## cannot follow #" );
+                if ( items.empty() || items.back().type() != common::Token::Type::Word )
+                    throw exception::InternalError( "malformed source - word has to be before ##" );
                 continue;
             }
 
@@ -109,19 +133,15 @@ int Substituer::substitute() {
                 stringify( items, actualParams[ index ] );
             else if ( _join )
                 join( items, actualParams[ index ] );
-            else 
-                items.insert( items.end(), actualParams[ index ].begin(), actualParams[ index ].end() );
+            else
+                merge( items, Substituer( *this, actualParams[ index ].begin(), actualParams[ index ].end() ).result() );
         }
-        int consumed = parametrizer.consumed();
-        recursion( UsedSymbol( token, actualParams ), items, parametrizer.consumed() );
-        return 1 + consumed;// symbol + ( parametres, ... )
+        return recursion( UsedSymbol( token, actualParams ), std::move( items ) );
     }
-    else {
-        recursion( UsedSymbol( token ), symbol->value() );
-        return 1;
-    }
+    if ( consumed )
+        *consumed = 1;
+    return recursion( UsedSymbol( token ), symbol->value() );
 }
-
 
 } // namespace preprocessor
 } // namespace compiler

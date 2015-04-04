@@ -51,13 +51,12 @@ private:
 struct Substituer {
     using SymbolTable = common::SymbolTable < Symbol > ;
     Substituer( SymbolTable &symbols, common::Token initial, Tokenizer &tokenizer ) :
+        _tokenizer( &tokenizer ),
         _position( initial.position() ),
-        _symbols( symbols ),
-        _chunks( std::move( initial ), [&] { return tokenizer.readToken(); } ),
-        _join( false ),
-        _stringify( false )
+        _chunks( ShadowChunker( std::move( initial ), [&] { return tokenizer.readToken(); } ) ),
+        _symbols( symbols )
     {
-        substitute();
+        _result = substitute();
 
         for ( auto &token : _result )
             token.position() = _position;
@@ -67,25 +66,51 @@ struct Substituer {
         return _result;
     }
 
-
 private:
 
-    int substitute();
+    Substituer( const Substituer &self,
+                std::vector< common::Token >::const_iterator begin,
+                std::vector< common::Token >::const_iterator end ) :
+        _tokenizer( nullptr ),
+        _symbols( self._symbols ),
+        _used( self._used ),
+        _chunks( ShadowChunker() )
+    {
+        _chunks.prepend( begin, end );
+        _result = substitute();
+    }
 
-    void prepareForJoin( std::vector< common::Token > & );
+
+    std::vector< common::Token > substitute( int * = nullptr );
+
     void addChunk( std::vector< common::Token > &, const common::Token & );
     void stringify( std::vector< common::Token > &, const std::vector< common::Token > & );
     void join( std::vector< common::Token > &, const std::vector< common::Token > & );
-    void recursion( UsedSymbol &&, const std::vector< common::Token > &, int = 0 );
+    std::vector< common::Token > recursion( UsedSymbol &&, std::vector< common::Token > );
 
+    void merge( std::vector< common::Token > &, std::vector< common::Token > & );
+
+    bool limited() const {
+        return !_tokenizer;
+    }
+    void savePosition() {
+        if ( !limited() )
+            _savedPosition = _tokenizer->position();
+    }
+    void restorePosition() {
+        if ( !limited() )
+            _tokenizer->position( _savedPosition );
+    }
+
+    Tokenizer *_tokenizer;
     common::Position _position;
-    std::vector< common::Token > _result;
     SymbolTable &_symbols;
     common::SymbolTable< UsedSymbol > _used;
     ShadowChunker _chunks;
     bool _join = false;
     bool _stringify = false;
-
+    std::vector< common::Token > _result;
+    common::Position _savedPosition;
 };
 
 } // namespace preprocessor
