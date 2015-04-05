@@ -83,6 +83,11 @@ public:
             op() = o.op();
     }
 
+    void replaceBy( Token o ) {
+        swap( o );
+        std::swap( _position, o._position );
+    }
+
     void swap( Token &o ) {
         using std::swap;
         swap( _token, o._token );
