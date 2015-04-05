@@ -92,6 +92,7 @@
     <ClInclude Include="exception\Unicode.h" />
     <ClInclude Include="exception\UnsupportedFeature.h" />
     <ClInclude Include="includes\exceptions.h" />
+    <ClInclude Include="preprocessor\Expression.h" />
     <ClInclude Include="preprocessor\Global.h" />
     <ClInclude Include="preprocessor\InputBuffer.h" />
     <ClInclude Include="preprocessor\NumberParser.h" />
@@ -114,6 +115,7 @@
     <ClCompile Include="context\Context.cpp" />
     <ClCompile Include="exception\InvalidCharacterConstant.cpp" />
     <ClCompile Include="main-preprocessor.cpp" />
+    <ClCompile Include="preprocessor\Expression.cpp" />
     <ClCompile Include="preprocessor\NumberParser.cpp" />
     <ClCompile Include="preprocessor\OperatorParser.cpp" />
     <ClCompile Include="preprocessor\Output.cpp" />

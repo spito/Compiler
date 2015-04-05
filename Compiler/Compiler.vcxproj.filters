@@ -157,6 +157,9 @@
     <ClInclude Include="preprocessor\Global.h">
       <Filter>Header Files\preprocessor</Filter>
     </ClInclude>
+    <ClInclude Include="preprocessor\Expression.h">
+      <Filter>Header Files\preprocessor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\Unicode.cpp">
@@ -199,6 +202,9 @@
       <Filter>Source Files\preprocessor</Filter>
     </ClCompile>
     <ClCompile Include="preprocessor\Worker.cpp">
+      <Filter>Source Files\preprocessor</Filter>
+    </ClCompile>
+    <ClCompile Include="preprocessor\Expression.cpp">
       <Filter>Source Files\preprocessor</Filter>
     </ClCompile>
   </ItemGroup>
