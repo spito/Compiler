@@ -4,7 +4,7 @@ namespace compiler {
 namespace common {
 
 enum class Operator {
-
+    None,
     // not ranked
     Ampersand, // &
     Star, // *
