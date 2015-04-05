@@ -87,16 +87,21 @@ std::vector< Token > Substituer::substitute( int *consumed ) {
     if ( !symbol || ( !_insideExpression && symbol->kind() == Symbol::Kind::Defined ) ) {
         if ( consumed )
             *consumed = 1;
+        if ( _insideExpression ) {
+            Token t( "0", Type::Integer, token.position() );
+            t.integer() = 0;
+            return{ t };
+        }
         return{ token };
     }
 
     switch ( symbol->kind() ) {
     case Symbol::Kind::Integer:
-        return substituteInteger( *symbol, consumed );
+        return substituteInteger( std::move( token ), *symbol, consumed );
     case Symbol::Kind::Macro:
         return substituteMacro( std::move( token ), *symbol, consumed );
     case Symbol::Kind::Special:
-        return substituteSpecial( *symbol, consumed );
+        return substituteSpecial( token, *symbol, consumed );
     case Symbol::Kind::Defined:
     case Symbol::Kind::Function:
         return substituteFunction( std::move( token ), *symbol, consumed );
@@ -112,13 +117,17 @@ std::vector< Token > Substituer::substitute( int *consumed ) {
 std::vector< Token > Substituer::substituteMacro( Token token, const Symbol &symbol, int *consumed ) {
     if ( consumed )
         *consumed = 1;
-    return recursion( UsedSymbol( std::move( token ) ), symbol.value() );
+    auto tokens = symbol.value();
+    for ( auto &t : tokens )
+        t.position() = token.position();
+    return recursion( UsedSymbol( std::move( token ) ), std::move( tokens ) );
 }
 
-std::vector< Token > Substituer::substituteInteger( const Symbol &symbol, int *consumed ) {
+std::vector< Token > Substituer::substituteInteger( Token token, const Symbol &symbol, int *consumed ) {
     if ( consumed )
         *consumed = 1;
-    return{ symbol.value().front() };
+    token.replaceBy( symbol.value().front() );
+    return{ token };
 }
 
 std::vector< Token > Substituer::substituteFunction( Token token, const Symbol &symbol, int *consumed ) {
@@ -186,15 +195,15 @@ std::vector< Token > Substituer::substituteFunction( Token token, const Symbol &
     return recursion( UsedSymbol( token, actualParams ), std::move( items ) );
 }
 
-std::vector< Token > Substituer::substituteSpecial( const Symbol &symbol, int *consumed ) {
+std::vector< Token > Substituer::substituteSpecial( const Token &token, const Symbol &symbol, int *consumed ) {
     if ( consumed )
         *consumed = 1;
 
     if ( symbol.name() == "__FILE__" )
-        return{ Token( _position.file(), Type::String ) };
+        return{ Token( token.position().file(), Type::String, token.position() ) };
     if ( symbol.name() == "__LINE__" ) {
-        Token t( std::to_string( _position.line() ), Type::Integer );
-        t.integer() = _position.line();
+        Token t( std::to_string( token.position().line() ), Type::Integer, token.position() );
+        t.integer() = token.position().line();
         return{ t };
     }
     return{};

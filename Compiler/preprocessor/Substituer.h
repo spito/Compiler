@@ -52,17 +52,12 @@ struct Substituer {
     using SymbolTable = common::SymbolTable < Symbol > ;
     Substituer( SymbolTable &symbols, common::Token initial, Tokenizer &tokenizer ) :
         _tokenizer( &tokenizer ),
-        _position( initial.position() ),
         _chunks( ShadowChunker( std::move( initial ), [&] { return tokenizer.readToken(); } ) ),
         _symbols( symbols )
     {
         _result = substitute();
-
-        for ( auto &token : _result )
-            token.position() = _position;
     }
     Substituer( SymbolTable &symbols,
-                common::Position position,
                 std::vector< common::Token >::const_iterator begin,
                 std::vector< common::Token >::const_iterator end ) :
         _tokenizer( nullptr ),
@@ -71,7 +66,12 @@ struct Substituer {
         _insideExpression( true )
     {
         _chunks.prepend( begin, end );
-        _result = substitute();
+        auto diff = end - begin;
+        for ( int eaten = 0; eaten < diff; ) {
+            int consumed;
+            merge( _result, substitute( &consumed ) );
+            eaten += consumed;
+        }
     }
 
     std::vector< common::Token > &result() {
@@ -84,7 +84,6 @@ private:
                 std::vector< common::Token >::const_iterator begin,
                 std::vector< common::Token >::const_iterator end ) :
         _tokenizer( nullptr ),
-        _position( self._position ),
         _symbols( self._symbols ),
         _used( self._used ),
         _chunks( ShadowChunker() )
@@ -96,9 +95,9 @@ private:
 
     std::vector< common::Token > substitute( int * = nullptr );
     std::vector< common::Token > substituteMacro( common::Token, const Symbol &, int * );
-    std::vector< common::Token > substituteInteger( const Symbol &, int * );
+    std::vector< common::Token > substituteInteger( common::Token, const Symbol &, int * );
     std::vector< common::Token > substituteFunction( common::Token, const Symbol &, int * );
-    std::vector< common::Token > substituteSpecial( const Symbol &, int * );
+    std::vector< common::Token > substituteSpecial( const common::Token &, const Symbol &, int * );
 
 
 
@@ -123,7 +122,6 @@ private:
     }
 
     Tokenizer *_tokenizer;
-    common::Position _position;
     SymbolTable &_symbols;
     common::SymbolTable< UsedSymbol > _used;
     ShadowChunker _chunks;
