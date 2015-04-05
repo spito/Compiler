@@ -91,13 +91,22 @@ void Worker::invokeExpression() {
 }
 
 void Worker::processDefine() {
-    if ( ignore() )
-        return;
-
     Token token;
     std::string name;
     std::vector< Token > value;
     std::vector< Token > params;
+
+    if ( ignore() ) {
+        while ( true ) {
+            token = _tokenizer.readToken();
+            if ( token.type() == Type::NewLine || token.type() == Type::Eof ) {
+                _tokenizer.giveBack( token );
+                break;
+            }
+        }
+        return;
+    }
+
 
     Position before = position();
 
@@ -134,12 +143,14 @@ void Worker::processDefine() {
                 break;
             throw exception::InvalidToken( token );
         }
+        token = _tokenizer.readToken();
     }
 
     while ( true ) {
         if ( token.type() == Type::NewLine || token.type() == Type::Eof ) {
             _tokenizer.giveBack( token );
             break;
+        }
 
         value.push_back( std::move( token ) );
         token = _tokenizer.readToken();
@@ -210,8 +221,6 @@ void Worker::processInclude() {
 }
 
 void Worker::processPragma() {
-    if ( ignore() )
-        return;
 
     std::vector< Token > chunks;
 
@@ -222,6 +231,8 @@ void Worker::processPragma() {
         }
         chunks.push_back( std::move( token ) );
     }
+    if ( ignore() )
+        return;
 
     if ( chunks.size() == 1 && chunks.front().value() == "once" )
         _global.seenFiles.insert( &context::file() );
