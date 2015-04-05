@@ -206,66 +206,66 @@ bool Expression::isBinary() const {
     }
 }
 
-Expression::Expression( IteratorPack &pack, Side side, Operator owner ) : Expression( owner ) {
+Expression::Expression( IteratorPack &iterator, Side side, Operator owner ) : Expression( owner ) {
 
-    if ( !pack )
+    if ( !iterator )
         throw exception::InternalError( "expression is corrupted" );
 
-    switch ( pack->type() ) {
+    switch ( iterator->type() ) {
     case Type::Char:
-        _value = pack->value().front();
+        _value = iterator->value().front();
         _op = Operator::None;
-        ++pack;
+        ++iterator;
         break;
     case Type::Integer:
-        _value = pack->integer();
+        _value = iterator->integer();
         _op = Operator::None;
-        ++pack;
+        ++iterator;
         break;
     case Type::Real:
-        _value = Value( pack->real() );
+        _value = Value( iterator->real() );
         _op = Operator::None;
-        ++pack;
+        ++iterator;
         break;
     case Type::Operator:
-        switch ( pack->op() ) {
+        switch ( iterator->op() ) {
         case Operator::LogicalNot:
             _op = Operator::LogicalNot;
-            ++pack;
-            right() = Expression( pack, Side::Right, _op );
+            ++iterator;
+            right() = Expression( iterator, Side::Right, _op );
             break;
         case Operator::BracketOpen:
-            ++pack;
-            *this = Expression( pack );
-            if ( !pack || !pack->isOperator( Operator::BracketClose ) )
-                throw exception::InvalidToken( *pack );
+            ++iterator;
+            *this = Expression( iterator );
+            if ( !iterator || !iterator->isOperator( Operator::BracketClose ) )
+                throw exception::InvalidToken( *iterator );
             break;
         default:
-            throw exception::InvalidToken( *pack );
+            throw exception::InvalidToken( *iterator );
         }
-        ++pack;
+        ++iterator;
         break;
     default:
-        throw exception::InvalidToken( *pack );
+        throw exception::InvalidToken( *iterator );
     }
 
-    while ( pack ) {
+    while ( iterator ) {
 
-        if ( pack->type() != Type::Operator )
-            throw exception::InvalidToken( *pack );
+        if ( iterator->type() != Type::Operator )
+            throw exception::InvalidToken( *iterator );
 
-        if ( pack->op() == Operator::BracketClose )
+        if ( iterator->op() == Operator::BracketClose )
             break;
 
         Expression top;
-        top._op = pack->op();
+        top._op = iterator->op();
 
         if ( isFarther( top._op ) && side == Side::Right )
             return;
 
-        ++pack;
+        ++iterator;
         top.left() = std::move( *this );
-        top.right() = Expression( pack, Side::Right, top._op );
+        top.right() = Expression( iterator, Side::Right, top._op );
         *this = std::move( top );
     }
 

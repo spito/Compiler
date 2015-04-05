@@ -60,11 +60,11 @@ struct Expression {
         _op( common::Operator::None ),
         _owner( owner )
     {}
-    Expression( IteratorPack &&pack ) :
-        Expression( pack )
+    Expression( IteratorPack &&iterator ) :
+        Expression( iterator )
     {
-        if ( pack )
-            throw exception::InvalidToken( *pack );
+        if ( iterator )
+            throw exception::InvalidToken( *iterator );
     }
     Expression( const Expression & ) = delete;
     Expression( Expression &&other ) :
