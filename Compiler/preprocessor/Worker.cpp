@@ -228,22 +228,25 @@ void Worker::processIfdef() {
     if ( token.type() != Type::Word )
         throw exception::InvalidToken( token );
 
+    std::string symbol = token.value();
+
     bool inherited = ignore();
 
-    _stack.push( ConditionalFrame( token ) );
+    _stack.emplace(); // = push
+    ConditionFrame &frame = _stack.top();
 
     token = _tokenizer.lookAtToken();
     if ( token.type() != Type::NewLine )
         throw exception::InvalidToken( token );
 
     if ( inherited ) {
-        _stack.top().ignore = true;
-        _stack.top().inherited = true;
+        frame.ignore = true;
+        frame.inherited = true;
     }
-    else if ( symbols().find( _stack.top().lastUsed.value() ) )
-        _stack.top().fulfilled = true;
+    else if ( symbols().find( symbol ) )
+        frame.fulfilled = true;
     else
-        _stack.top().ignore = true;
+        frame.ignore = true;
 }
 
 void Worker::processIfndef() {
@@ -252,22 +255,31 @@ void Worker::processIfndef() {
     if ( token.type() != Type::Word )
         throw exception::InvalidToken( token );
 
+    std::string symbol = token.value();
+
     bool inherited = ignore();
 
-    _stack.push( ConditionalFrame( token ) );
+    _stack.emplace(); // = push
+    ConditionFrame &frame = _stack.top();
 
-    token = _tokenizer.lookAtToken();
+    token = _tokenizer.readToken();
     if ( token.type() != Type::NewLine )
         throw exception::InvalidToken( token );
+    _tokenizer.giveBack( token );
 
     if ( inherited ) {
-        _stack.top().ignore = true;
-        _stack.top().inherited = true;
+        frame.ignore = true;
+        frame.inherited = true;
     }
-    else if ( !symbols().find( _stack.top().lastUsed.value() ) )
-        _stack.top().fulfilled = true;
+    else if ( !symbols().find( symbol ) )
+        frame.fulfilled = true;
     else
-        _stack.top().ignore = true;
+        frame.ignore = true;
+}
+
+    if ( inherited ) {
+    }
+    else
 }
 
 void Worker::processElse() {
@@ -278,7 +290,7 @@ void Worker::processElse() {
     if ( _stack.empty() )
         throw exception::InternalError( "missing if/ifdef/ifndef" );
 
-    ConditionalFrame &frame = _stack.top();
+    ConditionFrame &frame = _stack.top();
     if ( frame.exhausted )
         throw exception::InternalError( "missing if/ifdef/ifndef" );
 

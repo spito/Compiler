@@ -9,28 +9,11 @@
 namespace compiler {
 namespace preprocessor {
 
-struct ConditionalFrame {
-    common::Token lastUsed;
-    bool ignore;
-    bool fulfilled;
-    bool inherited;
-    bool exhausted;
-
-    ConditionalFrame( common::Token lastUsed ) :
-        lastUsed( std::move( lastUsed ) ),
-        ignore( false ),
-        fulfilled( false ),
-        inherited( false ),
-        exhausted( false )
-    {}
-    ConditionalFrame( const ConditionalFrame & ) = delete;
-    ConditionalFrame( ConditionalFrame &&other ) :
-        lastUsed( std::move( other.lastUsed ) ),
-        ignore( other.ignore ),
-        fulfilled( other.fulfilled ),
-        inherited( other.inherited ),
-        exhausted( other.exhausted )
-    {}
+struct ConditionFrame {
+    bool ignore = false;
+    bool fulfilled = false;
+    bool inherited = false;
+    bool exhausted = false;
 };
 
 struct Worker {
@@ -49,7 +32,7 @@ private:
     Tokenizer _tokenizer;
     bool _ready = true;
     const std::string *_name;
-    std::stack< ConditionalFrame > _stack;
+    std::stack< ConditionFrame > _stack;
 
     static std::map< std::string, void( Worker::* )( void ) > _keywords;
 
