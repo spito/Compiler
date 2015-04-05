@@ -331,7 +331,7 @@ void Worker::processEndif() {
     _tokenizer.giveBack( token );
 
     if ( _stack.empty() )
-        throw exception::InternalError( "missing if/ifdef/ifndef" );
+        throw exception::InternalError( "more than one `else' in a row" );
 
     _stack.pop();
 }
