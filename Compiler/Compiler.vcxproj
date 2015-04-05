@@ -75,7 +75,6 @@
     <ClInclude Include="common\SymbolTable.h" />
     <ClInclude Include="common\Token.h" />
     <ClInclude Include="common\TokenStore.h" />
-    <ClInclude Include="common\TokenType.h" />
     <ClInclude Include="common\Unicode.h" />
     <ClInclude Include="common\Utils.h" />
     <ClInclude Include="common\Value.h" />

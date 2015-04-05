@@ -78,9 +78,6 @@
     <ClInclude Include="common\Token.h">
       <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="common\TokenType.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
     <ClInclude Include="preprocessor\Preprocessor.h">
       <Filter>Header Files\preprocessor</Filter>
     </ClInclude>
