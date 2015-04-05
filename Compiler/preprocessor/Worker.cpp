@@ -1,5 +1,6 @@
 #include "Worker.h"
 #include "Substituer.h"
+#include "Expression.h"
 
 #include <fstream>
 
@@ -18,6 +19,8 @@ std::map< std::string, void( Worker::* )( void ) > Worker::_keywords{
         { "include", &Worker::processInclude },
         { "ifdef", &Worker::processIfdef },
         { "ifndef", &Worker::processIfndef },
+        { "if", &Worker::processIf },
+        { "elif", &Worker::processElif },
         { "else", &Worker::processElse },
         { "endif", &Worker::processEndif },
 };
@@ -294,9 +297,80 @@ void Worker::processIfndef() {
         frame.ignore = true;
 }
 
-    if ( inherited ) {
+void Worker::processIf() {
+
+    std::vector< Token > list;
+
+    while ( true ) {
+        Token token = _tokenizer.readToken();
+        
+        if ( token.type() == Type::NewLine ) {
+            _tokenizer.giveBack( token );
+            break;
+        }
+
+        list.push_back( std::move( token ) );
+
+        if ( list.back().type() == Type::Eof )
+            throw exception::InvalidToken( list.back() );
     }
+    bool inherited = ignore();
+
+    _stack.emplace(); // = push
+    ConditionFrame &frame = _stack.top();
+
+    if ( inherited ) {
+        frame.ignore = true;
+        frame.inherited = true;
+        return;
+    }
+
+    list = Substituer( symbols(), list.begin(), list.end() ).result();
+    Expression::prepare( list.begin(), list.end() );
+    if ( Expression( { list.begin(), list.end() } ) )
+        frame.fulfilled = true;
     else
+        frame.ignore = true;
+}
+
+void Worker::processElif() {
+    std::vector< Token > list;
+
+    if ( _stack.empty() )
+        throw exception::InternalError( "missing if/ifdef/ifndef" );
+
+    ConditionFrame &frame = _stack.top();
+    if ( frame.exhausted )
+        throw exception::InternalError( "`else' was placed before" );
+
+    while ( true ) {
+        Token token = _tokenizer.readToken();
+
+        if ( token.type() == Type::NewLine ) {
+            _tokenizer.giveBack( token );
+            break;
+        }
+
+        list.push_back( std::move( token ) );
+
+        if ( list.back().type() == Type::Eof )
+            throw exception::InvalidToken( list.back() );
+    }
+
+    if ( frame.inherited )
+        return;
+
+    if ( frame.fulfilled )
+        frame.ignore = true;
+    else {
+
+        list = Substituer( symbols(), list.begin(), list.end() ).result();
+        Expression::prepare( list.begin(), list.end() );
+        if ( Expression( { list.begin(), list.end() } ) )
+            frame.fulfilled = true;
+        else
+            frame.ignore = true;
+    }
 }
 
 void Worker::processElse() {
@@ -311,7 +385,7 @@ void Worker::processElse() {
 
     ConditionFrame &frame = _stack.top();
     if ( frame.exhausted )
-        throw exception::InternalError( "missing if/ifdef/ifndef" );
+        throw exception::InternalError( "more than one `else' in a row" );
 
     frame.exhausted = true;
 
@@ -331,7 +405,7 @@ void Worker::processEndif() {
     _tokenizer.giveBack( token );
 
     if ( _stack.empty() )
-        throw exception::InternalError( "more than one `else' in a row" );
+        throw exception::InternalError( "missing if/ifdef/ifndef" );
 
     _stack.pop();
 }

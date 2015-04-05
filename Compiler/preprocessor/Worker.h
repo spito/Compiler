@@ -46,6 +46,8 @@ private:
 
     void processIfdef();
     void processIfndef();
+    void processIf();
+    void processElif();
     void processElse();
     void processEndif();
 
