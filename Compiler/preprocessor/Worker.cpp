@@ -113,7 +113,7 @@ void Worker::processDefine() {
     if ( symbol.name() == "defined" )
         throw exception::DuplicateSymbol( symbol, token.position() );
 
-    token = _tokenizer.lookAtToken();
+    token = _tokenizer.readToken();
 
     // parse formal parameters
     if ( token.isOperator( Operator::BracketOpen ) ) {
@@ -137,11 +137,12 @@ void Worker::processDefine() {
     }
 
     while ( true ) {
-
-        if ( _tokenizer.lookAtToken().type() == Type::NewLine )
+        if ( token.type() == Type::NewLine || token.type() == Type::Eof ) {
+            _tokenizer.giveBack( token );
             break;
 
-        value.push_back( _tokenizer.readToken() );
+        value.push_back( std::move( token ) );
+        token = _tokenizer.readToken();
     }
 
     if ( value.size() == 1 && value.back().type() == Type::Integer )
@@ -171,9 +172,10 @@ void Worker::processUndef() {
 
     name = token.value();
 
-    token = _tokenizer.lookAtToken();
+    token = _tokenizer.readToken();
     if ( token.type() != Type::NewLine )
         throw exception::InvalidToken( token );
+    _tokenizer.giveBack( token );
 
     symbols().remove( name );
 }
@@ -196,9 +198,10 @@ void Worker::processInclude() {
     }
 
     std::string name = token.value();
-    token = _tokenizer.lookAtToken();
+    token = _tokenizer.readToken();
     if ( token.type() != Type::NewLine )
         throw exception::InvalidToken( token );
+    _tokenizer.giveBack( token );
 
     context::file( name );
     if ( !_global.seenFiles.count( &context::file() ) )
@@ -213,9 +216,11 @@ void Worker::processPragma() {
     std::vector< Token > chunks;
 
     while ( true ) {
-        if ( _tokenizer.lookAtToken().type() == Type::NewLine )
+        Token token = _tokenizer.readToken();
+        if ( token.type() == Type::NewLine || token.type() == Type::Eof ) {
             break;
-        chunks.push_back( _tokenizer.readToken() );
+        }
+        chunks.push_back( std::move( token ) );
     }
 
     if ( chunks.size() == 1 && chunks.front().value() == "once" )
@@ -235,9 +240,10 @@ void Worker::processIfdef() {
     _stack.emplace(); // = push
     ConditionFrame &frame = _stack.top();
 
-    token = _tokenizer.lookAtToken();
+    token = _tokenizer.readToken();
     if ( token.type() != Type::NewLine )
         throw exception::InvalidToken( token );
+    _tokenizer.giveBack( token );
 
     if ( inherited ) {
         frame.ignore = true;
@@ -283,9 +289,11 @@ void Worker::processIfndef() {
 }
 
 void Worker::processElse() {
-    Token token = _tokenizer.lookAtToken();
+    Token token = _tokenizer.readToken();
     if ( token.type() != Type::NewLine )
         throw exception::InvalidToken( token );
+    _tokenizer.giveBack( token );
+
 
     if ( _stack.empty() )
         throw exception::InternalError( "missing if/ifdef/ifndef" );
@@ -306,9 +314,10 @@ void Worker::processElse() {
 }
 
 void Worker::processEndif() {
-    Token token = _tokenizer.lookAtToken();
-    if ( token.type() != Type::NewLine )
+    Token token = _tokenizer.readToken();
+    if ( token.type() != Type::NewLine && token.type() != Type::Eof )
         throw exception::InvalidToken( token );
+    _tokenizer.giveBack( token );
 
     if ( _stack.empty() )
         throw exception::InternalError( "missing if/ifdef/ifndef" );

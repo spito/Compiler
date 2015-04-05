@@ -36,11 +36,9 @@ struct Tokenizer {
         _input.assignContent( content );
     }
 
-    // destroying
     common::Token readToken( bool = false );
     
-    // not-destroying
-    common::Token lookAtToken( bool = false );
+    void giveBack( const common::Token & );
 
     const common::Position &position() const {
         return _input.position();

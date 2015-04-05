@@ -11,10 +11,8 @@ common::Token Tokenizer::readToken( bool acceptSpaces ) {
     return getToken( acceptSpaces );
 }
 
-common::Token Tokenizer::lookAtToken( bool acceptSpaces ) {
-    common::Position before = position();
-    auto d = common::make_defer( [&] { position( before ); } );
-    return getToken( acceptSpaces );
+void Tokenizer::giveBack( const common::Token &token ) {
+    position( token.position() );
 }
 
 common::Token Tokenizer::getToken( bool acceptSpaces ) {
