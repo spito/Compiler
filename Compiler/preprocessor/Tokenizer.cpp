@@ -297,8 +297,9 @@ common::Token Tokenizer::processSharp() {
 }
 
 common::Token Tokenizer::processNewLine() {
+    common::Position before = position();
     _input.read();
-    return common::Token( "\n", common::Token::Type::NewLine, position() );
+    return common::Token( "\n", common::Token::Type::NewLine, before );
 }
 
 
