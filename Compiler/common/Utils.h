@@ -3,86 +3,86 @@
 #include <utility>
 
 namespace compiler {
-    namespace common {
+namespace common {
 
-        struct Comparable {
-            using IsComparable = bool;
-        };
-        struct Orderable {
-            using IsOrderable = bool;
-        };
+struct Comparable {
+    using IsComparable = bool;
+};
+struct Orderable {
+    using IsOrderable = bool;
+};
 
-        template< typename F >
-        struct Defer {
+template< typename F >
+struct Defer {
 
-            Defer( F &&f ) :
-                _f( std::move( f ) ),
-                _run( false )
-            {}
+    Defer( F &&f ) :
+        _f( std::move( f ) ),
+        _run( false )
+    {}
 
-            Defer( const Defer & ) = delete;
-            Defer( Defer &&another ) :
-                _f( std::move( another._f ) ),
-                _run( another._f )
-            {
-                another._run = true;
-            }
+    Defer( const Defer & ) = delete;
+    Defer( Defer &&another ) :
+        _f( std::move( another._f ) ),
+        _run( another._f )
+    {
+        another._run = true;
+    }
 
-            ~Defer() {
-                run();
-            }
+    ~Defer() {
+        run();
+    }
 
-            void run() {
-                if ( !_run ) {
-                    _f();
-                    _run = true;
-                }
-            }
-
-        private:
-            F _f;
-            bool _run;
-        };
-
-        template< typename F >
-        Defer< F > make_defer( F &&f ) {
-            return Defer< F >( std::move( f ) );
+    void run() {
+        if ( !_run ) {
+            _f();
+            _run = true;
         }
+    }
 
-        template< typename T >
-        struct Adaptor {
-            Adaptor( T begin, T end ) :
-                _begin( begin ),
-                _end( end )
-            {}
+private:
+    F _f;
+    bool _run;
+};
 
-            T begin() {
-                return _begin;
-            }
-            T begin() const {
-                return _begin;
-            }
-            T end() {
-                return _end;
-            }
-            T end() const {
-                return _end;
-            }
+template< typename F >
+Defer< F > make_defer( F &&f ) {
+    return Defer< F >( std::move( f ) );
+}
 
-        private:
-            T _begin;
-            T _end;
-        };
+template< typename T >
+struct Adaptor {
+    Adaptor( T begin, T end ) :
+        _begin( begin ),
+        _end( end )
+    {}
 
-        template< typename T >
-        auto revert( T &&container )
-            -> decltype( container.rbegin() )
-        {
-            using Iterator = decltype( container.rbegin() );
-            return Adaptor< Iterator >( container.rbegin(), container.rend() );
-        }
+    T begin() {
+        return _begin;
+    }
+    T begin() const {
+        return _begin;
+    }
+    T end() {
+        return _end;
+    }
+    T end() const {
+        return _end;
+    }
 
-    } // namespace common
+private:
+    T _begin;
+    T _end;
+};
+
+template< typename T >
+auto revert( T &&container )
+-> decltype( container.rbegin() )
+{
+    using Iterator = decltype( container.rbegin() );
+    return Adaptor< Iterator >( container.rbegin(), container.rend() );
+}
+
+} // namespace common
 } // namespace compiler
 
 template< typename T >
