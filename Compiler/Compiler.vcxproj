@@ -103,7 +103,6 @@
     <ClInclude Include="preprocessor\Substituer.h" />
     <ClInclude Include="preprocessor\Symbol.h" />
     <ClInclude Include="preprocessor\Tokenizer.h" />
-    <ClInclude Include="preprocessor\Tokens.h" />
     <ClInclude Include="preprocessor\Worker.h" />
     <ClInclude Include="type\Type.h" />
     <ClInclude Include="what.h" />
@@ -122,7 +121,6 @@
     <ClCompile Include="preprocessor\Preprocessor.cpp" />
     <ClCompile Include="preprocessor\Substituer.cpp" />
     <ClCompile Include="preprocessor\Tokenizer.cpp" />
-    <ClCompile Include="preprocessor\Tokens.cpp" />
     <ClCompile Include="preprocessor\Worker.cpp" />
   </ItemGroup>
   <ItemGroup>

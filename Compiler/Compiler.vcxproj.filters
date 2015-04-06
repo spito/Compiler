@@ -81,9 +81,6 @@
     <ClInclude Include="preprocessor\Preprocessor.h">
       <Filter>Header Files\preprocessor</Filter>
     </ClInclude>
-    <ClInclude Include="preprocessor\Tokens.h">
-      <Filter>Header Files\preprocessor</Filter>
-    </ClInclude>
     <ClInclude Include="preprocessor\Tokenizer.h">
       <Filter>Header Files\preprocessor</Filter>
     </ClInclude>
@@ -163,9 +160,6 @@
       <Filter>Source Files\common</Filter>
     </ClCompile>
     <ClCompile Include="preprocessor\Preprocessor.cpp">
-      <Filter>Source Files\preprocessor</Filter>
-    </ClCompile>
-    <ClCompile Include="preprocessor\Tokens.cpp">
       <Filter>Source Files\preprocessor</Filter>
     </ClCompile>
     <ClCompile Include="preprocessor\Tokenizer.cpp">
