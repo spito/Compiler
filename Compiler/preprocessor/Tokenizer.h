@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Tokens.h"
 #include "InputBuffer.h"
 
 namespace compiler {
