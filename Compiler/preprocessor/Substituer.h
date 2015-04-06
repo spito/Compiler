@@ -65,13 +65,7 @@ struct Substituer {
         _chunks( ShadowChunker() ),
         _insideExpression( true )
     {
-        _chunks.prepend( begin, end );
-        auto diff = end - begin;
-        for ( int eaten = 0; eaten < diff; ) {
-            int consumed;
-            merge( _result, substitute( &consumed ) );
-            eaten += consumed;
-        }
+        recursion( begin, end );
     }
 
     std::vector< common::Token > &result() {
@@ -106,8 +100,8 @@ private:
     void stringify( std::vector< common::Token > &, const std::vector< common::Token > & );
     void join( std::vector< common::Token > &, const std::vector< common::Token > & );
     std::vector< common::Token > recursion( UsedSymbol &&, std::vector< common::Token > );
+    void recursion( std::vector< common::Token >::const_iterator, std::vector< common::Token >::const_iterator );
 
-    void merge( std::vector< common::Token > &, std::vector< common::Token > & );
 
     bool limited() const {
         return !_tokenizer;

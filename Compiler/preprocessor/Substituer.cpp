@@ -17,6 +17,15 @@ static ptrdiff_t grabParameterIndex( const Symbol &symbol, const Token &name ) {
     return -1;
 }
 
+static void merge( std::vector< Token > &destination, std::vector< Token > &source ) {
+    if ( !source.empty() )
+        std::move( source.begin(), source.end(), std::back_inserter( destination ) );
+}
+static void merge( std::vector< Token > &destination, std::vector< Token > &&source ) {
+    merge( destination, source );
+}
+
+
 void Substituer::addChunk( std::vector< Token > &items, const Token &chunk ){
     if ( _stringify )
         throw exception::InternalError( "malformed source - parameter has to be after #" );
@@ -48,11 +57,6 @@ void Substituer::join( std::vector< Token > &items, const std::vector< Token > &
         merge( items, Substituer( *this, toJoin.begin() + 1, toJoin.end() ).result() );
 }
 
-void Substituer::merge( std::vector< Token > &destination, std::vector< Token > &source ) {
-    if ( !source.empty() )
-        std::move( source.begin(), source.end(), std::back_inserter( destination ) );
-}
-
 std::vector< Token > Substituer::recursion( UsedSymbol &&symbol, std::vector< Token > items ) {
     if ( _used.find( symbol ) )
         return{ symbol.token() };
@@ -69,6 +73,16 @@ std::vector< Token > Substituer::recursion( UsedSymbol &&symbol, std::vector< To
     }
     _used.remove( symbol );
     return result;
+}
+
+void Substituer::recursion( std::vector< common::Token >::const_iterator begin, std::vector< common::Token >::const_iterator end ) {
+    _chunks.prepend( begin, end );
+    auto diff = end - begin;
+    for ( int eaten = 0; eaten < diff; ) {
+        int consumed;
+        merge( _result, substitute( &consumed ) );
+        eaten += consumed;
+    }
 }
 
 std::vector< Token > Substituer::substitute( int *consumed ) {
