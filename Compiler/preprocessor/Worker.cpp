@@ -326,8 +326,7 @@ void Worker::processIf() {
     }
 
     list = Substituer( symbols(), list.begin(), list.end() ).result();
-    Expression::prepare( list.begin(), list.end() );
-    if ( Expression( { list.begin(), list.end() } ) )
+    if ( expression( {list.begin(), list.end() } ) )
         frame.fulfilled = true;
     else
         frame.ignore = true;
@@ -365,9 +364,10 @@ void Worker::processElif() {
     else {
 
         list = Substituer( symbols(), list.begin(), list.end() ).result();
-        Expression::prepare( list.begin(), list.end() );
-        if ( Expression( { list.begin(), list.end() } ) )
+        if ( expression( { list.begin(), list.end() } ) ) {
             frame.fulfilled = true;
+            frame.ignore = false;
+        }
         else
             frame.ignore = true;
     }

@@ -1,13 +1,15 @@
 #include "Expression.h"
 #include "../includes/exceptions.h"
 
+#include <iostream>
+
 namespace compiler {
 namespace preprocessor {
 
-//using Token = common::Token;
 using Type = common::Token::Type;
 using Operator = common::Operator;
-using Handle = std::unique_ptr < Expression > ;
+using Value = long long;
+using Unsigned = unsigned long long;
 
 static int rank( Operator op ) {
     switch ( op ) {
@@ -83,105 +85,99 @@ static Precedence precedence( Operator op ) {
     }
 }
 
-void Expression::prepare( Iterator begin, Iterator end ) {
-
-    for ( ; begin != end; ++begin ) {
-        if ( begin->type() != Type::Operator )
-            continue;
-
-        switch ( begin->op() ) {
-        case Operator::Ampersand: begin->op() = Operator::BitwiseAnd; break;
-        case Operator::Star: begin->op() = Operator::Multiplication; break;
-        case Operator::Plus: begin->op() = Operator::Addition; break;
-        case Operator::Minus: begin->op() = Operator::Subtraction; break;
-        default:;
-        }
+void solveAmbiguity( IteratorPack iterator ) {
+    if ( !iterator || iterator->type() != Type::Operator )
+        return;
+    switch ( iterator->op() ) {
+    case Operator::Ampersand: iterator->op() = Operator::BitwiseAnd; break;
+    case Operator::Star: iterator->op() = Operator::Multiplication; break;
+    case Operator::Plus: iterator->op() = Operator::Addition; break;
+    case Operator::Minus: iterator->op() = Operator::Subtraction; break;
+    default:;
     }
 }
 
-Expression::Value Expression::value() {
-    switch ( _op ) {
+static Value eval( Operator op, Value value, Value lhs, Value rhs ) {
+    switch ( op ) {
     case Operator::LogicalNot:
-        return !right().value();
+        return !rhs;
     case Operator::Multiplication:
-        return left().value() * right().value();
+        return lhs * rhs;
     case Operator::Division:
-        return left().value() / right().value();
+        return lhs / rhs;
     case Operator::Modulo:
-        return left().value() % right().value();
+        return lhs % rhs;
     case Operator::Addition:
-        return left().value() + right().value();
+        return lhs + rhs;
     case Operator::Subtraction:
-        return left().value() - right().value();
+        return lhs - rhs;
     case Operator::BitwiseLeftShift:
-        return left().value() << right().value();
+        return lhs << rhs;
     case Operator::BitwiseRightShift:
-        return left().value() >> right().value();
+        return lhs >> rhs;
     case Operator::LessThan:
-        return left().value() < right().value();
+        return lhs < rhs;
     case Operator::LessThenOrEqual:
-        return left().value() <= right().value();
+        return lhs <= rhs;
     case Operator::GreaterThan:
-        return left().value() > right().value();
+        return lhs > rhs;
     case Operator::GreaterThanOrEqual:
-        return left().value() >= right().value();
+        return lhs >= rhs;
     case Operator::EqualTo:
-        return left().value() == right().value();
+        return lhs == rhs;
     case Operator::NotEqualTo:
-        return left().value() != right().value();
+        return lhs != rhs;
     case Operator::BitwiseAnd:
-        return Unsigned( left().value() ) & Unsigned( right().value() );
+        return Unsigned( lhs ) & Unsigned( rhs );
     case Operator::BitwiseXor:
-        return Unsigned( left().value() ) ^ Unsigned( right().value() );
+        return Unsigned( lhs ) ^ Unsigned( rhs );
     case Operator::BitwiseOr:
-        return Unsigned( left().value() ) | Unsigned( right().value() );
+        return Unsigned( lhs ) | Unsigned( rhs );
     case Operator::LogicalAnd:
-        return left().value() && right().value();
+        return lhs && rhs;
     case Operator::LogicalOr:
-        return left().value() || right().value();
+        return lhs || rhs;
     case Operator::None:
-        return _value;
+        return value;
     default:
         throw exception::InternalError( "expression has invalid operator" );
     }
 }
 
-bool Expression::isCloser( Operator op ) const {
-    Operator my = _op == Operator::None ? _owner : _op;
+static bool isCloser( Operator owner, Operator foreign ) {
 
-    if ( rank( my ) == rank( op ) )
-        return precedence( my ) == Precedence::RightToLeft;
-    return rank( my ) > rank( op );
+    if ( rank( owner ) == rank( foreign ) )
+        return precedence( owner ) == Precedence::RightToLeft;
+    return rank( owner ) > rank( foreign );
 }
-bool Expression::isFarther( Operator op ) const {
-    Operator my = _op == Operator::None ? _owner : _op;
+static bool isFarther( Operator owner, Operator foreign ) {
 
-    if ( rank( my ) == rank( op ) )
-        return precedence( my ) == Precedence::LeftToRight;
-    return rank( my ) < rank( op );
+    if ( rank( owner ) == rank( foreign ) )
+        return precedence( owner ) == Precedence::LeftToRight;
+    return rank( owner ) < rank( foreign );
 }
 
-bool Expression::isUnary() const {
-    switch ( _op ) {
+static bool isUnary( Operator op ) {
+    switch ( op ) {
     case Operator::LogicalNot:
         return true;
     default:
         return false;
     }
 }
-bool Expression::isPrefix() const {
-    switch ( _op ) {
+static bool isPrefix( Operator op ) {
+    switch ( op ) {
     case Operator::LogicalNot:
         return true;
     default:
         return false;
     }
 }
-bool Expression::isPostfix() const {
+static bool isPostfix( Operator op ) {
     return false;
 }
-bool Expression::isBinary() const {
-    switch ( _op ) {
+static bool isBinary( Operator op ) {
+    switch ( op ) {
     case Operator::Multiplication:
     case Operator::Division:
     case Operator::Modulo:
@@ -206,49 +202,55 @@ bool Expression::isBinary() const {
     }
 }
 
-Expression::Expression( IteratorPack &iterator, Side side, Operator owner ) : Expression( owner ) {
+enum class Side : bool {
+    Left,
+    Right
+};
+
+static Value expression( IteratorPack &iterator, Side side, Operator owner ) {
+
+    solveAmbiguity( iterator );
+
+    Value value = 0, left = 0, right = 0;
+    Operator self = Operator::None;
 
     if ( !iterator )
         throw exception::InternalError( "expression is corrupted" );
 
     switch ( iterator->type() ) {
     case Type::Char:
-        _value = iterator->value().front();
-        _op = Operator::None;
+        value = iterator->value().front();
         ++iterator;
         break;
     case Type::Integer:
-        _value = iterator->integer();
-        _op = Operator::None;
+        value = iterator->integer();
         ++iterator;
         break;
     case Type::Real:
-        _value = Value( iterator->real() );
-        _op = Operator::None;
+        value = Value( iterator->real() );
         ++iterator;
         break;
     case Type::Operator:
         switch ( iterator->op() ) {
         case Operator::LogicalNot:
-            _op = Operator::LogicalNot;
+            self = Operator::LogicalNot;
             ++iterator;
-            right() = Expression( iterator, Side::Right, _op );
+            right = expression( iterator, Side::Right, self );
             break;
         case Operator::BracketOpen:
             ++iterator;
-            *this = Expression( iterator );
+            value = expression( iterator, Side::Left, Operator::None );
             if ( !iterator || !iterator->isOperator( Operator::BracketClose ) )
                 throw exception::InvalidToken( *iterator );
+            ++iterator;
             break;
         default:
             throw exception::InvalidToken( *iterator );
         }
-        ++iterator;
         break;
     default:
         throw exception::InvalidToken( *iterator );
     }
-
     while ( iterator ) {
 
         if ( iterator->type() != Type::Operator )
@@ -257,21 +259,23 @@ Expression::Expression( IteratorPack &iterator, Side side, Operator owner ) : Ex
         if ( iterator->op() == Operator::BracketClose )
             break;
 
-        Expression top;
-        top._op = iterator->op();
+        solveAmbiguity( iterator );
+        Operator next = iterator->op();
 
-        if ( isFarther( top._op ) && side == Side::Right )
-            return;
+        if ( isFarther( owner, next ) && side == Side::Right )
+            break;
 
         ++iterator;
-        top.left() = std::move( *this );
-        top.right() = Expression( iterator, Side::Right, top._op );
-        *this = std::move( top );
+        left = eval( self, value, left, right );
+        self = next;
+        right = expression( iterator, Side::Right, self );
     }
-
+    return eval( self, value, left, right );
 }
 
-
+bool expression( IteratorPack &&iterator ) {
+    return expression( iterator, Side::Left, Operator::None ) != 0;
+}
 
 } // namespace preprocessor
 } // namespace compiler
