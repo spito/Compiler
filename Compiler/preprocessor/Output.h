@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Preprocessor.h"
+#include "../common/TokenStore.h"
 
 namespace compiler {
 namespace preprocessor {
 
 struct Output {
 
-    Output( Preprocessor &p ) :
-        _p( p )
+    Output( common::TokenStore &store ) :
+        _store( store )
     {}
 
     void save( const char * );
@@ -18,7 +18,7 @@ struct Output {
 
 
 private:
-    Preprocessor &_p;
+    common::TokenStore &_store;
 
 };
 

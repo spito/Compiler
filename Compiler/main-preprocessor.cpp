@@ -1,9 +1,10 @@
+#include "preprocessor/Preprocessor.h"
 #include "preprocessor/Output.h"
 
 int main() {
     try {
         compiler::preprocessor::Preprocessor p( "Text.txt" );
-        compiler::preprocessor::Output o( p );
+        compiler::preprocessor::Output o( p.store() );
         o.save( "out.txt" );
     }
     catch ( compiler::exception::Exception &e ) {

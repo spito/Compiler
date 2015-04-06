@@ -1,4 +1,5 @@
 #include "Output.h"
+#include "../includes/exceptions.h"
 
 #include <fstream>
 #include <stack>
@@ -42,7 +43,7 @@ void Output::save( const char *name ) {
 
     
 
-    for ( const auto &token : _p.store() ) {
+    for ( const auto &token : _store ) {
 
         if ( token.type() == common::Token::Type::FileBegin ) {
             stack.push( Frame( 1, token.position().file() ) );
