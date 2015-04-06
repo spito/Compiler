@@ -113,7 +113,7 @@ static const int characters[] = {
     WORD_BEGIN | WORD_LATER, // Y
     WORD_BEGIN | WORD_LATER, // Z
     OPERATOR, // [
-    SLASH, // \ 
+    SLASH, // \ <---
     OPERATOR, // ]
     OPERATOR, // ^
     WORD_BEGIN | WORD_LATER, // _
