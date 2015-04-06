@@ -20,7 +20,7 @@ struct Worker {
 
     Worker( const std::string &name, Global &global ) :
         _global( global ),
-        _tokenizer( std::ifstream( name.c_str() ) ),
+        _tokenizer( name ),
         _name( &context::file() )
     {
         context::position( &position() );

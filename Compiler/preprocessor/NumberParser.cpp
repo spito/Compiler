@@ -10,14 +10,14 @@ void NumberParser::run() {
     States state = States::Init;
     common::Position before;
     while ( true ) {
-        before = _input.position();
+        before = _buffer.position();
 
         char c{};
 
-        if ( _input.eof() )
+        if ( _buffer.eof() )
             state = States::Quit;
         else
-            c = _input.readChar();
+            c = _buffer.readChar();
 
         switch ( state ) {
         case States::Init:
@@ -53,7 +53,7 @@ void NumberParser::run() {
         if ( state == States::Quit )
             break;
     }
-    _input.position( before );// return back the last character
+    _buffer.position( before );// return back the last character
 
     if ( _isE )
         postProcessing();
@@ -79,7 +79,7 @@ NumberParser::States NumberParser::stateInit( char c ) {
         _integer = c - '0';
     }
     else {
-        throw exception::InvalidCharacter( c, "-0123456789", _input.position() );
+        throw exception::InvalidCharacter( c, "-0123456789", _buffer.position() );
     }
     _value.push_back( c );
     return state;
@@ -95,7 +95,7 @@ NumberParser::States NumberParser::stateMinus( char c ) {
         _integer = c - '0';
     }
     else {
-        throw exception::InvalidCharacter( c, "0123456789", _input.position() );
+        throw exception::InvalidCharacter( c, "0123456789", _buffer.position() );
     }
     _value.push_back( c );
     return state;
@@ -149,7 +149,7 @@ NumberParser::States NumberParser::statePoint( char c ){
         _denominator *= 10;
     }
     else {
-        throw exception::InvalidCharacter( c, "0123456789", _input.position() );
+        throw exception::InvalidCharacter( c, "0123456789", _buffer.position() );
     }
     _value.push_back( c );
     return States::DecimalDigits;
@@ -188,7 +188,7 @@ NumberParser::States NumberParser::stateE( char c ){
         _exponent += c - '0';
     }
     else {
-        throw exception::InvalidCharacter( c, "+-0123456789", _input.position() );
+        throw exception::InvalidCharacter( c, "+-0123456789", _buffer.position() );
     }
     _value.push_back( c );
     return state;
@@ -200,7 +200,7 @@ NumberParser::States NumberParser::stateEplusMinus( char c ){
         _exponent += c - '0';
     }
     else {
-        throw exception::InvalidCharacter( c, "0123456789", _input.position() );
+        throw exception::InvalidCharacter( c, "0123456789", _buffer.position() );
     }
     _value.push_back( c );
     return States::EDigits;

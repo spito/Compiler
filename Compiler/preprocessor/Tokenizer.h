@@ -22,17 +22,17 @@ struct Tokenizer {
         Eof,
     };
 
-    Tokenizer( std::ifstream &file ) :
-        _input( file )
+    Tokenizer( const std::string &name ) :
+        _buffer( name )
     {}
 
     Tokenizer( const Tokenizer & ) = delete;
     Tokenizer( Tokenizer &&other ) :
-        _input( std::move( other._input ) )
+        _buffer( std::move( other._buffer ) )
     {}
 
     void restart( const std::string &content ) {
-        _input.assignContent( content );
+        _buffer.assignContent( content );
     }
 
     common::Token readToken( bool = false );
@@ -40,10 +40,10 @@ struct Tokenizer {
     void giveBack( const common::Token & );
 
     const common::Position &position() const {
-        return _input.position();
+        return _buffer.position();
     }
     void position( common::Position p ) {
-        _input.position( std::move( p ) );
+        _buffer.position( std::move( p ) );
     }
 
 private:
@@ -63,7 +63,7 @@ private:
     void processSlash();
     common::Token processSharp();
 
-    InputBuffer _input;
+    InputBuffer _buffer;
     bool _readyForCommand = true;
 
 };

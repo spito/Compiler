@@ -52,18 +52,18 @@ common::Token Tokenizer::getToken( bool acceptSpaces ) {
         case Class::Eof:
             return common::Token( common::Token::Type::Eof, before );
         default:
-            throw exception::InvalidCharacter( _input.look(), before );
+            throw exception::InvalidCharacter( _buffer.look(), before );
         }
     }
 
 }
 
 Tokenizer::Class Tokenizer::resolveClass() {
-    if ( _input.eof() )
+    if ( _buffer.eof() )
         return Class::Eof;
 
-    char c = _input.look();
-    char next = _input.look( 1 );
+    char c = _buffer.look();
+    char next = _buffer.look( 1 );
 
     if ( common::isPreprocessorSign( c ) )
         return Class::Preprocessor;
@@ -90,7 +90,7 @@ Tokenizer::Class Tokenizer::resolveClass() {
 
 common::Token Tokenizer::processNumber() {
     common::Position before = position();
-    NumberParser p( _input );
+    NumberParser p( _buffer );
 
     common::Token token( std::move( p.value() ),
                          p.isReal() ?
@@ -107,7 +107,7 @@ common::Token Tokenizer::processNumber() {
 common::Token Tokenizer::processOperator() {
     common::Position before = position();
 
-    OperatorParser p( _input );
+    OperatorParser p( _buffer );
 
     common::Token token( std::move( p.value() ), common::Token::Type::Operator, before );
     token.op() = p.op();
@@ -122,16 +122,16 @@ common::Token Tokenizer::processWord() {
 
     while ( true ) {
 
-        if ( common::isSlash( _input.look() ) && common::isNewLine( _input.look( 1 ) ) ) {
-            _input.read();
-            _input.read();
+        if ( common::isSlash( _buffer.look() ) && common::isNewLine( _buffer.look( 1 ) ) ) {
+            _buffer.read();
+            _buffer.read();
             continue;
         }
 
-        if ( !common::isWordLater( _input.look() ) )
+        if ( !common::isWordLater( _buffer.look() ) )
             break;
 
-        rawToken += _input.read();
+        rawToken += _buffer.read();
     }
     return common::Token( std::move( rawToken ), common::Token::Type::Word, before );
 }
@@ -140,11 +140,11 @@ common::Token Tokenizer::processSpace() {
     std::string rawToken;
     common::Position before = position();
 
-    while ( !_input.eof() ) {
-        char c = _input.look();
+    while ( !_buffer.eof() ) {
+        char c = _buffer.look();
         if ( !common::isSpace( c ) || common::isNewLine( c ) )
             break;
-        rawToken += _input.read();
+        rawToken += _buffer.read();
     }
     return common::Token( std::move( rawToken ), common::Token::Type::Space, before );
 }
@@ -154,17 +154,17 @@ common::Token Tokenizer::processString() {
     bool special = false;
 
     common::Position before = position();
-    char quots = _input.read();// read "
+    char quots = _buffer.read();// read "
     char endQuots = quots;
     if ( endQuots == '<' )
         endQuots = '>';
 
     while ( true ) {
-        if ( _input.eof() ) {
+        if ( _buffer.eof() ) {
             throw exception::EndOfFile( "", position() );
         }
         common::Position p = position();
-        char c = _input.read();
+        char c = _buffer.read();
 
         if ( special ) {
             switch ( c ) {
@@ -223,19 +223,19 @@ void Tokenizer::processShortComment() {
 
     common::Position before = position();
 
-    while ( !_input.eof() ) {
-        char c = _input.look();
+    while ( !_buffer.eof() ) {
+        char c = _buffer.look();
 
-        if ( common::isSlash( c ) && common::isNewLine( _input.look( 1 ) ) ) {
-            _input.read();
-            _input.read();
+        if ( common::isSlash( c ) && common::isNewLine( _buffer.look( 1 ) ) ) {
+            _buffer.read();
+            _buffer.read();
             continue;
         }
 
 
         if ( common::isNewLine( c ) )
             break;
-        _input.read();
+        _buffer.read();
     }
 }
 
@@ -245,13 +245,13 @@ void Tokenizer::processLongComment() {
     common::Position before = position();
 
     while ( true ) {
-        if ( _input.eof() )
+        if ( _buffer.eof() )
             throw exception::EndOfFile( "", position() );
 
-        char c = _input.read();
+        char c = _buffer.read();
 
-        if ( common::isSlash( c ) && common::isNewLine( _input.look( 1 ) ) ) {
-            _input.read();
+        if ( common::isSlash( c ) && common::isNewLine( _buffer.look( 1 ) ) ) {
+            _buffer.read();
             continue;
         }
 
@@ -266,13 +266,13 @@ void Tokenizer::processLongComment() {
 
 void Tokenizer::processSlash() {
 
-    _input.read(); // erase slash \ 
+    _buffer.read(); // erase slash \ 
 
-    if ( common::isNewLine( _input.look() ) ) {
-        _input.read(); // erase \n
+    if ( common::isNewLine( _buffer.look() ) ) {
+        _buffer.read(); // erase \n
         return;
     }
-    throw exception::InvalidCharacter( _input.look(), '\n' );
+    throw exception::InvalidCharacter( _buffer.look(), '\n' );
 }
 
 common::Token Tokenizer::processSharp() {
@@ -280,8 +280,8 @@ common::Token Tokenizer::processSharp() {
 
     std::string rawToken;
 
-    while ( common::isPreprocessorSign( _input.look() ) ) {
-        rawToken += _input.read();
+    while ( common::isPreprocessorSign( _buffer.look() ) ) {
+        rawToken += _buffer.read();
     }
     if ( rawToken.empty() || rawToken.size() > 2 )
         throw exception::InvalidCharacterConstant( std::move( rawToken ), before );
@@ -296,7 +296,7 @@ common::Token Tokenizer::processSharp() {
 
 common::Token Tokenizer::processNewLine() {
     common::Position before = position();
-    _input.read();
+    _buffer.read();
     return common::Token( "\n", common::Token::Type::NewLine, before );
 }
 

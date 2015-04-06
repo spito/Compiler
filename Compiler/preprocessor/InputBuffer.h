@@ -24,11 +24,11 @@ public:
         _buffer( std::move( other._buffer ) ),
         _position( std::move( other._position ) )
     {}
-    InputBuffer( const std::string &content ) :
-        _size( content.size() ),
-        _buffer( new char[ _size ] )
+    InputBuffer( const std::string &name ) :
+        _size( 0 ),
+        _buffer( nullptr )
     {
-        std::copy( content.begin(), content.end(), _buffer.get() );
+        openFile( name.c_str() );
     }
 
     InputBuffer( const char *content ) :

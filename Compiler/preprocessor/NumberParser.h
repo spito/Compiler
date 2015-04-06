@@ -7,7 +7,7 @@ namespace preprocessor {
 
 // Deterministic finite automaton for processing numbers
 class NumberParser {
-    InputBuffer &_input;
+    InputBuffer &_buffer;
 
     enum class States {
         Init,
@@ -35,7 +35,7 @@ class NumberParser {
     long double _real;
 public:
     NumberParser( InputBuffer &buffer ) :
-        _input( buffer ),
+        _buffer( buffer ),
         _isReal( false ),
         _isMinus( false ),
         _isE( false ),
