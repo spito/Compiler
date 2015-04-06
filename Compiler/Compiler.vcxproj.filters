@@ -154,6 +154,9 @@
     <ClInclude Include="preprocessor\Expression.h">
       <Filter>Header Files\preprocessor</Filter>
     </ClInclude>
+    <ClInclude Include="common\SmartIterator.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\Unicode.cpp">

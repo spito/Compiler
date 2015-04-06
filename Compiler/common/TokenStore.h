@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Token.h"
+#include "SmartIterator.h"
 #include <vector>
 
 namespace compiler {
@@ -8,14 +9,15 @@ namespace common {
 
 struct TokenStore {
 
-    TokenStore() :
-        _index( 0 )
+    using Iterator = SmartIterator < std::vector< Token >::iterator > ;
+    using ConstIterator = SmartIterator < std::vector< Token >::const_iterator > ;
+
+    TokenStore()
     {}
 
     TokenStore( const TokenStore & ) = default;
     TokenStore( TokenStore &&other ) :
-        _tokens( std::move( other._tokens ) ),
-        _index( other._index )
+        _tokens( std::move( other._tokens ) )
     {}
 
 
@@ -37,45 +39,32 @@ struct TokenStore {
         tokens.clear();
     }
 
-    bool available() {
-        return index() < _tokens.size();
-    }
-
-    const Token &get() {
-        size_t i = index();
-        ++_index;
-        return _tokens[ i ];
-    }
-
-    const Token &get( size_t index ) {
-        return _tokens[ this->index() + index ];
-    }
-
-    const Token &operator[]( size_t index ) {
-        return _tokens[ index ];
-    }
-
-    size_t index() {
-        while ( _index < _tokens.size() && _tokens[ _index ].type() == common::Token::Type::Space )
-            ++_index;
-        return _index;
-    }
-
-    const Token &look() {
-        return _tokens[ index() ];
-    }
-
     size_t size() const {
         return _tokens.size();
     }
 
-    void reset() {
-        _index = 0;
+    Iterator begin() {
+        return{ _tokens.begin(), _tokens.end() };
+    }
+    ConstIterator begin() const {
+        return{ _tokens.begin(), _tokens.end() };
+    }
+    ConstIterator cbegin() const {
+        return{ _tokens.begin(), _tokens.end() };
+    }
+
+    Iterator end() {
+        return{ _tokens.end(), _tokens.end() };
+    }
+    ConstIterator end() const {
+        return{ _tokens.end(), _tokens.end() };
+    }
+    ConstIterator cend() const {
+        return{ _tokens.end(), _tokens.end() };
     }
 
 private:
     std::vector< Token > _tokens;
-    size_t _index;
 };
 
 

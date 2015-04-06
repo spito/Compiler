@@ -10,6 +10,7 @@ using Type = common::Token::Type;
 using Operator = common::Operator;
 using Value = long long;
 using Unsigned = unsigned long long;
+using SmartIterator = common::SmartIterator < std::vector< common::Token >::iterator > ;
 
 static int rank( Operator op ) {
     switch ( op ) {
@@ -85,7 +86,7 @@ static Precedence precedence( Operator op ) {
     }
 }
 
-void solveAmbiguity( IteratorPack iterator ) {
+void solveAmbiguity( SmartIterator iterator ) {
     if ( !iterator || iterator->type() != Type::Operator )
         return;
     switch ( iterator->op() ) {
@@ -207,7 +208,7 @@ enum class Side : bool {
     Right
 };
 
-static Value expression( IteratorPack &iterator, Side side, Operator owner ) {
+static Value expression( SmartIterator &iterator, Side side, Operator owner ) {
 
     solveAmbiguity( iterator );
 
@@ -273,7 +274,7 @@ static Value expression( IteratorPack &iterator, Side side, Operator owner ) {
     return eval( self, value, left, right );
 }
 
-bool expression( IteratorPack &&iterator ) {
+bool expression( SmartIterator &&iterator ) {
     return expression( iterator, Side::Left, Operator::None ) != 0;
 }
 

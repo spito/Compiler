@@ -71,6 +71,7 @@
     <ClInclude Include="common\CharClass.h" />
     <ClInclude Include="common\Operator.h" />
     <ClInclude Include="common\Position.h" />
+    <ClInclude Include="common\SmartIterator.h" />
     <ClInclude Include="common\Symbol.h" />
     <ClInclude Include="common\SymbolTable.h" />
     <ClInclude Include="common\Token.h" />

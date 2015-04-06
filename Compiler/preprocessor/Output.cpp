@@ -40,9 +40,9 @@ void Output::save( const char *name ) {
 
     std::stack< Frame > stack;
 
-    while ( _p.store().available() ) {
+    
 
-        const common::Token &token = _p.store().get();
+    for ( const auto &token : _p.store() ) {
 
         if ( token.type() == common::Token::Type::FileBegin ) {
             stack.push( Frame( 1, token.position().file() ) );
