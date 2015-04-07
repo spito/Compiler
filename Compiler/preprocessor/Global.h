@@ -3,7 +3,6 @@
 #include "../common/SymbolTable.h"
 #include "../common/TokenStore.h"
 #include "Symbol.h"
-#include "Substituer.h"
 
 namespace compiler {
 namespace preprocessor {
