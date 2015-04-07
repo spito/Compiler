@@ -1,5 +1,5 @@
 #include "Worker.h"
-#include "Substituer.h"
+#include "Replacer.h"
 #include "Expression.h"
 
 #include <fstream>
@@ -40,7 +40,7 @@ void Worker::processText() {
             break;
         case Type::Word:
             if ( !ignore() )
-                store().push( Substituer( symbols(), token, _tokenizer ).result() );
+                store().push( Replacer( symbols(), token, _tokenizer ).result() );
             _ready = false;
             break;
         case Type::Operator:
@@ -203,11 +203,11 @@ void Worker::processInclude() {
 
     token = _tokenizer.readToken();
     if ( token.type() == Type::Word ) {
-        Substituer substituer( symbols(), token, _tokenizer );
-        if ( substituer.result().empty() )
+        Replacer replacer( symbols(), token, _tokenizer );
+        if ( replacer.result().empty() )
             throw exception::InvalidToken( token );
-        if ( substituer.result().size() != 1 ||
-             substituer.result().front().type() != Type::String )
+        if ( replacer.result().size() != 1 ||
+             replacer.result().front().type() != Type::String )
              throw exception::InvalidToken( token );
     }
 
@@ -325,7 +325,7 @@ void Worker::processIf() {
         return;
     }
 
-    list = Substituer( symbols(), list.begin(), list.end() ).result();
+    list = Replacer( symbols(), list.begin(), list.end() ).result();
     if ( expression( {list.begin(), list.end() } ) )
         frame.fulfilled = true;
     else
@@ -363,7 +363,7 @@ void Worker::processElif() {
         frame.ignore = true;
     else {
 
-        list = Substituer( symbols(), list.begin(), list.end() ).result();
+        list = Replacer( symbols(), list.begin(), list.end() ).result();
         if ( expression( { list.begin(), list.end() } ) ) {
             frame.fulfilled = true;
             frame.ignore = false;

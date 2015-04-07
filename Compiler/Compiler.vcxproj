@@ -101,7 +101,7 @@
     <ClInclude Include="preprocessor\Parametrizer.h" />
     <ClInclude Include="preprocessor\Preprocessor.h" />
     <ClInclude Include="preprocessor\ShadowChunker.h" />
-    <ClInclude Include="preprocessor\Substituer.h" />
+    <ClInclude Include="preprocessor\Replacer.h" />
     <ClInclude Include="preprocessor\Symbol.h" />
     <ClInclude Include="preprocessor\Tokenizer.h" />
     <ClInclude Include="preprocessor\Worker.h" />
@@ -120,7 +120,7 @@
     <ClCompile Include="preprocessor\Output.cpp" />
     <ClCompile Include="preprocessor\Parametrizer.cpp" />
     <ClCompile Include="preprocessor\Preprocessor.cpp" />
-    <ClCompile Include="preprocessor\Substituer.cpp" />
+    <ClCompile Include="preprocessor\Replacer.cpp" />
     <ClCompile Include="preprocessor\Tokenizer.cpp" />
     <ClCompile Include="preprocessor\Worker.cpp" />
   </ItemGroup>

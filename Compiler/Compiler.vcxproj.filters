@@ -111,9 +111,6 @@
     <ClInclude Include="preprocessor\Symbol.h">
       <Filter>Header Files\preprocessor</Filter>
     </ClInclude>
-    <ClInclude Include="preprocessor\Substituer.h">
-      <Filter>Header Files\preprocessor</Filter>
-    </ClInclude>
     <ClInclude Include="preprocessor\Parametrizer.h">
       <Filter>Header Files\preprocessor</Filter>
     </ClInclude>
@@ -157,6 +154,9 @@
     <ClInclude Include="common\SmartIterator.h">
       <Filter>Header Files\common</Filter>
     </ClInclude>
+    <ClInclude Include="preprocessor\Replacer.h">
+      <Filter>Header Files\preprocessor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\Unicode.cpp">
@@ -180,9 +180,6 @@
     <ClCompile Include="preprocessor\Parametrizer.cpp">
       <Filter>Source Files\preprocessor</Filter>
     </ClCompile>
-    <ClCompile Include="preprocessor\Substituer.cpp">
-      <Filter>Source Files\preprocessor</Filter>
-    </ClCompile>
     <ClCompile Include="preprocessor\Output.cpp">
       <Filter>Source Files\preprocessor</Filter>
     </ClCompile>
@@ -199,6 +196,9 @@
       <Filter>Source Files\preprocessor</Filter>
     </ClCompile>
     <ClCompile Include="preprocessor\Expression.cpp">
+      <Filter>Source Files\preprocessor</Filter>
+    </ClCompile>
+    <ClCompile Include="preprocessor\Replacer.cpp">
       <Filter>Source Files\preprocessor</Filter>
     </ClCompile>
   </ItemGroup>

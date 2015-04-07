@@ -11,24 +11,27 @@ namespace preprocessor {
 struct Symbol : common::Symbol {
 
     using Base = common::Symbol;
+    using Event = std::function < 
+        std::vector< common::Token >( const common::Token &, const std::vector< std::vector< common::Token > > * ) > ;
 
     enum class Kind {
         Nothing,
         Integer,
         Macro,
         Function,
-        Special,
-        Defined,
     };
 
-    static Symbol makeSpecial( std::string name ) {
+    static Symbol makeSpecial( std::string name, Event ev, int arguments = 0, bool expressionOnly = false ) {
         Symbol s( std::move( name ) );
-        s._kind = Kind::Special;
-        return s;
-    }
-    static Symbol makeDefined() {
-        Symbol s( "defined", { common::Token( "x" ) }, {} );
-        s._kind = Kind::Defined;
+        s._special = true;
+        s._expressionOnly = expressionOnly;
+        s._event = std::move( ev );
+        if ( arguments ) {
+            s._kind = Kind::Function;
+            s._parametres.resize( arguments );
+        }
+        else
+            s._kind = Kind::Macro;
         return s;
     }
 
@@ -60,9 +63,12 @@ struct Symbol : common::Symbol {
     Symbol( Symbol &&other ) :
         Base( std::move( other ) ),
         _kind( other._kind ),
+        _special( other._special ),
+        _expressionOnly( other._expressionOnly ),
         _integer( other._integer ),
         _value( std::move( other._value ) ),
-        _parametres( std::move( other._parametres ) )
+        _parametres( std::move( other._parametres ) ),
+        _event( std::move( other._event ) )
     {}
 
     Symbol &operator=( const Symbol & ) = default;
@@ -84,7 +90,7 @@ struct Symbol : common::Symbol {
         return _value;
     }
     const std::vector< common::Token > &parametres() const {
-        if ( _kind != Kind::Function && _kind != Kind::Defined )
+        if ( _kind != Kind::Function )
             throw exception::InternalError( "Invalid usage of symbol (not a function)" );
         return _parametres;
     }
@@ -103,8 +109,6 @@ struct Symbol : common::Symbol {
 
         switch ( kind() ) {
         case Symbol::Kind::Nothing:
-        case Symbol::Kind::Special:
-        case Symbol::Kind::Defined:
             return true;
         case Symbol::Kind::Integer:
             return integer() == other.integer();
@@ -118,11 +122,25 @@ struct Symbol : common::Symbol {
         }
     }
 
+    bool special() const {
+        return _special;
+    }
+    bool expressionOnly() const {
+        return _expressionOnly;
+    }
+
+    std::vector< common::Token > eval( const common::Token &token, const std::vector< std::vector< common::Token > > *parametres = nullptr ) const {
+        return _event( token, parametres );
+    }
+
 private:
     Kind _kind;
     long long _integer;
+    bool _special = false;
+    bool _expressionOnly = false;
     std::vector< common::Token > _value;
     std::vector< common::Token > _parametres;
+    Event _event;
 };
 
 } // namespace preprocessor

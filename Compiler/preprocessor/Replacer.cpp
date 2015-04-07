@@ -1,4 +1,4 @@
-#include "Substituer.h"
+#include "Replacer.h"
 
 namespace compiler {
 namespace preprocessor {
@@ -26,7 +26,7 @@ static void merge( std::vector< Token > &destination, std::vector< Token > &&sou
 }
 
 
-void Substituer::addChunk( std::vector< Token > &items, const Token &chunk ){
+void Replacer::addChunk( std::vector< Token > &items, const Token &chunk ){
     if ( _stringify )
         throw exception::InternalError( "malformed source - parameter has to be after #" );
     else if ( _join ) {
@@ -37,7 +37,7 @@ void Substituer::addChunk( std::vector< Token > &items, const Token &chunk ){
         items.push_back( chunk );
 }
 
-void Substituer::stringify( std::vector< Token > &items, const std::vector< Token > &toString ) {
+void Replacer::stringify( std::vector< Token > &items, const std::vector< Token > &toString ) {
     Token result( Type::String );
 
     for ( const auto &s : toString )
@@ -47,17 +47,17 @@ void Substituer::stringify( std::vector< Token > &items, const std::vector< Toke
     _stringify = false;
 }
 
-void Substituer::join( std::vector< Token > &items, const std::vector< Token > &toJoin ){
+void Replacer::join( std::vector< Token > &items, const std::vector< Token > &toJoin ){
     _join = false;
     Token result( items.back().value() );
     result.value() += toJoin.front().value();
     items.back() = result;
 
     if ( toJoin.size() > 1 )
-        merge( items, Substituer( *this, toJoin.begin() + 1, toJoin.end() ).result() );
+        merge( items, Replacer( *this, toJoin.begin() + 1, toJoin.end() ).result() );
 }
 
-std::vector< Token > Substituer::recursion( UsedSymbol &&symbol, std::vector< Token > items ) {
+std::vector< Token > Replacer::recursion( UsedSymbol &&symbol, std::vector< Token > items ) {
     if ( _used.find( symbol ) )
         return{ symbol.token() };
 
@@ -75,7 +75,7 @@ std::vector< Token > Substituer::recursion( UsedSymbol &&symbol, std::vector< To
     return result;
 }
 
-void Substituer::recursion( std::vector< common::Token >::const_iterator begin, std::vector< common::Token >::const_iterator end ) {
+void Replacer::recursion( std::vector< common::Token >::const_iterator begin, std::vector< common::Token >::const_iterator end ) {
     _chunks.prepend( begin, end );
     auto diff = end - begin;
     for ( int eaten = 0; eaten < diff; ) {
@@ -85,7 +85,7 @@ void Substituer::recursion( std::vector< common::Token >::const_iterator begin, 
     }
 }
 
-std::vector< Token > Substituer::substitute( int *consumed ) {
+std::vector< Token > Replacer::substitute( int *consumed ) {
 
     Token token = _chunks.top();
     _chunks.pop();
@@ -98,7 +98,7 @@ std::vector< Token > Substituer::substitute( int *consumed ) {
 
     auto symbol = _symbols.find( token.value() );
 
-    if ( !symbol || ( !_insideExpression && symbol->kind() == Symbol::Kind::Defined ) ) {
+    if ( !symbol || ( !_insideExpression && symbol->expressionOnly() ) ) {
         if ( consumed )
             *consumed = 1;
         if ( _insideExpression ) {
@@ -114,9 +114,6 @@ std::vector< Token > Substituer::substitute( int *consumed ) {
         return substituteInteger( std::move( token ), *symbol, consumed );
     case Symbol::Kind::Macro:
         return substituteMacro( std::move( token ), *symbol, consumed );
-    case Symbol::Kind::Special:
-        return substituteSpecial( token, *symbol, consumed );
-    case Symbol::Kind::Defined:
     case Symbol::Kind::Function:
         return substituteFunction( std::move( token ), *symbol, consumed );
     case Symbol::Kind::Nothing:
@@ -128,23 +125,27 @@ std::vector< Token > Substituer::substitute( int *consumed ) {
     }
 }
 
-std::vector< Token > Substituer::substituteMacro( Token token, const Symbol &symbol, int *consumed ) {
+std::vector< Token > Replacer::substituteMacro( Token token, const Symbol &symbol, int *consumed ) {
     if ( consumed )
         *consumed = 1;
+
+    if ( symbol.special() )
+        return symbol.eval( token );
+
     auto tokens = symbol.value();
     for ( auto &t : tokens )
         t.position() = token.position();
     return recursion( UsedSymbol( std::move( token ) ), std::move( tokens ) );
 }
 
-std::vector< Token > Substituer::substituteInteger( Token token, const Symbol &symbol, int *consumed ) {
+std::vector< Token > Replacer::substituteInteger( Token token, const Symbol &symbol, int *consumed ) {
     if ( consumed )
         *consumed = 1;
     token.replaceBy( symbol.value().front() );
     return{ token };
 }
 
-std::vector< Token > Substituer::substituteFunction( Token token, const Symbol &symbol, int *consumed ) {
+std::vector< Token > Replacer::substituteFunction( Token token, const Symbol &symbol, int *consumed ) {
     std::vector< std::vector< Token > > actualParams;
     savePosition();
     Parametrizer parametrizer( _chunks.begin(), limited() );
@@ -163,18 +164,8 @@ std::vector< Token > Substituer::substituteFunction( Token token, const Symbol &
     if ( actualParams.size() != symbol.parametres().size() )
         throw exception::InternalError( "malformed source - insufficient number of parametres passed into the function macro" );
 
-    if ( symbol.kind() == Symbol::Kind::Defined ) {
-        if ( actualParams.front().size() != 1 )
-            throw exception::InternalError( "only one macro name can be passed into defined operator" );
-
-        Token t( "0", Type::Integer, token.position() );
-        t.integer() = 0;
-        if ( _symbols.find( actualParams.front().front().value() ) ) {
-            t.value() = "1";
-            t.integer() = 1;
-        }
-        return{ t };
-    }
+    if ( symbol.special() )
+        return symbol.eval( token, &actualParams );
 
     std::vector< Token > items;
     for ( const auto &chunk : symbol.value() ) {
@@ -204,27 +195,12 @@ std::vector< Token > Substituer::substituteFunction( Token token, const Symbol &
         else if ( _join )
             join( items, actualParams[ index ] );
         else
-            merge( items, Substituer( *this, actualParams[ index ].begin(), actualParams[ index ].end() ).result() );
+            merge( items, Replacer( *this, actualParams[ index ].begin(), actualParams[ index ].end() ).result() );
     }
     for ( auto &t : items )
         t.position() = token.position();
     return recursion( UsedSymbol( token, actualParams ), std::move( items ) );
 }
-
-std::vector< Token > Substituer::substituteSpecial( const Token &token, const Symbol &symbol, int *consumed ) {
-    if ( consumed )
-        *consumed = 1;
-
-    if ( symbol.name() == "__FILE__" )
-        return{ Token( token.position().file(), Type::String, token.position() ) };
-    if ( symbol.name() == "__LINE__" ) {
-        Token t( std::to_string( token.position().line() ), Type::Integer, token.position() );
-        t.integer() = token.position().line();
-        return{ t };
-    }
-    return{};
-}
-
 
 } // namespace preprocessor
 } // namespace compiler

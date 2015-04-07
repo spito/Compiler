@@ -48,16 +48,16 @@ private:
     const std::vector< std::vector< common::Token > > *_arguments;
 };
 
-struct Substituer {
+struct Replacer {
     using SymbolTable = common::SymbolTable < Symbol > ;
-    Substituer( SymbolTable &symbols, common::Token initial, Tokenizer &tokenizer ) :
+    Replacer( SymbolTable &symbols, common::Token initial, Tokenizer &tokenizer ) :
         _tokenizer( &tokenizer ),
         _chunks( ShadowChunker( std::move( initial ), [&] { return tokenizer.readToken(); } ) ),
         _symbols( symbols )
     {
         _result = substitute();
     }
-    Substituer( SymbolTable &symbols,
+    Replacer( SymbolTable &symbols,
                 std::vector< common::Token >::const_iterator begin,
                 std::vector< common::Token >::const_iterator end ) :
         _tokenizer( nullptr ),
@@ -74,7 +74,7 @@ struct Substituer {
 
 private:
 
-    Substituer( const Substituer &self,
+    Replacer( const Replacer &self,
                 std::vector< common::Token >::const_iterator begin,
                 std::vector< common::Token >::const_iterator end ) :
         _tokenizer( nullptr ),
