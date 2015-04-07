@@ -50,6 +50,7 @@ private:
     void processElif();
     void processElse();
     void processEndif();
+    void processError();
 
     const common::Position &position() const {
         return _tokenizer.position();

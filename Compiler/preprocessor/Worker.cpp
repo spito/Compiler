@@ -23,6 +23,7 @@ std::map< std::string, void( Worker::* )( void ) > Worker::_keywords{
         { "elif", &Worker::processElif },
         { "else", &Worker::processElse },
         { "endif", &Worker::processEndif },
+        { "error", &Worker::processError },
 };
 
 void Worker::processText() {
@@ -410,6 +411,34 @@ void Worker::processEndif() {
     _stack.pop();
 }
 
+void Worker::processError() {
+    Position before = position();
+
+    std::vector< Token > chunks;
+
+    while ( true ) {
+        Token token = _tokenizer.readToken( true );
+        if ( token.type() == Type::NewLine || token.type() == Type::Eof ) {
+            break;
+        }
+        chunks.push_back( std::move( token ) );
+    }
+    if ( ignore() )
+        return;
+
+    std::string content( "Custom user error: " );
+    for ( auto &chunk : chunks ) {
+
+        switch ( chunk.type() ) {
+        case Type::Space:
+            content += ' ';
+            break;
+        default:
+            content += chunk.value();
+        }
+    }
+    throw exception::InternalError( content, before );
+}
 
 } // namespace preprocessor
 } // namespace compiler
