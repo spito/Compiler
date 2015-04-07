@@ -167,7 +167,7 @@ std::vector< Token > Substituer::substituteFunction( Token token, const Symbol &
         if ( actualParams.front().size() != 1 )
             throw exception::InternalError( "only one macro name can be passed into defined operator" );
 
-        Token t( "0", Type::Integer );
+        Token t( "0", Type::Integer, token.position() );
         t.integer() = 0;
         if ( _symbols.find( actualParams.front().front().value() ) ) {
             t.value() = "1";
@@ -206,6 +206,8 @@ std::vector< Token > Substituer::substituteFunction( Token token, const Symbol &
         else
             merge( items, Substituer( *this, actualParams[ index ].begin(), actualParams[ index ].end() ).result() );
     }
+    for ( auto &t : items )
+        t.position() = token.position();
     return recursion( UsedSymbol( token, actualParams ), std::move( items ) );
 }
 
