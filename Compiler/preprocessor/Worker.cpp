@@ -130,7 +130,6 @@ void Worker::processDefine() {
 
     // parse formal parameters
     if ( token.isOperator( Operator::BracketOpen ) ) {
-        token = _tokenizer.readToken();
         while ( true ) {
 
             token = _tokenizer.readToken();
