@@ -12,7 +12,7 @@ using Value = long long;
 using Unsigned = unsigned long long;
 using SmartIterator = common::SmartIterator < std::vector< common::Token >::iterator > ;
 
-static int rank( Operator op ) {
+static int precedenceRank( Operator op ) {
     switch ( op ) {
     case Operator::BracketOpen:
         return 0;
@@ -58,7 +58,7 @@ enum class Precedence : bool {
     RightToLeft
 };
 
-static Precedence precedence( Operator op ) {
+static Precedence asociativity( Operator op ) {
     switch ( op ) {
     case Operator::LogicalNot:
         return Precedence::RightToLeft;
@@ -147,15 +147,15 @@ static Value eval( Operator op, Value value, Value lhs, Value rhs ) {
 
 static bool isCloser( Operator owner, Operator foreign ) {
 
-    if ( rank( owner ) == rank( foreign ) )
-        return precedence( owner ) == Precedence::RightToLeft;
-    return rank( owner ) > rank( foreign );
+    if ( precedenceRank( owner ) == precedenceRank( foreign ) )
+        return asociativity( owner ) == Precedence::RightToLeft;
+    return precedenceRank( owner ) > precedenceRank( foreign );
 }
 static bool isFarther( Operator owner, Operator foreign ) {
 
-    if ( rank( owner ) == rank( foreign ) )
-        return precedence( owner ) == Precedence::LeftToRight;
-    return rank( owner ) < rank( foreign );
+    if ( precedenceRank( owner ) == precedenceRank( foreign ) )
+        return asociativity( owner ) == Precedence::LeftToRight;
+    return precedenceRank( owner ) < precedenceRank( foreign );
 }
 
 static bool isUnary( Operator op ) {
