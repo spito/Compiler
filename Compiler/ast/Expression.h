@@ -8,8 +8,11 @@ namespace ast {
 
 template< typename Traversal >
 struct Expression : Statement< Traversal > {
+    using Base = Statement< Traversal >;
 
-    Expression( common::Operator op ) :
+
+    Expression( common::Position p, common::Operator op ) :
+        Base( std::move( p ) ),
         _op( op )
     {}
 
