@@ -30,6 +30,7 @@ struct Type : DynamicCast, common::Comparable {
         return equalInherited( other );
     }
     virtual size_t hash() const = 0;
+    virtual size_t size() const = 0;
 private:
     virtual bool equalInherited( const Type * ) const = 0;
     Kind _kind;
@@ -44,6 +45,9 @@ struct Elementary : Type {
         _const( c )
     {}
 
+    size_t size() const override {
+        return _length;
+    }
     int length() const {
         return _length;
     }
@@ -74,17 +78,20 @@ private:
 };
 
 struct Array : Type {
-    Array( Type *of, size_t size ) :
+    Array( Type *of, size_t count ) :
         Type( Kind::Array ),
         _of( *of ),
-        _size( size )
+        _count( count )
     {}
 
+    size_t size() const override {
+        return _count * of().size();
+    }
     const Type &of() const {
         return _of;
     }
-    size_t size() const {
-        return _size;
+    size_t count() const {
+        return _count;
     }
     size_t hash() const override {
         return
@@ -99,7 +106,7 @@ private:
             of() == other->of();
     }
     Type &_of;
-    size_t _size;
+    size_t _count;
 };
 
 struct Pointer : Type {
@@ -110,6 +117,9 @@ struct Pointer : Type {
         _const( c )
     {}
 
+    size_t size() const {
+        return sizeof( void * );
+    }
     const Type &of() const {
         return _of;
     }
