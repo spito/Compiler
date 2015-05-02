@@ -14,6 +14,21 @@ struct TypeStorage {
     using Ptr = type::Type *;
     using ConstPtr = const type::Type *;
 
+    template< typename T, typename... Args >
+    Ptr addType( std::string name, Args &&... args ) ->
+        std::enable_if< std::is_base_of< Ptr, T >::value, Ptr >
+    {
+        return addType( std::move( name ), new T( std::forward< Args >( args )... ) );
+    }
+
+    template< typename T, typename... Args >
+    auto addType( Args &&... args ) ->
+        std::enable_if< std::is_base_of< Ptr, T >::value, Ptr >
+    {
+        return addType( new T( std::forward< Args >( args )... ) );
+    }
+
+private:
     Ptr addType( std::string name, Ptr t ) {
         return _named.insert( { std::move( name ), Handle( t ) } ).first->second.get();
     }
@@ -21,7 +36,7 @@ struct TypeStorage {
     Ptr addType( Ptr t ) {
         return _unnamed.insert( Handle( t ) ).first->get();
     }
-private:
+
     std::unordered_map< std::string, Handle > _named;
     std::unordered_set< Handle > _unnamed;
 };
