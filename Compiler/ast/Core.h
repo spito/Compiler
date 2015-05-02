@@ -12,6 +12,7 @@ template< typename Traversal > struct Variable;
 template< typename Traversal > struct Constant;
 template< typename Traversal > struct Block;
 template< typename Traversal > struct If;
+template< typename Traversal > struct DoWhile;
 template< typename Traversal > struct While;
 template< typename Traversal > struct For;
 template< typename Traversal > struct StatementSwitch;
