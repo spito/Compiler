@@ -31,14 +31,14 @@
     <Filter Include="Source Files\preprocessor">
       <UniqueIdentifier>{e622b602-8d6c-41ac-8897-a9f8aee7b001}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\type">
-      <UniqueIdentifier>{ed52f4a8-f5c4-461d-9c29-7f1e50b5e4b6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\context">
       <UniqueIdentifier>{4f5def76-f0a8-4728-95e9-600d56c3ac1f}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\context">
       <UniqueIdentifier>{c21c063e-e633-4b99-aada-2177f6078ab4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ast">
+      <UniqueIdentifier>{51afd190-2492-4fa1-9444-a2e943f79227}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -102,12 +102,6 @@
     <ClInclude Include="exception\InvalidCharacterConstant.h">
       <Filter>Header Files\exceptions</Filter>
     </ClInclude>
-    <ClInclude Include="common\Value.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="type\Type.h">
-      <Filter>Header Files\type</Filter>
-    </ClInclude>
     <ClInclude Include="preprocessor\Symbol.h">
       <Filter>Header Files\preprocessor</Filter>
     </ClInclude>
@@ -156,6 +150,24 @@
     </ClInclude>
     <ClInclude Include="preprocessor\Replacer.h">
       <Filter>Header Files\preprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\Type.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\Value.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\Symbol.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\AST.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\Expression.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\Node.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

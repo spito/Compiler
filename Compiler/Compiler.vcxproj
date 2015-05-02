@@ -68,6 +68,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ast\AST.h" />
+    <ClInclude Include="ast\Expression.h" />
+    <ClInclude Include="ast\Node.h" />
+    <ClInclude Include="ast\Symbol.h" />
+    <ClInclude Include="ast\Type.h" />
+    <ClInclude Include="ast\Value.h" />
     <ClInclude Include="common\CharClass.h" />
     <ClInclude Include="common\Operator.h" />
     <ClInclude Include="common\Position.h" />
@@ -78,7 +84,6 @@
     <ClInclude Include="common\TokenStore.h" />
     <ClInclude Include="common\Unicode.h" />
     <ClInclude Include="common\Utils.h" />
-    <ClInclude Include="common\Value.h" />
     <ClInclude Include="context\File.h" />
     <ClInclude Include="context\Position.h" />
     <ClInclude Include="exception\DuplicateSymbol.h" />
@@ -105,7 +110,6 @@
     <ClInclude Include="preprocessor\Symbol.h" />
     <ClInclude Include="preprocessor\Tokenizer.h" />
     <ClInclude Include="preprocessor\Worker.h" />
-    <ClInclude Include="type\Type.h" />
     <ClInclude Include="what.h" />
   </ItemGroup>
   <ItemGroup>
