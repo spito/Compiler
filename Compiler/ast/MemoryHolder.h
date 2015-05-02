@@ -12,7 +12,7 @@ struct MemoryHolder {
 
     struct Variable {
 
-        Variable( int o, type::Type *t ) :
+        Variable( int o, const type::Type *t ) :
             _offset( o ),
             _type( *t )
         {}
@@ -29,14 +29,14 @@ struct MemoryHolder {
 
     private:
         int _offset;
-        type::Type &_type;
+        const type::Type &_type;
     };
 
     MemoryHolder() :
         _memoryLength( 0 )
     {}
 
-    void add( std::string name, type::Type *type ) {
+    void add( std::string name, const type::Type *type ) {
         if ( _variables.count( name ) )
             throw std::runtime_error( "duplicit symbol" );
         _variables.emplace( std::move( name ), Variable( _memoryLength, type ) );
