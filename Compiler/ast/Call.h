@@ -18,7 +18,7 @@ struct Call : Expression< Traversal > {
         _name( std::move( name ) ),
         _params( params.size() )
     {
-        std::transform( params.begin(), params.end(), _params.begin(), []( Ptr p ) {
+        std::transform( params.begin(), params.end(), _params.begin(), []( EPtr p ) {
             return EHandle( p );
         } );
     }
