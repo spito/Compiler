@@ -29,16 +29,18 @@ enum class Operator {
     Decrement, // --
     BracketIndexOpen, // [
     BracketIndexClose, // ]
+    ArrayAccess,
+    FunctionCall,
 
     // rank 2, right to left
     UnaryPlus, // +
     UnaryMinus, // -
     LogicalNot, // !
     BitwiseNot, // ~
-    //TypeCast, // (int)
+    TypeCast, // (int)
     Dereference, // *
     AddressOf, // &
-    //Sizeof, // sizeof(int)
+    Sizeof, // sizeof(int)
 
     // rank 3, left to right
     Multiplication, // *
