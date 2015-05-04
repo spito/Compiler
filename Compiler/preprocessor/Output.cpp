@@ -38,10 +38,7 @@ void Output::save( const char *name ) {
     std::ofstream file( name );
 
     bool word = false;
-
     std::stack< Frame > stack;
-
-    
 
     for ( const auto &token : _store ) {
 
