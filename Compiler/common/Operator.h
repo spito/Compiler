@@ -16,6 +16,8 @@ enum class Operator {
     Semicolon, // ;
     Colon, // :
     VariadicArgument, // ...
+    Increment, // ++
+    Decrement, // --
 
 
     // rank 0
@@ -25,14 +27,16 @@ enum class Operator {
     BraceClose, // }
 
     // rank 1, left to right
-    Increment, // ++
-    Decrement, // --
+    SuffixIncrement, // ++
+    SuffixDecrement, // --
     BracketIndexOpen, // [
     BracketIndexClose, // ]
     ArrayAccess,
     FunctionCall,
 
     // rank 2, right to left
+    PrefixIncrement, // ++
+    PrefixDecrement, // --
     UnaryPlus, // +
     UnaryMinus, // -
     LogicalNot, // !
