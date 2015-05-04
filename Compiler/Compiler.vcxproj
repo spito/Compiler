@@ -69,11 +69,29 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ast\AST.h" />
+    <ClInclude Include="ast\BinaryOperator.h" />
+    <ClInclude Include="ast\Block.h" />
+    <ClInclude Include="ast\Break.h" />
+    <ClInclude Include="ast\Call.h" />
+    <ClInclude Include="ast\Constant.h" />
+    <ClInclude Include="ast\Continue.h" />
+    <ClInclude Include="ast\Core.h" />
+    <ClInclude Include="ast\DoWhile.h" />
     <ClInclude Include="ast\Expression.h" />
-    <ClInclude Include="ast\Node.h" />
-    <ClInclude Include="ast\Symbol.h" />
+    <ClInclude Include="ast\For.h" />
+    <ClInclude Include="ast\Function.h" />
+    <ClInclude Include="ast\MemoryHolder.h" />
+    <ClInclude Include="ast\Return.h" />
+    <ClInclude Include="ast\Statement.h" />
+    <ClInclude Include="ast\If.h" />
+    <ClInclude Include="ast\TernaryOperator.h" />
+    <ClInclude Include="ast\Traversal.h" />
     <ClInclude Include="ast\Type.h" />
-    <ClInclude Include="ast\Value.h" />
+    <ClInclude Include="ast\TypeStorage.h" />
+    <ClInclude Include="ast\UnaryOperator.h" />
+    <ClInclude Include="ast\Variable.h" />
+    <ClInclude Include="ast\While.h" />
+    <ClInclude Include="common\AutoCheckPointer.h" />
     <ClInclude Include="common\CharClass.h" />
     <ClInclude Include="common\Operator.h" />
     <ClInclude Include="common\Position.h" />
@@ -97,6 +115,11 @@
     <ClInclude Include="exception\Unicode.h" />
     <ClInclude Include="exception\UnsupportedFeature.h" />
     <ClInclude Include="includes\exceptions.h" />
+    <ClInclude Include="interpret\Frame.h" />
+    <ClInclude Include="interpret\Register.h" />
+    <ClInclude Include="interpret\Variable.h" />
+    <ClInclude Include="interpret\Information.h" />
+    <ClInclude Include="interpret\Interpret.h" />
     <ClInclude Include="preprocessor\Expression.h" />
     <ClInclude Include="preprocessor\Global.h" />
     <ClInclude Include="preprocessor\InputBuffer.h" />
@@ -117,7 +140,14 @@
     <ClCompile Include="common\Unicode.cpp" />
     <ClCompile Include="context\Context.cpp" />
     <ClCompile Include="exception\InvalidCharacterConstant.cpp" />
-    <ClCompile Include="main-preprocessor.cpp" />
+    <ClCompile Include="interpret\Interpret.cpp" />
+    <ClCompile Include="interpret\InterpretEvalBinary.cpp" />
+    <ClCompile Include="interpret\InterpretEvalUnary.cpp" />
+    <ClCompile Include="interpret\Register.cpp" />
+    <ClCompile Include="main-interpret.cpp" />
+    <ClCompile Include="main-preprocessor.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="preprocessor\Expression.cpp" />
     <ClCompile Include="preprocessor\NumberParser.cpp" />
     <ClCompile Include="preprocessor\OperatorParser.cpp" />

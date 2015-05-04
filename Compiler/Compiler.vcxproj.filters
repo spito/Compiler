@@ -40,6 +40,12 @@
     <Filter Include="Header Files\ast">
       <UniqueIdentifier>{51afd190-2492-4fa1-9444-a2e943f79227}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\interpret">
+      <UniqueIdentifier>{50ad5659-f249-4f50-8e4b-1c320c784365}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\interpret">
+      <UniqueIdentifier>{5324baba-ac03-4b46-afb6-544f26e072c5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common\Position.h">
@@ -154,11 +160,8 @@
     <ClInclude Include="ast\Type.h">
       <Filter>Header Files\ast</Filter>
     </ClInclude>
-    <ClInclude Include="ast\Value.h">
-      <Filter>Header Files\ast</Filter>
-    </ClInclude>
-    <ClInclude Include="ast\Symbol.h">
-      <Filter>Header Files\ast</Filter>
+    <ClInclude Include="interpret\Interpret.h">
+      <Filter>Header Files\interpret</Filter>
     </ClInclude>
     <ClInclude Include="ast\AST.h">
       <Filter>Header Files\ast</Filter>
@@ -166,8 +169,80 @@
     <ClInclude Include="ast\Expression.h">
       <Filter>Header Files\ast</Filter>
     </ClInclude>
-    <ClInclude Include="ast\Node.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="ast\Traversal.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\Core.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\Statement.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\If.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\For.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\While.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\BinaryOperator.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\Block.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\Call.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\MemoryHolder.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\TernaryOperator.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\TypeStorage.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\UnaryOperator.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\Variable.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\Constant.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\Break.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\Continue.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\Return.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\DoWhile.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\Function.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="interpret\Information.h">
+      <Filter>Header Files\interpret</Filter>
+    </ClInclude>
+    <ClInclude Include="interpret\Variable.h">
+      <Filter>Header Files\interpret</Filter>
+    </ClInclude>
+    <ClInclude Include="interpret\Register.h">
+      <Filter>Header Files\interpret</Filter>
+    </ClInclude>
+    <ClInclude Include="interpret\Frame.h">
+      <Filter>Header Files\interpret</Filter>
+    </ClInclude>
+    <ClInclude Include="common\AutoCheckPointer.h">
+      <Filter>Header Files\common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -212,6 +287,21 @@
     </ClCompile>
     <ClCompile Include="preprocessor\Replacer.cpp">
       <Filter>Source Files\preprocessor</Filter>
+    </ClCompile>
+    <ClCompile Include="interpret\Interpret.cpp">
+      <Filter>Source Files\interpret</Filter>
+    </ClCompile>
+    <ClCompile Include="interpret\InterpretEvalUnary.cpp">
+      <Filter>Source Files\interpret</Filter>
+    </ClCompile>
+    <ClCompile Include="interpret\InterpretEvalBinary.cpp">
+      <Filter>Source Files\interpret</Filter>
+    </ClCompile>
+    <ClCompile Include="interpret\Register.cpp">
+      <Filter>Source Files\interpret</Filter>
+    </ClCompile>
+    <ClCompile Include="main-interpret.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
