@@ -6,7 +6,6 @@
 namespace compiler {
 namespace ast {
 
-template< typename Traversal >
 struct Function {
 
     Function( Function &&other ) :
@@ -15,8 +14,9 @@ struct Function {
         _returnType( std::move( other._returnType ) )
     {}
 
-    Function( type::Type *t ) :
-        _returnType( *t )
+    Function( const type::Type *t, std::string name ) :
+        _returnType( *t ),
+        _name( std::move( name ) )
     {}
 
     MemoryHolder &parameters() {
@@ -26,21 +26,25 @@ struct Function {
         return _parameters;
     }
 
-    Block< Traversal > &body() {
+    Block &body() {
         return _body;
     }
-    const Block< Traversal > &body() const {
+    const Block &body() const {
         return _body;
     }
 
     const type::Type &returnType() const {
         return _returnType;
     }
+    const std::string &name() const {
+        return _name;
+    }
 
 private:
     MemoryHolder _parameters;
-    Block< Traversal > _body;
+    Block _body;
     const type::Type &_returnType;
+    std::string _name;
 };
 
 

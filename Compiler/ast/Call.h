@@ -9,12 +9,11 @@
 namespace compiler {
 namespace ast {
 
-template< typename Traversal >
-struct Call : Expression< Traversal > {
-    using Base = Expression< Traversal >;
+struct Call : Expression {
+    using Base = Expression;
 
     Call( common::Position p, std::string name, std::vector< EPtr > params ) :
-        Base( std::move( p ), common::Operator::FunctionCall ),
+        Base( Kind::Call, std::move( p ), common::Operator::FunctionCall ),
         _name( std::move( name ) ),
         _params( params.size() )
     {
@@ -29,10 +28,6 @@ struct Call : Expression< Traversal > {
 
     const std::vector< EHandle > &parametres() const {
         return _params;
-    }
-
-    Information *traverse( Traversal &t ) const override {
-        return t.eval( this );
     }
 
 private:

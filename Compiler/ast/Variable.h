@@ -7,18 +7,13 @@
 namespace compiler {
 namespace ast {
 
-template< typename Traversal >
-struct Variable : Expression< Traversal > {
-    using Base = Expression< Traversal >;
+struct Variable : Expression {
+    using Base = Expression;
 
     Variable( common::Position p, std::string n ) :
-        Base( std::move( p ), common::Operator::None ),
+        Base( Kind::Variable, std::move( p ), common::Operator::None ),
         _name( std::move( n ) )
     {}
-
-    Information *traverse( Traversal &t ) const override {
-        return t.eval( this );
-    }
 
     const std::string &name() const {
         return _name;

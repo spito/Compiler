@@ -1,31 +1,33 @@
 #pragma once
 
 #include "Expression.h"
+#include "Type.h"
 
 #include <string>
 
 namespace compiler {
 namespace ast {
 
-template< typename Traversal >
-struct Constant : Expression< Traversal > {
-    using Base = Expression< Traversal >;
+struct Constant : Expression {
+    using Base = Expression;
 
-    Constant( common::Position p, long long value ) :
-        Base( std::move( p ), common::Operator::None ),
-        _value( value )
+    Constant( common::Position p, long long value, const type::Type *type ) :
+        Base( Kind::Constant, std::move( p ), common::Operator::None ),
+        _value( value ),
+        _type( type )
     {}
-
-    Information *traverse( Traversal &t ) const override {
-        return t.eval( this );
-    }
 
     long long value() const {
         return _value;
     }
 
+    const type::Type *type() const {
+        return _type;
+    }
+
 private:
     long long _value;
+    const type::Type *_type;
 };
 
 } // namespace ast

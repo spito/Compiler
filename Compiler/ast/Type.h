@@ -78,7 +78,7 @@ private:
 };
 
 struct Array : Type {
-    Array( Type *of, size_t count ) :
+    Array( const Type *of, size_t count ) :
         Type( Kind::Array ),
         _of( *of ),
         _count( count )
@@ -105,19 +105,19 @@ private:
             size() == other->size() &&
             of() == other->of();
     }
-    Type &_of;
+    const Type &_of;
     size_t _count;
 };
 
 struct Pointer : Type {
 
-    Pointer( Type *of, bool c = false ) :
+    Pointer( const Type *of, bool c = false ) :
         Type( Kind::Pointer ),
         _of( *of ),
         _const( c )
     {}
 
-    size_t size() const {
+    size_t size() const override {
         return sizeof( void * );
     }
     const Type &of() const {
@@ -138,7 +138,7 @@ private:
             isConst() == other->isConst() &&
             of() == other->of();
     }
-    Type &_of;
+    const Type &_of;
     bool _const;
 };
 

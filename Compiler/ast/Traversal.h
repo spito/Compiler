@@ -1,12 +1,14 @@
 #pragma once
 
+#include "Statement.h"
+
 namespace compiler {
 namespace ast {
 
-template< typename ReturnedInformation, typename StoredInformation >
 struct Traversal {
-    using Information = ReturnedInformation;
-    using StoredInfo = StoredInformation;
+    virtual ~Traversal() {}
+
+    virtual void eval( const Statement * ) = 0;
 };
 
 } // namespace ast

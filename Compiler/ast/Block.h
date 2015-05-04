@@ -8,24 +8,21 @@
 namespace compiler {
 namespace ast {
 
-template< typename Traversal >
-struct Block : Statement< Traversal >, MemoryHolder {
-    using Iterator = std::vector< Handle >::iterator;
+struct Block : Statement, MemoryHolder {
 
     using MemoryHolder::add;
 
     Block( Block &&o ) :
+        Statement( o ),
+        MemoryHolder( o ),
         _descendants( std::move( o._descendants ) ),
         _soft( o._soft )
     {}
 
     Block( bool soft = true ) :
+        Statement( Kind::Block ),
         _soft( soft )
     {}
-
-    Information *traverse( Traversal &t ) const override {
-        return t.eval( this );
-    }
 
     void add( Ptr p ) {
         _descendants.emplace_back( p );

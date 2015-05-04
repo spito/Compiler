@@ -36,6 +36,13 @@ struct MemoryHolder {
         _memoryLength( 0 )
     {}
 
+    MemoryHolder( const MemoryHolder & ) = default;
+
+    MemoryHolder( MemoryHolder &&other ) :
+        _memoryLength( other._memoryLength ),
+        _variables( std::move( other._variables ) )
+    {}
+
     void add( std::string name, const type::Type *type ) {
         if ( _variables.count( name ) )
             throw std::runtime_error( "duplicit symbol" );

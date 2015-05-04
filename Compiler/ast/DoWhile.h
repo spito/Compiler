@@ -5,13 +5,12 @@
 namespace compiler {
 namespace ast {
 
-template< typename Traversal >
-struct DoWhile : Statement< Traversal > {
+struct DoWhile : Statement {
 
-    using Base = Statement< Traversal >;
+    using Base = Statement;
 
     DoWhile( common::Position p, EPtr condition, Ptr body ) :
-        Base( p ),
+        Base( Kind::DoWhile, std::move( p ) ),
         _condition( condition ),
         _body( body )
     {
@@ -19,10 +18,6 @@ struct DoWhile : Statement< Traversal > {
         parentContinue( this );
         _body->parentBreak( this );
         _body->parentContinue( this );
-    }
-
-    Information *traverse( Traversal &t ) const override {
-        return t.eval( this );
     }
 
     EPtr condition() const {

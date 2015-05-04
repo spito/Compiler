@@ -6,13 +6,12 @@
 namespace compiler {
 namespace ast {
 
-template< typename Traversal >
-struct Expression : Statement< Traversal > {
-    using Base = Statement< Traversal >;
+struct Expression : Statement {
+    using Base = Statement;
 
 
-    Expression( common::Position p, common::Operator op ) :
-        Base( std::move( p ) ),
+    Expression( Kind k, common::Position p, common::Operator op ) :
+        Base( k, std::move( p ) ),
         _op( op )
     {}
 

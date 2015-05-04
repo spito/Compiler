@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Core.h"
-#include "Traversal.h"
 #include "../common/Position.h"
 
 #include <memory>
@@ -10,40 +9,35 @@
 namespace compiler {
 namespace ast {
 
-template< typename SI >
-struct StoredInfo {
-    SI &storedInfo() {
-        return _info;
-    }
-
-    const SI &storedInfo() const {
-        return _info;
-    }
-private:
-    SI _info;
-};
-
-template<>
-struct StoredInfo < void > {};
-
-template< typename Traversal >
-struct Statement : DynamicCast, StoredInfo< typename Traversal::StoredInfo > {
+struct Statement : DynamicCast {
 
     using Handle = std::unique_ptr< Statement >;
-    using EHandle = std::unique_ptr< Expression< Traversal > >;
+    using EHandle = std::unique_ptr< Expression >;
     using Ptr = Statement *;
-    using EPtr = Expression< Traversal > *;
+    using EPtr = Expression *;
     using ConstPtr = const Statement *;
-    using ConstEPtr = const Expression< Traversal > *;
-    using Information = typename Traversal::Information;
+    using ConstEPtr = const Expression *;
 
-    Statement( common::Position p = common::Position() ) :
+    Statement( Kind k, common::Position p = common::Position() ) :
+        _kind( k ),
         _position( std::move( p ) )
     {}
 
-    virtual ~Statement() = default;
+    Statement( const Statement &o ) :
+        _kind( o._kind ),
+        _position( o._position ),
+        _parentBreak( o._parentBreak ),
+        _parentContinue( o._parentContinue )
+    {}
 
-    virtual Information *traverse( Traversal & ) const = 0;
+    Statement( Statement &&o ) :
+        _kind( o._kind ),
+        _position( std::move( o._position ) ),
+        _parentBreak( o._parentBreak ),
+        _parentContinue( o._parentContinue )
+    {}
+
+    virtual ~Statement() = default;
 
     Ptr parentBreak() const {
         return _parentBreak;
@@ -61,6 +55,10 @@ struct Statement : DynamicCast, StoredInfo< typename Traversal::StoredInfo > {
             _parentContinue = p;
     }
 
+    Kind kind() const {
+        return _kind;
+    }
+
     common::Position &position() {
         return _position;
     }
@@ -69,6 +67,7 @@ struct Statement : DynamicCast, StoredInfo< typename Traversal::StoredInfo > {
         return _position;
     }
 private:
+    Kind _kind;
     Ptr _parentBreak = nullptr;
     Ptr _parentContinue = nullptr;
     common::Position _position;

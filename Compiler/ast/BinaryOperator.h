@@ -5,19 +5,14 @@
 namespace compiler {
 namespace ast {
 
-template< typename Traversal >
-struct BinaryOperator : Expression< Traversal > {
-    using Base = Expression< Traversal >;
+struct BinaryOperator : Expression {
+    using Base = Expression;
 
     BinaryOperator( common::Position p, common::Operator o, EPtr lhs, EPtr rhs ) :
-        Base( std::move( p ), o ),
+        Base( Kind::BinaryOperator, std::move( p ), o ),
         _left( lhs ),
         _right( rhs )
     {}
-
-    Information *traverse( Traversal &t ) const override {
-        return t.eval( this );
-    }
 
     EPtr left() const {
         return _left.get();

@@ -5,20 +5,15 @@
 namespace compiler {
 namespace ast {
 
-template< typename Traversal >
-struct TernaryOperator : Expression< Traversal > {
-    using Base = Expression< Traversal >;
+struct TernaryOperator : Expression {
+    using Base = Expression;
 
-    TernaryOperator( common::Position p, common::Operator o, EPtr lhs, EPtr mdl, EPtr rhs ) :
-        Base( std::move( p ), o ),
+    TernaryOperator( common::Position p, EPtr lhs, EPtr mdl, EPtr rhs ) :
+        Base( Kind::TernaryOperator, std::move( p ), common::Operator::TernaryOperator ),
         _left( lhs ),
         _middle( mdl ),
         _right( rhs )
     {}
-
-    Information *traverse( Traversal &t ) const override {
-        return t.eval( this );
-    }
 
     EPtr left() const {
         return _left.get();

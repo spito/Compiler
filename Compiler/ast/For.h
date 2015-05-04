@@ -5,13 +5,12 @@
 namespace compiler {
 namespace ast {
 
-template< typename Traversal >
-struct For : Statement< Traversal > {
+struct For : Statement {
 
-    using Base = Statement< Traversal >;
+    using Base = Statement;
 
     For( common::Position p, EPtr initialization, EPtr condition, EPtr increment, Ptr body ) :
-        Base( p ),
+        Base( Kind::For, std::move( p ) ),
         _initialization( initialization ),
         _condition( condition ),
         _increment( increment ),
@@ -21,10 +20,6 @@ struct For : Statement< Traversal > {
         parentContinue( this );
         _body->parentBreak( this );
         _body->parentContinue( this );
-    }
-
-    Information *traverse( Traversal &t ) const override {
-        return t.eval( this );
     }
 
     EPtr initialization() const {

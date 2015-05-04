@@ -5,17 +5,13 @@
 namespace compiler {
 namespace ast {
 
-template< typename Traversal >
-struct Continue : Statement< Traversal > {
-    using Base = Statement< Traversal >;
+struct Continue : Statement {
+    using Base = Statement;
 
     Continue( common::Position p ) :
-        Base( std::move( p ) )
+        Base( Kind::Continue, std::move( p ) )
     {}
 
-    Information *traverse( Traversal &t ) const override {
-        return t.eval( this );
-    }
 };
 
 } // namespace ast

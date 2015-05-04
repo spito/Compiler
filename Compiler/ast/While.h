@@ -5,13 +5,12 @@
 namespace compiler {
 namespace ast {
 
-template< typename Traversal >
-struct While : Statement< Traversal > {
+struct While : Statement {
 
-    using Base = Statement< Traversal >;
+    using Base = Statement;
 
     While( common::Position p, EPtr condition, Ptr body ) :
-        Base( p ),
+        Base( Kind::While, std::move( p ) ),
         _condition( condition ),
         _body( body )
     {
@@ -19,10 +18,6 @@ struct While : Statement< Traversal > {
         parentContinue( this );
         _body->parentBreak( this );
         _body->parentContinue( this );
-    }
-
-    Information *traverse( Traversal &t ) const override {
-        return t.eval( this );
     }
 
     EPtr condition() const {

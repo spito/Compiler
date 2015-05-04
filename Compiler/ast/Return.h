@@ -5,18 +5,13 @@
 namespace compiler {
 namespace ast {
 
-template< typename Traversal >
-struct Return : Statement< Traversal > {
-    using Base = Statement< Traversal >;
+struct Return : Statement {
+    using Base = Statement;
 
     Return( common::Position p, EPtr e ) :
-        Base( std::move( p ) ),
+        Base( Kind::Return, std::move( p ) ),
         _expression( e )
     {}
-
-    Information *traverse( Traversal &t ) const override {
-        return t.eval( this );
-    }
 
     EPtr expression() const {
         return _expression.get();

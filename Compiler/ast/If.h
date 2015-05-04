@@ -5,21 +5,16 @@
 namespace compiler {
 namespace ast {
 
-template< typename Traversal >
-struct If : Statement< Traversal > {
+struct If : Statement {
 
-    using Base = Statement< Traversal >;
+    using Base = Statement;
 
     If ( common::Position p, EPtr condition, Ptr ifPath, Ptr elsePath ) :
-        Base( p ),
+        Base( Kind::If, std::move( p ) ),
         _condition( condition ),
         _ifPath( ifPath ),
         _elsePath( elsePath )
     {}
-
-    Information *traverse( Traversal &t ) const override {
-        return t.eval( this );
-    }
 
     EPtr condition() const {
         return _condition.get();
