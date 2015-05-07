@@ -7,18 +7,18 @@ namespace preprocessor {
 
 struct Output {
 
-    Output( common::TokenStore &store ) :
+    Output( const common::TokenStore &store ) :
         _store( store )
     {}
 
-    void save( const char * );
-    void save( const std::string &name ) {
+    void save( const char * ) const;
+    void save( const std::string &name ) const {
         save( name.c_str() );
     }
 
 
 private:
-    common::TokenStore &_store;
+    const common::TokenStore &_store;
 
 };
 

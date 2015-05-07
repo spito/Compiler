@@ -34,13 +34,15 @@ static bool splitBySpace( common::Token::Type type ) {
         type == common::Token::Type::Char;
 }
 
-void Output::save( const char *name ) {
+void Output::save( const char *name ) const {
     std::ofstream file( name );
 
     bool word = false;
     std::stack< Frame > stack;
 
     for ( const auto &token : _store ) {
+        if ( token.type() == common::Token::Type::Eof )
+            break;
 
         if ( token.type() == common::Token::Type::FileBegin ) {
             stack.push( Frame( 1, token.position().file() ) );
