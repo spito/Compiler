@@ -202,8 +202,29 @@ void ExpressionEvaluator::eval( const ast::BinaryOperator *e ) {
     default:
         throw exception::InternalError( "invalid operator" );
     }
-
 }
+
+void ExpressionEvaluator::eval( const ast::TernaryOperator *e ) {
+
+    if ( _typeOnly ) {
+        eval( e->middle() );
+        return;
+    }
+
+    eval( e->left() );
+    if ( !valid() )
+        return;
+
+    if ( !_value.zero() )
+        eval( e->middle() );
+    else
+        eval( e->right() );
+}
+
+void ExpressionEvaluator::eval( const ast::Call *e ) {
+    _type = &_parser.tree().findFunction( e->name() ).returnType();
+}
+
 
 } // namespace parser
 } // namespace compiler
