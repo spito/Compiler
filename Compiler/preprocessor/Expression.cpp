@@ -53,15 +53,15 @@ static int precedenceRank( Operator op ) {
     }
 }
 
-enum class Precedence : bool {
+enum class Asociativity : bool {
     LeftToRight,
     RightToLeft
 };
 
-static Precedence asociativity( Operator op ) {
+static Asociativity asociativity( Operator op ) {
     switch ( op ) {
     case Operator::LogicalNot:
-        return Precedence::RightToLeft;
+        return Asociativity::RightToLeft;
     case Operator::Multiplication:
     case Operator::Division:
     case Operator::Modulo:
@@ -80,7 +80,7 @@ static Precedence asociativity( Operator op ) {
     case Operator::BitwiseOr:
     case Operator::LogicalAnd:
     case Operator::LogicalOr:
-        return Precedence::LeftToRight;
+        return Asociativity::LeftToRight;
     default:
         throw exception::InternalError( "unprecedencable operator" );
     }
@@ -145,20 +145,20 @@ static Value eval( Operator op, Value value, Value lhs, Value rhs ) {
     }
 }
 
-static bool isCloser( Operator owner, Operator foreign ) {
+inline bool isCloser( Operator owner, Operator foreign ) {
 
     if ( precedenceRank( owner ) == precedenceRank( foreign ) )
-        return asociativity( owner ) == Precedence::RightToLeft;
+        return asociativity( owner ) == Asociativity::RightToLeft;
     return precedenceRank( owner ) > precedenceRank( foreign );
 }
-static bool isFarther( Operator owner, Operator foreign ) {
+inline bool isFarther( Operator owner, Operator foreign ) {
 
     if ( precedenceRank( owner ) == precedenceRank( foreign ) )
-        return asociativity( owner ) == Precedence::LeftToRight;
+        return asociativity( owner ) == Asociativity::LeftToRight;
     return precedenceRank( owner ) < precedenceRank( foreign );
 }
 
-static bool isUnary( Operator op ) {
+inline bool isUnary( Operator op ) {
     switch ( op ) {
     case Operator::LogicalNot:
         return true;
@@ -166,7 +166,7 @@ static bool isUnary( Operator op ) {
         return false;
     }
 }
-static bool isPrefix( Operator op ) {
+inline bool isPrefix( Operator op ) {
     switch ( op ) {
     case Operator::LogicalNot:
         return true;
@@ -174,10 +174,10 @@ static bool isPrefix( Operator op ) {
         return false;
     }
 }
-static bool isPostfix( Operator op ) {
+inline bool isPostfix( Operator op ) {
     return false;
 }
-static bool isBinary( Operator op ) {
+inline bool isBinary( Operator op ) {
     switch ( op ) {
     case Operator::Multiplication:
     case Operator::Division:
