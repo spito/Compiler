@@ -15,6 +15,7 @@ Preprocessor::Preprocessor( const std::string &name ) {
 
     setPredefined();
     Worker w( name, _global );
+    _global.store.push( common::Token() );
 }
 
 static std::vector< Token > substituteFile( const Token &token, const std::vector< std::vector< Token > > * ) {
