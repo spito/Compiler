@@ -11,8 +11,8 @@ namespace common {
 
 struct TokenStore {
 
-    using Iterator = SmartIterator < std::vector< Token >::iterator > ;
-    using ConstIterator = SmartIterator < std::vector< Token >::const_iterator > ;
+    using Iterator = SmartIterator< std::vector< Token >::iterator > ;
+    using ConstIterator = SmartIterator < std::vector< Token >::const_iterator >;
 
     TokenStore()
     {}
@@ -34,9 +34,10 @@ struct TokenStore {
         else {
 
             if ( token.type() == Token::Type::Word && _keywords.count( token.value() ) )
-                token = Token( std::move( token.value() ), Token::Type::Keyword, std::move( token.position() ) ), 
+                token = Token( std::move( token.value() ), Token::Type::Keyword, std::move( token.position() ) );
 
             _tokens.push_back( std::move( token ) );
+        }
     }
     void push( std::vector< Token > &tokens ) {
         for ( auto &token : tokens ) {

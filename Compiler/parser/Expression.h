@@ -2,6 +2,7 @@
 
 #include "Parser.h"
 #include "ExpressionEvaluator.h"
+#include "SmartIterator.h"
 #include "../ast/Expression.h"
 #include "../common/TokenStore.h"
 
@@ -11,7 +12,6 @@ namespace parser {
 struct Expression {
 
     using Operator = common::Operator;
-    using SmartIterator = common::TokenStore::Iterator;
 
     Expression( Parser &p, SmartIterator &it ) :
         _it( it ),

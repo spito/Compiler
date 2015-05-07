@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Parser.h"
+#include "SmartIterator.h"
 
 namespace compiler {
 namespace parser {
@@ -15,8 +16,6 @@ struct Declaration {
         VariadicPack,
         Void
     };
-
-    using SmartIterator = common::TokenStore::Iterator;
 
     Declaration( Parser &p, SmartIterator &it ) :
         _it( it ),

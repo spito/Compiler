@@ -4,7 +4,8 @@ namespace compiler {
 namespace parser {
 
 void Parser::obtain() {
-    _ast.global().add( Expression( *this, _store.begin() ) );
+    SmartIterator it( _store.begin() );
+    _ast.global().add( Expression( *this, it ) );
 }
 
 std::unordered_set< std::string > Parser::_typeKeywords = {

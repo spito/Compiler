@@ -70,7 +70,7 @@ struct SmartIterator : Comparable, Orderable {
         return _begin < other._begin;
     }
         
-private:
+protected:
     Iterator _begin;
     Iterator _end;
 };

@@ -10,7 +10,6 @@ namespace parser {
 
 using Type = common::Token::Type;
 using Operator = common::Operator;
-using SmartIterator = common::TokenStore::Iterator;
 
 enum class Asociativity : bool {
     LeftToRight,
