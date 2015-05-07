@@ -46,8 +46,15 @@ void Preprocessor::setPredefined() {
     _global.symbols.assign( Symbol::makeSpecial( "defined", std::bind( substituteDefined, std::ref( _global.symbols ), _1, _2 ), 1, true ) );
 
     _global.symbols.assign( Symbol::makeSpecial( "__FILE__", substituteFile ) );
-
     _global.symbols.assign( Symbol::makeSpecial( "__LINE__", substituteLine ) );
+
+#ifdef _WIN32
+    _global.symbols.assign( Symbol( "_WIN32" ) );
+#endif
+#ifdef __unix
+    _global.symbols.assign( Symbol( "__unix" ) );
+#endif
+
 }
 
 } // namespace preprocessor
