@@ -17,6 +17,8 @@ $RECYCLE.BIN/
 # MSVC binary folders
 Debug/
 Release/
+Interpret only/
+Preprocessor only/
 
 *.vcxproj.user
 *.suo
