@@ -12,15 +12,11 @@ namespace ast {
 struct Call : Expression {
     using Base = Expression;
 
-    Call( common::Position p, std::string name, std::vector< EPtr > params ) :
+    Call( common::Position p, std::string name, std::vector< EHandle > &&params ) :
         Base( Kind::Call, std::move( p ), common::Operator::FunctionCall ),
         _name( std::move( name ) ),
-        _params( params.size() )
-    {
-        std::transform( params.begin(), params.end(), _params.begin(), []( EPtr p ) {
-            return EHandle( p );
-        } );
-    }
+        _params( std::move( params ) )
+    {}
 
     const std::string &name() const {
         return _name;
