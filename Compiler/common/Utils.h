@@ -1,6 +1,8 @@
 #pragma once
 
 #include <utility>
+#include <string>
+#include <vector>
 
 namespace compiler {
 namespace common {
@@ -80,6 +82,23 @@ auto revert( T &&container )
 {
     using Iterator = decltype( container.rbegin() );
     return Adaptor< Iterator >( container.rbegin(), container.rend() );
+}
+
+inline std::string join( const std::vector< std::string > &v, const std::string &glue ) {
+    size_t size = v.size() ? ( v.size() - 1 ) * glue.size() : 0;
+    for ( const auto &s : v )
+        size += s.size();
+    std::string result;
+    result.reserve( size );
+
+    int i = 0;
+    for ( const auto &s : v ) {
+        if ( i )
+            result += glue;
+        result += s;
+        ++i;
+    }
+    return result;
 }
 
 } // namespace common
