@@ -127,25 +127,29 @@ void Worker::processDefine() {
         throw exception::DuplicateSymbol( symbol, token.position() );
 
     token = _tokenizer.readToken();
-
+    bool function = false;
     // parse formal parameters
     if ( token.isOperator( Operator::BracketOpen ) ) {
+        function = true;
         while ( true ) {
 
             token = _tokenizer.readToken();
 
             if ( token.type() != Type::Word )
-                throw exception::InvalidToken( token );
+                break;
+                //throw exception::InvalidToken( token );
             params.push_back( token );
 
             token = _tokenizer.readToken();
 
             if ( token.isOperator( Operator::Comma ) )
                 continue;
-            if ( token.isOperator( Operator::BracketClose ) )
+            else
                 break;
-            throw exception::InvalidToken( token );
         }
+        if ( !token.isOperator( Operator::BracketClose ) )
+            throw exception::InvalidToken( token );
+
         token = _tokenizer.readToken();
     }
 
@@ -161,7 +165,7 @@ void Worker::processDefine() {
 
     if ( value.size() == 1 && value.back().type() == Type::Integer )
         symbol = Symbol( name, value.back() );
-    else if ( !params.empty() )
+    else if ( function )
         symbol = Symbol( name, params, value );
     else if ( !value.empty() )
         symbol = Symbol( name, value );
