@@ -17,6 +17,7 @@ struct Token : Comparable {
         Operator,
         Integer,
         Real,
+        Keyword,
         Word,
         String,
         Char,
