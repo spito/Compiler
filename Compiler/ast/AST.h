@@ -47,6 +47,7 @@ struct AST {
         _typeStorage.addType< type::Elementary >( "unsigned short", 2, false );
         _typeStorage.addType< type::Elementary >( "unsigned short int", 2, false );
         _typeStorage.addType< type::Elementary >( "int", 4, true );
+        _typeStorage.addType< type::Elementary >( "signed", 4, true );
         _typeStorage.addType< type::Elementary >( "signed int", 4, true );
         _typeStorage.addType< type::Elementary >( "unsigned int", 4, false );
         _typeStorage.addType< type::Elementary >( "unsigned", 4, false );
@@ -56,6 +57,27 @@ struct AST {
         _typeStorage.addType< type::Elementary >( "signed long int", 8, true );
         _typeStorage.addType< type::Elementary >( "unsigned long", 8, false );
         _typeStorage.addType< type::Elementary >( "unsigned long int", 8, false );
+        _typeStorage.addType< type::Elementary >( "const void", 0, true, true );
+        _typeStorage.addType< type::Elementary >( "const char", 1, true, true );
+        _typeStorage.addType< type::Elementary >( "const signed char", 1, true, true );
+        _typeStorage.addType< type::Elementary >( "const unsigned char", 1, false, true );
+        _typeStorage.addType< type::Elementary >( "const short", 2, true, true );
+        _typeStorage.addType< type::Elementary >( "const short int", 2, true, true );
+        _typeStorage.addType< type::Elementary >( "const signed short", 2, true, true );
+        _typeStorage.addType< type::Elementary >( "const signed short int", 2, true, true );
+        _typeStorage.addType< type::Elementary >( "const unsigned short", 2, false, true );
+        _typeStorage.addType< type::Elementary >( "const unsigned short int", 2, false, true );
+        _typeStorage.addType< type::Elementary >( "const int", 4, true, true );
+        _typeStorage.addType< type::Elementary >( "const signed", 4, true, true );
+        _typeStorage.addType< type::Elementary >( "const signed int", 4, true, true );
+        _typeStorage.addType< type::Elementary >( "const unsigned int", 4, false, true );
+        _typeStorage.addType< type::Elementary >( "const unsigned", 4, false, true );
+        _typeStorage.addType< type::Elementary >( "const long", 8, true, true );
+        _typeStorage.addType< type::Elementary >( "const long int", 8, true, true );
+        _typeStorage.addType< type::Elementary >( "const signed long", 8, true, true );
+        _typeStorage.addType< type::Elementary >( "const signed long int", 8, true, true );
+        _typeStorage.addType< type::Elementary >( "const unsigned long", 8, false, true );
+        _typeStorage.addType< type::Elementary >( "const unsigned long int", 8, false, true );
     }
 
     AST( const AST & ) = delete;
