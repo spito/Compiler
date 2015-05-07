@@ -46,6 +46,18 @@
     <Filter Include="Source Files\interpret">
       <UniqueIdentifier>{5324baba-ac03-4b46-afb6-544f26e072c5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\tool">
+      <UniqueIdentifier>{84ec8c43-e333-42c2-b2a7-1c8bc1b0c293}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\tool">
+      <UniqueIdentifier>{4347b0ab-2178-4fae-a504-0e8648ca42e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\parser">
+      <UniqueIdentifier>{04881502-3139-45a6-b9a6-bc796206ab06}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\parser">
+      <UniqueIdentifier>{f5c02480-d3fb-4c5d-8109-b1b8f413c9a0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common\Position.h">
@@ -235,13 +247,37 @@
     <ClInclude Include="interpret\Variable.h">
       <Filter>Header Files\interpret</Filter>
     </ClInclude>
-    <ClInclude Include="interpret\Register.h">
-      <Filter>Header Files\interpret</Filter>
-    </ClInclude>
     <ClInclude Include="interpret\Frame.h">
       <Filter>Header Files\interpret</Filter>
     </ClInclude>
     <ClInclude Include="common\AutoCheckPointer.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="tool\ArgumentParser.h">
+      <Filter>Header Files\tool</Filter>
+    </ClInclude>
+    <ClInclude Include="tool\Meta.h">
+      <Filter>Header Files\tool</Filter>
+    </ClInclude>
+    <ClInclude Include="tool\Main.h">
+      <Filter>Header Files\tool</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\Parser.h">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\Expression.h">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\StringPlaceholder.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\Declaration.h">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\ExpressionEvaluator.h">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="common\Register.h">
       <Filter>Header Files\common</Filter>
     </ClInclude>
   </ItemGroup>
@@ -297,11 +333,32 @@
     <ClCompile Include="interpret\InterpretEvalBinary.cpp">
       <Filter>Source Files\interpret</Filter>
     </ClCompile>
-    <ClCompile Include="interpret\Register.cpp">
-      <Filter>Source Files\interpret</Filter>
-    </ClCompile>
     <ClCompile Include="main-interpret.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tool\ArgumentParser.cpp">
+      <Filter>Source Files\tool</Filter>
+    </ClCompile>
+    <ClCompile Include="tool\Main.cpp">
+      <Filter>Source Files\tool</Filter>
+    </ClCompile>
+    <ClCompile Include="parser\Parser.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="parser\Expression.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="parser\Declaration.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="parser\ExpressionEvaluator.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="common\Register.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="common\TokenStore.cpp">
+      <Filter>Source Files\common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

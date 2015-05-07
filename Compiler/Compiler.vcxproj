@@ -5,6 +5,14 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Interpret only|Win32">
+      <Configuration>Interpret only</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Preprocessor only|Win32">
+      <Configuration>Preprocessor only</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
@@ -16,6 +24,18 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Interpret only|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
@@ -34,11 +54,28 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Interpret only|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">
+    <IntDir>$(SolutionDir)$(Configuration)\obj\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IntDir>$(SolutionDir)$(Configuration)\obj\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IntDir>$(SolutionDir)$(Configuration)\obj\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Interpret only|Win32'">
+    <IntDir>$(SolutionDir)$(Configuration)\obj\</IntDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -47,6 +84,43 @@
       <PreprocessorDefinitions>_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <MinimalRebuild>true</MinimalRebuild>
+      <AssemblerListingLocation>$(IntDir)/%(RelativeDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
+      <XMLDocumentationFileName>$(IntDir)/%(RelativeDir)</XMLDocumentationFileName>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Interpret only|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <MinimalRebuild>true</MinimalRebuild>
+      <AssemblerListingLocation>$(IntDir)/%(RelativeDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
+      <XMLDocumentationFileName>$(IntDir)/%(RelativeDir)</XMLDocumentationFileName>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <MinimalRebuild>true</MinimalRebuild>
+      <AssemblerListingLocation>$(IntDir)/%(RelativeDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
+      <XMLDocumentationFileName>$(IntDir)/%(RelativeDir)</XMLDocumentationFileName>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -60,6 +134,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <AssemblerListingLocation>$(IntDir)/%(RelativeDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
+      <XMLDocumentationFileName>$(IntDir)/%(RelativeDir)</XMLDocumentationFileName>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -84,6 +161,7 @@
     <ClInclude Include="ast\Return.h" />
     <ClInclude Include="ast\Statement.h" />
     <ClInclude Include="ast\If.h" />
+    <ClInclude Include="ast\StringPlaceholder.h" />
     <ClInclude Include="ast\TernaryOperator.h" />
     <ClInclude Include="ast\Traversal.h" />
     <ClInclude Include="ast\Type.h" />
@@ -93,6 +171,7 @@
     <ClInclude Include="ast\While.h" />
     <ClInclude Include="common\AutoCheckPointer.h" />
     <ClInclude Include="common\CharClass.h" />
+    <ClInclude Include="common\Register.h" />
     <ClInclude Include="common\Operator.h" />
     <ClInclude Include="common\Position.h" />
     <ClInclude Include="common\SmartIterator.h" />
@@ -116,10 +195,13 @@
     <ClInclude Include="exception\UnsupportedFeature.h" />
     <ClInclude Include="includes\exceptions.h" />
     <ClInclude Include="interpret\Frame.h" />
-    <ClInclude Include="interpret\Register.h" />
     <ClInclude Include="interpret\Variable.h" />
     <ClInclude Include="interpret\Information.h" />
     <ClInclude Include="interpret\Interpret.h" />
+    <ClInclude Include="parser\Expression.h" />
+    <ClInclude Include="parser\ExpressionEvaluator.h" />
+    <ClInclude Include="parser\Parser.h" />
+    <ClInclude Include="parser\Declaration.h" />
     <ClInclude Include="preprocessor\Expression.h" />
     <ClInclude Include="preprocessor\Global.h" />
     <ClInclude Include="preprocessor\InputBuffer.h" />
@@ -133,20 +215,48 @@
     <ClInclude Include="preprocessor\Symbol.h" />
     <ClInclude Include="preprocessor\Tokenizer.h" />
     <ClInclude Include="preprocessor\Worker.h" />
+    <ClInclude Include="tool\ArgumentParser.h" />
+    <ClInclude Include="tool\Main.h" />
+    <ClInclude Include="tool\Meta.h" />
     <ClInclude Include="what.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\CharClass.cpp" />
+    <ClCompile Include="common\Register.cpp" />
+    <ClCompile Include="common\TokenStore.cpp" />
     <ClCompile Include="common\Unicode.cpp" />
     <ClCompile Include="context\Context.cpp" />
     <ClCompile Include="exception\InvalidCharacterConstant.cpp" />
-    <ClCompile Include="interpret\Interpret.cpp" />
-    <ClCompile Include="interpret\InterpretEvalBinary.cpp" />
-    <ClCompile Include="interpret\InterpretEvalUnary.cpp" />
-    <ClCompile Include="interpret\Register.cpp" />
-    <ClCompile Include="main-interpret.cpp" />
+    <ClCompile Include="interpret\Interpret.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="interpret\InterpretEvalBinary.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="interpret\InterpretEvalUnary.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="main-interpret.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Interpret only|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="main-preprocessor.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Interpret only|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="parser\Declaration.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="parser\Expression.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="parser\ExpressionEvaluator.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="parser\Parser.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="preprocessor\Expression.cpp" />
     <ClCompile Include="preprocessor\NumberParser.cpp" />
@@ -157,6 +267,11 @@
     <ClCompile Include="preprocessor\Replacer.cpp" />
     <ClCompile Include="preprocessor\Tokenizer.cpp" />
     <ClCompile Include="preprocessor\Worker.cpp" />
+    <ClCompile Include="tool\ArgumentParser.cpp" />
+    <ClCompile Include="tool\Main.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Interpret only|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Text.txt" />
