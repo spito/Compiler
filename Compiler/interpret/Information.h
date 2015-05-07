@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Variable.h"
-#include "Register.h"
+#include "../common/Register.h"
 
 namespace compiler {
 namespace interpret {
@@ -14,7 +14,7 @@ struct Information {
         InfoOnly
     };
 
-    Information( Register r ) :
+    Information( common::Register r ) :
         _state( State::Constant ),
         _value( r )
     {}
@@ -40,7 +40,7 @@ struct Information {
         return _state == State::InfoOnly;
     }
 
-    Register value() const {
+    common::Register value() const {
         return _value;
     }
 
@@ -85,12 +85,12 @@ struct Information {
         return nullptr;
     }
 
-    void remember( Register r ) {
+    void remember( common::Register r ) {
         _state = State::Constant;
         _value = r;
     }
 
-    Register load() const {
+    common::Register load() const {
         if ( rValue() )
             return _value;
 
@@ -99,7 +99,7 @@ struct Information {
             bool sign = tOf.kind() == ast::type::Kind::Elementary ?
                 tOf.as< ast::type::Elementary >()->isSigned() :
                 false;
-            return Register( variable().as< void * >(), tOf.size(), sign );
+            return common::Register( variable().as< void * >(), tOf.size(), sign );
         }
 
         if ( type()->kind() == ast::type::Kind::Array ) {
@@ -107,7 +107,7 @@ struct Information {
             bool sign = tOf.kind() == ast::type::Kind::Elementary ?
                 tOf.as< ast::type::Elementary >()->isSigned() :
                 false;
-            return Register( variable().address(), tOf.size(), sign );
+            return common::Register( variable().address(), tOf.size(), sign );
         }
 
         const ast::type::Elementary *t = type()->as< ast::type::Elementary >();
@@ -115,26 +115,26 @@ struct Information {
         switch ( t->length() ) {
         case 1:
             if ( t->isSigned() )
-                return Register( variable().as< int8_t >() );
-            return Register( variable().as< uint8_t >() );
+                return common::Register( variable().as< int8_t >() );
+            return common::Register( variable().as< uint8_t >() );
         case 2:
             if ( t->isSigned() )
-                return Register( variable().as< int16_t >() );
-            return Register( variable().as< uint16_t >() );
+                return common::Register( variable().as< int16_t >() );
+            return common::Register( variable().as< uint16_t >() );
         case 4:
             if ( t->isSigned() )
-                return Register( variable().as< int32_t >() );
-            return Register( variable().as< uint32_t >() );
+                return common::Register( variable().as< int32_t >() );
+            return common::Register( variable().as< uint32_t >() );
         case 8:
             if ( t->isSigned() )
-                return Register( variable().as< int64_t >() );
-            return Register( variable().as< uint64_t >() );
+                return common::Register( variable().as< int64_t >() );
+            return common::Register( variable().as< uint64_t >() );
         default:
             throw std::runtime_error( "invalid type length" );
         }
     }
 
-    void store( Register r ) {
+    void store( common::Register r ) {
         if ( !lValue() )
             throw exception::InternalError( "not l-value" );
 
@@ -182,7 +182,7 @@ private:
     bool _continue = false;
     bool _return = false;
     Variable _variable;
-    Register _value;
+    common::Register _value;
 };
 
 } // namespace interpret

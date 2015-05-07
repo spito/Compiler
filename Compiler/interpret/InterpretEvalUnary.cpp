@@ -6,8 +6,8 @@ namespace interpret {
 void Interpret::eval( const ast::UnaryOperator *e ) {
     eval( e->expression() );
 
-    Register r1 = _info->load();
-    Register r2;
+    common::Register r1 = _info->load();
+    common::Register r2;
     bool sign = false;
 
     switch ( e->op() ) {
@@ -20,7 +20,7 @@ void Interpret::eval( const ast::UnaryOperator *e ) {
 
         if ( _info->type()->kind() == ast::type::Kind::Elementary )
             sign = _info->type()->as< ast::type::Elementary >()->isSigned();
-        _info->remember( Register( _info->variable().address(), _info->type()->size(), sign ) );
+        _info->remember( common::Register( _info->variable().address(), _info->type()->size(), sign ) );
 
         break;
     case common::Operator::Dereference:
@@ -53,6 +53,7 @@ void Interpret::eval( const ast::UnaryOperator *e ) {
         _info->remember( -r1 );
         break;
     case common::Operator::UnaryPlus:
+        _info->remember( +r1 );
         break;
     default:
         throw exception::InternalError( "invalid operator" );

@@ -6,18 +6,18 @@ namespace interpret {
 void Interpret::eval( const ast::BinaryOperator *e ) {
     eval( e->left() );
 
-    Register l = _info->load();
+    common::Register l = _info->load();
 
     switch ( e->op() ) {
     case common::Operator::LogicalAnd:
         if ( l.zero() ) {
-            _info->remember( Register( 0 ) );
+            _info->remember( common::Register( 0 ) );
             return;
         }
         break;
     case common::Operator::LogicalOr:
         if ( !l.zero() ) {
-            _info->remember( Register( 1 ) );
+            _info->remember( common::Register( 1 ) );
             return;
         }
         break;
@@ -25,7 +25,7 @@ void Interpret::eval( const ast::BinaryOperator *e ) {
 
     auto left = _info.get();
     eval( e->right() );
-    Register r = _info->load();
+    common::Register r = _info->load();
 
     switch ( e->op() ) {
     case common::Operator::ArrayAccess:
@@ -81,7 +81,7 @@ void Interpret::eval( const ast::BinaryOperator *e ) {
         break;
     case common::Operator::LogicalAnd:
     case common::Operator::LogicalOr:
-        _info->remember( Register( int( !r.zero() ) ) );
+        _info->remember( common::Register( int( !r.zero() ) ) );
         break;
 
     case common::Operator::Assignment:

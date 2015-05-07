@@ -5,7 +5,7 @@
 namespace compiler {
 namespace interpret {
 
-std::map< std::string, void( Interpret::* )( std::vector< Register > ) > Interpret::_intrinsicFunctions = {
+std::map< std::string, void( Interpret::* )( std::vector< common::Register > ) > Interpret::_intrinsicFunctions = {
         { "printf", &Interpret::intrinsicPrintf },
         { "scanf", &Interpret::intrinsicScanf },
 };
@@ -114,7 +114,7 @@ void Interpret::eval( const ast::Variable *v ) {
 }
 
 void Interpret::eval( const ast::Constant *c ) {
-    _info = new Information( Register( c->value() ) );
+    _info = new Information( common::Register( c->value() ) );
     addRegister();
 }
 
@@ -130,7 +130,7 @@ void Interpret::eval( const ast::TernaryOperator *e ) {
 void Interpret::eval( const ast::Call *e ) {
     int width = 0;
 
-    std::vector< Register > values;
+    std::vector< common::Register > values;
 
     for ( const auto &exp : e->parametres() ) {
         eval( exp.get() );
@@ -311,25 +311,25 @@ void Interpret::eval( const ast::For *s ) {
 
 }
 
-void Interpret::intrinsicPrintf( std::vector< Register > values ) {
-    for ( Register r : values ) {
+void Interpret::intrinsicPrintf( std::vector< common::Register > values ) {
+    for ( common::Register r : values ) {
 
         switch ( r.type().kind() ) {
-        case Register::Type::Kind::Int8:   std::cout << r.get8() << std::endl; break;
-        case Register::Type::Kind::UInt8:  std::cout << r.getu8() << std::endl; break;
-        case Register::Type::Kind::Int16:  std::cout << r.get16() << std::endl; break;
-        case Register::Type::Kind::UInt16: std::cout << r.getu16() << std::endl; break;
-        case Register::Type::Kind::Int32:  std::cout << r.get32() << std::endl; break;
-        case Register::Type::Kind::UInt32: std::cout << r.getu32() << std::endl; break;
-        case Register::Type::Kind::Int64:  std::cout << r.get64() << std::endl; break;
-        case Register::Type::Kind::UInt64: std::cout << r.getu64() << std::endl; break;
+        case common::Register::Type::Kind::Int8:   std::cout << r.get8() << std::endl; break;
+        case common::Register::Type::Kind::UInt8:  std::cout << r.getu8() << std::endl; break;
+        case common::Register::Type::Kind::Int16:  std::cout << r.get16() << std::endl; break;
+        case common::Register::Type::Kind::UInt16: std::cout << r.getu16() << std::endl; break;
+        case common::Register::Type::Kind::Int32:  std::cout << r.get32() << std::endl; break;
+        case common::Register::Type::Kind::UInt32: std::cout << r.getu32() << std::endl; break;
+        case common::Register::Type::Kind::Int64:  std::cout << r.get64() << std::endl; break;
+        case common::Register::Type::Kind::UInt64: std::cout << r.getu64() << std::endl; break;
         }
 
     }
 }
 
-void Interpret::intrinsicScanf( std::vector< Register > values ) {
-    for ( Register r : values ) {
+void Interpret::intrinsicScanf( std::vector< common::Register > values ) {
+    for ( common::Register r : values ) {
 
         if ( !r.type().isPointer() )
             throw exception::InternalError( "Not-pointer passed to scanf" );
@@ -338,14 +338,14 @@ void Interpret::intrinsicScanf( std::vector< Register > values ) {
             throw exception::InternalError( "ptr out of range" );
 
         switch ( r.type().kindOfPointer() ) {
-        case Register::Type::Kind::Int8:   std::cin >> *static_cast< int8_t * >( r.getPtr() ); break;
-        case Register::Type::Kind::UInt8:  std::cin >> *static_cast< uint8_t * >( r.getPtr() ); break;
-        case Register::Type::Kind::Int16:  std::cin >> *static_cast< int16_t * >( r.getPtr() ); break;
-        case Register::Type::Kind::UInt16: std::cin >> *static_cast< uint16_t * >( r.getPtr() ); break;
-        case Register::Type::Kind::Int32:  std::cin >> *static_cast< int32_t * >( r.getPtr() ); break;
-        case Register::Type::Kind::UInt32: std::cin >> *static_cast< uint32_t * >( r.getPtr() ); break;
-        case Register::Type::Kind::Int64:  std::cin >> *static_cast< int64_t * >( r.getPtr() ); break;
-        case Register::Type::Kind::UInt64: std::cin >> *static_cast< uint64_t * >( r.getPtr() ); break;
+        case common::Register::Type::Kind::Int8:   std::cin >> *static_cast< int8_t * >( r.getPtr() ); break;
+        case common::Register::Type::Kind::UInt8:  std::cin >> *static_cast< uint8_t * >( r.getPtr() ); break;
+        case common::Register::Type::Kind::Int16:  std::cin >> *static_cast< int16_t * >( r.getPtr() ); break;
+        case common::Register::Type::Kind::UInt16: std::cin >> *static_cast< uint16_t * >( r.getPtr() ); break;
+        case common::Register::Type::Kind::Int32:  std::cin >> *static_cast< int32_t * >( r.getPtr() ); break;
+        case common::Register::Type::Kind::UInt32: std::cin >> *static_cast< uint32_t * >( r.getPtr() ); break;
+        case common::Register::Type::Kind::Int64:  std::cin >> *static_cast< int64_t * >( r.getPtr() ); break;
+        case common::Register::Type::Kind::UInt64: std::cin >> *static_cast< uint64_t * >( r.getPtr() ); break;
         }
     }
 }

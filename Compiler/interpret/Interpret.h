@@ -14,7 +14,7 @@ struct Interpret : ast::Traversal {
     ast::AST &_ast;
     bool _processingGlobal;
     common::AutoCheckPointer< Information > _info;
-    static std::map< std::string, void( Interpret::* )( std::vector< Register > ) > _intrinsicFunctions;
+    static std::map< std::string, void( Interpret::* )( std::vector< common::Register > ) > _intrinsicFunctions;
 
     Interpret( ast::AST &ast ) :
         _ast( ast )
@@ -27,8 +27,8 @@ struct Interpret : ast::Traversal {
     void addRegister();
     void addRegister( bool( FrameIterator ) );
 
-    void intrinsicPrintf( std::vector< Register > );
-    void intrinsicScanf( std::vector< Register > );
+    void intrinsicPrintf( std::vector< common::Register > );
+    void intrinsicScanf( std::vector< common::Register > );
 
     bool checkRange( void * );
 
