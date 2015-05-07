@@ -12,7 +12,8 @@ struct Declaration {
         TypeOnly,
         SingleVariable,
         Function,
-        VariadicPack
+        VariadicPack,
+        Void
     };
 
     using SmartIterator = common::TokenStore::Iterator;
@@ -49,6 +50,55 @@ struct Declaration {
     }
 
 private:
+
+    enum class States {
+        Start,
+        Typeword,
+        Star,
+        Array,
+        Word,
+        OpenParameters,
+        CloseParameters,
+        NestedDeclaration,
+        LastNestedDeclaration,
+        Comma,
+        Quit,
+        Error,
+    };
+
+    States stStart();
+    States stStar();
+    States stTypeword();
+    States stWord();
+    States stArray();
+    States stOpenParametres();
+    States stCloseParametres();
+    States stDeclaration();
+    States stDeclarationLast();
+    States stComma();
+    States stOpenBody();
+    States stSemicolon();
+    void stError();
+
+    States toTypeword();
+    States toStar();
+    States toArray();
+    States toWord();
+    States toOpenParametres();
+    States toCloseParametres();
+    States toDeclaration();
+    States toComma();
+    States toError();
+
+    States beTypeOnly();
+    States beNone();
+    States beVariable();
+    States beVariadicPack();
+    States beFunction( bool );
+    States beVoid();
+
+    States quit();
+
     SmartIterator &_it;
     SmartIterator _begin;
     Parser &_parser;
@@ -56,6 +106,16 @@ private:
     ast::Function *_function = nullptr;
     ast::Variable *_variable = nullptr;
     const ast::type::Type *_type = nullptr;
+
+    std::vector< std::string > _typeId;
+    std::string _name;
+    std::vector< const ast::type::Type * > _types;
+    std::vector< std::pair< std::string, const ast::type::Type * > > _parametres;
+    Type _declarationType = Type::None;
+    bool _quit = false;
+    bool _void = false;
+    bool _constness = false;
+
 };
 
 } // namespace parser

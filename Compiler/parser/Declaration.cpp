@@ -5,176 +5,300 @@
 namespace compiler {
 namespace parser {
 
-Declaration::Type Declaration::decide() {
-    using Operator = common::Operator;
+using Operator = common::Operator;
+using common::Token;
 
-    Type t = Type::None;
-    std::vector< std::string > typeId;
-    std::string name;
-    ExpressionEvaluator evaluator( _parser );
+auto Declaration::stStart() -> States {
+    if ( _it->isOperator( Operator::VariadicArgument ) )
+        return beVariadicPack();
+    if ( _parser.isTypeKeyword( _it->value() ) )
+        return toTypeword();
+    return beNone();
+}
 
-    bool constness = false;
-    bool incomplete = false;
-    bool expectingPointer = false;
-    bool array = false;
+auto Declaration::stTypeword() -> States {
+    if ( _it->type() == Token::Type::Keyword &&  _parser.isTypeKeyword( _it->value() ) )
+        return toTypeword();
 
-    if ( _it && _it->isOperator( Operator::VariadicArgument ) )
-        return Type::VariadicPack;
-
-    while ( _it ) {
-        if ( _it->type() != common::Token::Type::Word || !_parser.isTypeKeyword( _it->value() ) )
-             break;
-        typeId.push_back( _it->value() );
-
-        if ( _it->value() == "const" ) {
-            if ( typeId.size() != 1 )
-                throw exception::InvalidToken( *_it );
-            constness = true;
-        }
-
-        else if ( _it->value() == "void" ) {
-            incomplete = true;
-            if ( constness )
-                expectingPointer = true;
-        }
-
-        ++_it;
-    }
-
-    if ( constness && typeId.empty() )
-        throw exception::InvalidToken( *_it );
-
-    if ( typeId.empty() )
-        return t;
-
-    _type = _parser.tree().typeStorage().fetchType( common::join( typeId, " " ) );
+    _type = _parser.tree().typeStorage().fetchType( common::join( _typeId, " " ) );
     if ( !_type )
-        throw exception::InternalError( "invalid type" );
-    t = Type::TypeOnly;
+        return toError();
 
-    bool leave = false;
-    size_t range = 0;
-    while ( _it && !leave ) {
+    if ( _it->isOperator( Operator::Star ) )
+        return toStar();
 
-        switch ( _it->type() ) {
-        case common::Token::Type::Char:
-        case common::Token::Type::Integer:
-        case common::Token::Type::Real:
-        case common::Token::Type::String:
-            throw exception::InvalidToken( *_it );
-        case common::Token::Type::Operator:
-            switch ( _it->op() ) {
-            case Operator::BracketIndexOpen:// OpenIndex
-                ++_it;
-                if ( _it->type() == common::Token::Type::Integer )
-                    range = size_t( _it->integer() );
-                else if ( _it->type() == common::Token::Type::Char )
-                    range = _it->value().front();
-                else {
-                    evaluator.typeOnly( false );
-                    auto position = _it;
-                    evaluator.eval( Expression( _parser, _it ) );
-                    if ( !evaluator.valid() )
-                        throw exception::InvalidToken( *position );
-                    range = size_t( evaluator.value().getu64() );
-                }
-                _type = _parser.tree().typeStorage().addType< ast::type::Array >( _type, range );
-                if ( !_it->isOperator( Operator::BracketIndexClose ) )
-                    throw exception::InvalidToken( *_it );
-                array = true;
+    if ( _it->isOperator( Operator::BracketIndexOpen ) )
+        return toArray();
+    if ( _it->type() == Token::Type::Operator )
+        return beTypeOnly();
+    if ( _it->type() == Token::Type::Word )
+        return toWord();
+    return toError();
+}
+
+auto Declaration::stStar() -> States {
+    if ( _it->isOperator( Operator::Star ) )
+        return toStar();
+    if ( _it->isOperator( Operator::BracketIndexOpen ) )
+        return toArray();
+    if ( _it->type() == Token::Type::Word )
+        return toWord();
+    if ( _it->type() == Token::Type::Operator )
+        return beTypeOnly();
+    return toError();
+}
+
+auto Declaration::stArray() -> States {
+    if ( _it->isOperator( Operator::BracketIndexOpen ) )
+        return toArray();
+    if ( _it->type() == Token::Type::Operator )
+        return _variable ? beVariable() : beTypeOnly();
+    return toError();
+}
+
+auto Declaration::stWord() -> States {
+    if ( _it->isOperator( Operator::BracketIndexOpen ) )
+        return toArray();
+    if ( _it->isOperator( Operator::BracketOpen ) )
+        return toOpenParametres();
+    if ( _it->type() == Token::Type::Operator )
+        return beVariable();
+    return toError();
+}
+
+auto Declaration::stOpenParametres() -> States {
+    if ( _it->isOperator( Operator::BracketClose ) )
+        return toCloseParametres();
+    return toDeclaration();
+}
+
+auto Declaration::stCloseParametres() -> States {
+    if ( _it->isOperator( Operator::BraceOpen ) )
+        return beFunction( true );
+    if ( _it->isOperator( Operator::Semicolon ) )
+        return beFunction( false );
+    return toError();
+}
+
+auto Declaration::stDeclaration() -> States {
+    if ( _it->isOperator( Operator::BracketClose ) )
+        return toCloseParametres();
+    if ( _it->isOperator( Operator::Comma ) )
+        return toComma();
+    return toError();
+}
+auto Declaration::stDeclarationLast() -> States {
+    if ( _it->isOperator( Operator::BracketClose ) )
+        return toCloseParametres();
+    return toError();
+}
+
+auto Declaration::stComma() -> States {
+    return toDeclaration();
+}
+
+void Declaration::stError() {
+    throw exception::InvalidToken( *_it );
+}
+
+auto Declaration::toTypeword() -> States {
+    if ( _it->value() == "const" ) {
+        if ( !_typeId.empty() )
+            return toError();
+        _constness = true;
+    }
+    else if ( _it->value() == "void" )
+        _void = true;
+
+    _typeId.push_back( _it->value() );
+    return States::Typeword;
+}
+
+auto Declaration::toStar() -> States {
+    _type = _parser.tree().typeStorage().addType< ast::type::Pointer >( _type );
+    _void = false;
+    return States::Star;
+}
+
+auto Declaration::toArray() -> States {
+    if ( _void )
+        return toError();
+
+    ExpressionEvaluator evaluator( _parser );
+    size_t range;
+    ++_it;
+
+    if ( _it->type() == common::Token::Type::Integer )
+        range = size_t( _it->integer() );
+    else if ( _it->type() == common::Token::Type::Char )
+        range = _it->value().front();
+    else {
+        evaluator.typeOnly( false );
+        auto position = _it;
+        evaluator.eval( Expression( _parser, _it ) );
+        if ( !evaluator.valid() ) {
+            _it = position;
+            return toError();
+        }
+        range = size_t( evaluator.value().getu64() );
+    }
+    _type = _parser.tree().typeStorage().addType< ast::type::Array >( _type, range );
+    if ( !_it->isOperator( Operator::BracketIndexClose ) )
+        return toError();
+    return States::Array;
+}
+
+auto Declaration::toWord() -> States {
+    _name = _it->value();
+    return States::Word;
+}
+
+auto Declaration::toOpenParametres() -> States {
+    return States::OpenParameters;
+}
+
+auto Declaration::toCloseParametres() -> States {
+    return States::CloseParameters;
+}
+
+auto Declaration::toDeclaration() -> States {
+    Declaration descendant( _parser, _it );
+    ast::Variable *v;
+    bool insertion = true;
+    const ast::type::Type *type;
+
+    auto decision = descendant.decide();
+
+    switch ( decision ) {
+    case Type::SingleVariable:
+    case Type::TypeOnly:
+        if ( descendant.typeOnly()->kind() == ast::type::Kind::Array ) {
+            type = _parser.typeStorage().addType< ast::type::Pointer >(
+                &descendant.typeOnly()->as< ast::type::Array >()->of()
+                );
+        }
+        else
+            type = descendant.typeOnly();
+    }
+
+    switch ( decision ) {
+    case Type::SingleVariable:
+        v = descendant.variable();
+        for ( auto &p : _parametres ) {
+            if ( p.first == v->name() ) {
+                insertion = false;
                 break;
-            case Operator::Star: // pointer
-                if ( array )
-                    return t;
-                _type = _parser.tree().typeStorage().addType< ast::type::Pointer >( _type );
-                ++_it;
-                break;
-            case Operator::BracketOpen: // function
-                if ( t != Type::SingleVariable )
-                    throw exception::InvalidToken( *_it );
-                {
-                    std::vector< const ast::type::Type * > types;
-                    std::vector< std::string > names;
-
-                    t = Type::Function;
-                    incomplete = false;
-                    _function = new ast::Function( _type, std::move( name ) );
-
-                    ++_it;
-                    while ( _it ) {
-                        if ( _it->isOperator( Operator::BracketClose ) )
-                            break;
-                        Declaration d( _parser, _it );
-                        switch ( d.decide() ) {
-                        case Type::SingleVariable:
-                        {
-                            auto v = d.variable();
-                            names.push_back( v->name() );
-                            delete v;
-                        }
-                        case Type::TypeOnly:
-                            if ( d.typeOnly()->kind() == ast::type::Kind::Array )
-                                types.push_back( _parser.typeStorage().addType< ast::type::Pointer >(
-                                &d.typeOnly()->as< ast::type::Array >()->of()
-                                ) );
-                            else
-                                types.push_back( d.typeOnly() );
-                            break;
-                        case Type::VariadicPack:
-                            types.push_back( _parser.typeStorage().fetchType( "void" ) );
-                            break;
-                        default:
-                            throw exception::InvalidToken( *d.end() );
-                        }
-                        if ( !_it->isOperator( Operator::Comma ) )
-                            break;
-                    }
-                    if ( !_it->isOperator( Operator::BracketClose ) )
-                        throw exception::InvalidToken( *_it );
-                    ++_it;
-
-                    if ( _it->isOperator( Operator::Semicolon ) ) {
-                        ++_it;
-                        for ( auto p : types ) {
-                            _function->parameters().addPrototype( p );
-                        }
-                    }
-                    else if ( _it->isOperator( Operator::BraceOpen ) ) {
-                        _function->parameters().namePrototypes( types, names );
-                        // process statement
-                    }
-                    else
-                        throw exception::InvalidToken( *_it );
-                    return t;
-                }
-
-                return t;
-            default:
-                leave = true;
             }
-            break;
-        case common::Token::Type::Word:
-            if ( array )
-                return t;
-            if ( t == Type::SingleVariable ) {
-                leave = true;
-                break;
-            }
-            if ( _parser.isStatementKeyword( _it->value() ) )
-                throw exception::InvalidToken( *_it );
-            name = _it->value();
-            ++_it;
-            t = Type::SingleVariable;
-            break;
+        }
+        if ( insertion )
+            _parametres.emplace_back( v->name(), type );
+        delete v;
+        if ( !insertion )
+            throw exception::InternalError( "duplicit variable name" );
+    case Type::TypeOnly:
+        _types.push_back( type );
+        return States::NestedDeclaration;
+    case Type::Void:
+        if ( !_types.empty() )
+            return toError();
+    case Type::VariadicPack:
+        _types.push_back( descendant.typeOnly() );
+        return States::LastNestedDeclaration;
+    default:
+        return toError();
+    }
+}
+
+auto Declaration::toComma() -> States {
+    return States::Comma;
+}
+
+auto Declaration::toError() -> States {
+    return States::Error;
+}
+
+auto Declaration::beNone() -> States {
+    _declarationType = Type::None;
+    return quit();
+}
+
+auto Declaration::beTypeOnly() -> States {
+    if ( _void )
+        return beVoid();
+    _declarationType = Type::TypeOnly;
+    return quit();
+}
+
+auto Declaration::beVoid() -> States {
+    _type = _parser.typeStorage().fetchType( "void" );
+    _declarationType = Type::Void;
+    return quit();
+}
+
+auto Declaration::beVariadicPack() -> States {
+    _type = _parser.typeStorage().fetchType( "void" );
+    _declarationType = Type::VariadicPack;
+    return quit();
+}
+
+auto Declaration::beVariable() -> States {
+    if ( _void )
+        return toError();
+
+    _variable = new ast::Variable( _begin->position(), std::move( _name ) );
+    _declarationType = Type::SingleVariable;
+    return quit();
+}
+
+auto Declaration::beFunction( bool definition ) -> States {
+    _function = new ast::Function( _type, std::move( _name ), definition );
+    // FIXME: off-by-one here
+    ++_it;
+
+    if ( definition ) {
+        for ( auto &p : _parametres ) {
+            _function->parameters().add( std::move( p.first ), p.second );
+        }
+        // process statement
+
+        if ( _it->isOperator( Operator::BraceClose ) )
+            return toError();
+    }
+    else {
+        for ( auto p : _types ) {
+            _function->parameters().addPrototype( p );
+        }
+    }
+    return quit();
+}
+
+auto Declaration::quit() -> States {
+    _quit = true;
+    return States::Quit;
+}
+
+Declaration::Type Declaration::decide() {
+    States state = States::Start;
+
+    for ( ; _it && !_quit; ++_it ) {
+        switch ( state ) {
+        case States::Start: state = stStart(); break;
+        case States::Typeword: state = stTypeword(); break;
+        case States::Star: state = stStar(); break;
+        case States::Array: state = stArray(); break;
+        case States::Word: state = stWord(); break;
+        case States::OpenParameters: state = stOpenParametres(); break;
+        case States::CloseParameters: state = stCloseParametres(); break;
+        case States::NestedDeclaration: state = stDeclaration(); break;
+        case States::LastNestedDeclaration: state = stDeclarationLast(); break;
+        case States::Comma: state = stComma(); break;
+        case States::Quit: break;
+        default:
+        case States::Error: stError(); break;
         }
     }
 
-    if ( incomplete )
-        throw exception::InvalidToken( *begin() );
-
-    if ( t == Type::SingleVariable )
-        _variable = new ast::Variable( begin()->position(), name );
-    return t;
+    return _declarationType;
 }
 
 } // namespace parser
