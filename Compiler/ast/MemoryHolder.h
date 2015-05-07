@@ -33,25 +33,50 @@ struct MemoryHolder {
     };
 
     MemoryHolder() :
-        _memoryLength( 0 )
+        _memoryLength( 0 ),
+        _variadic( false )
     {}
 
     MemoryHolder( const MemoryHolder & ) = default;
 
     MemoryHolder( MemoryHolder &&other ) :
         _memoryLength( other._memoryLength ),
-        _variables( std::move( other._variables ) )
+        _variables( std::move( other._variables ) ),
+        _prototypes( std::move( other._prototypes ) ),
+        _variadic( other._variadic )
     {}
 
-    void add( std::string name, const type::Type *type ) {
-        if ( _variables.count( name ) )
-            throw std::runtime_error( "duplicit symbol" );
+    bool add( std::string name, const type::Type *type ) {
+        if ( hasVariable( name ) )
+            return false;
         _variables.emplace( std::move( name ), Variable( _memoryLength, type ) );
         _memoryLength += type->size();
+        return true;
+    }
+
+    void addPrototype( const type::Type *type ) {
+        _prototypes.push_back( type );
+    }
+
+    bool namePrototypes( std::vector< const type::Type * > types, std::vector< std::string > names ) {
+        if ( _prototypes != types )
+            return false;
+
+        for ( size_t i = 0; i < names.size(); ++i )
+            add( std::move( names[ i ] ), types[ i ] );
+        if ( names.size() + 1 == types.size() )
+            _variadic = true;
+
+        _prototypes.clear();
+        return true;
     }
 
     int memoryLength() const {
         return _memoryLength;
+    }
+
+    bool variadic() const {
+        return _variadic;
     }
 
     template< typename Yield >
@@ -60,13 +85,26 @@ struct MemoryHolder {
             yield( i.first, i.second );
     }
 
+    bool hasVariable( const std::string &name ) {
+        return _variables.count( name ) == 1;
+    }
+
+    const Variable *getVariable( const std::string &name ) const {
+        auto i = _variables.find( name );
+        if ( i == _variables.end() )
+            return nullptr;
+        return &i->second;
+    }
+
     size_t size() const {
         return _variables.size();
     }
 
 private:
     std::map< std::string, Variable > _variables;
+    std::vector< const type::Type * > _prototypes;
     int _memoryLength;
+    bool _variadic;
 };
 
 
