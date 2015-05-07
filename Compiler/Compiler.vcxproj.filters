@@ -280,6 +280,9 @@
     <ClInclude Include="common\Register.h">
       <Filter>Header Files\common</Filter>
     </ClInclude>
+    <ClInclude Include="parser\SmartIterator.h">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\Unicode.cpp">

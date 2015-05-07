@@ -202,6 +202,7 @@
     <ClInclude Include="parser\ExpressionEvaluator.h" />
     <ClInclude Include="parser\Parser.h" />
     <ClInclude Include="parser\Declaration.h" />
+    <ClInclude Include="parser\SmartIterator.h" />
     <ClInclude Include="preprocessor\Expression.h" />
     <ClInclude Include="preprocessor\Global.h" />
     <ClInclude Include="preprocessor\InputBuffer.h" />
