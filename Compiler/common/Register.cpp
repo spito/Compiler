@@ -1,11 +1,11 @@
 #include "Register.h"
+#include "../includes/exceptions.h"
 
 namespace compiler {
-namespace interpret {
+namespace common {
 
 Register Register::operator++( ) {
     switch ( type().kind() ) {
-    case Type::Kind::None: throw exception::InternalError( "no type" );
     case Type::Kind::Int8:   ++get8();   break;
     case Type::Kind::UInt8:  ++getu8();  break;
     case Type::Kind::Int16:  ++get16();  break;
@@ -21,7 +21,6 @@ Register Register::operator++( ) {
 
 Register Register::operator--( ) {
     switch ( type().kind() ) {
-    case Type::Kind::None: throw exception::InternalError( "no type" );
     case Type::Kind::Int8:   --get8();   break;
     case Type::Kind::UInt8:  --getu8();  break;
     case Type::Kind::Int16:  --get16();  break;
@@ -37,23 +36,21 @@ Register Register::operator--( ) {
 
 Register Register::operator~( ) {
     switch ( type().kind() ) {
-    case Type::Kind::None: throw exception::InternalError( "no type" );
     case Type::Kind::Int8:
     case Type::Kind::Int16:
     case Type::Kind::Int32:
-    case Type::Kind::Int64: throw exception::InternalError( "signed type forced to bitwise operation" );
+    case Type::Kind::Int64: return raiseSignedProblem();
     case Type::Kind::UInt8:  setu8( ~getu8() );  break;
     case Type::Kind::UInt16: setu16( ~getu16() ); break;
     case Type::Kind::UInt32: setu32( ~getu32() ); break;
     case Type::Kind::UInt64: setu64( ~getu64() ); break;
-    case Type::Kind::Pointer: throw exception::InternalError( "bad type" );
+    case Type::Kind::Pointer: return raisePointerProblem();
     }
     return *this;
 }
 
 Register Register::operator-( ) {
     switch ( type().kind() ) {
-    case Type::Kind::None: throw exception::InternalError( "no type" );
     case Type::Kind::Int8:  set32( -get8() );  break;
     case Type::Kind::Int16: set32( -get16() ); break;
     case Type::Kind::Int32: set32( -get32() ); break;
@@ -61,28 +58,28 @@ Register Register::operator-( ) {
     case Type::Kind::UInt8:
     case Type::Kind::UInt16:
     case Type::Kind::UInt32:
-    case Type::Kind::UInt64: throw exception::InternalError( "unsigned type forced to unary minus" );
-    case Type::Kind::Pointer: throw exception::InternalError( "bad type" );
+    case Type::Kind::UInt64: return raiseSignedProblem();
+    case Type::Kind::Pointer: return raisePointerProblem();
     }
     return *this;
 }
 
 Register Register::operator+( ) {
     if ( type().isPointer() )
-        throw exception::InternalError( "bad type" );
+        return raisePointerProblem();
 
     promote();
     return *this;
 }
 
 Register Register::operator!( ) {
-    zero() ? setu32( 1 ) : clear();
+    zero() ? setu32( 1 ) : setu32( 0 );
     return *this;
 }
 
 Register Register::operator*=( Register r ) {
     if ( type().isPointer() || r.type().isPointer() )
-        throw exception::InternalError( "invalid type for multiplication" );
+        return raisePointerProblem();
 
     arithmeticsConversion( r );
 
@@ -96,8 +93,10 @@ Register Register::operator*=( Register r ) {
 }
 
 Register Register::operator/=( Register r ) {
+    if ( r.zero() )
+        throw exception::InternalError( "division by zero" );
     if ( type().isPointer() || r.type().isPointer() )
-        throw exception::InternalError( "invalid type for multiplication" );
+        return raisePointerProblem();
 
     arithmeticsConversion( r );
 
@@ -112,7 +111,7 @@ Register Register::operator/=( Register r ) {
 
 Register Register::operator%=( Register r ) {
     if ( type().isPointer() || r.type().isPointer() )
-        throw exception::InternalError( "invalid type for multiplication" );
+        return raisePointerProblem();
 
     arithmeticsConversion( r );
 
@@ -128,7 +127,7 @@ Register Register::operator%=( Register r ) {
 Register Register::operator+=( Register r ) {
     if ( type().isPointer() || r.type().isPointer() ) {
         if ( type().isPointer() && r.type().isPointer() )
-            throw exception::InternalError( "invalid type for multiplication" );
+            return raisePointerProblem();
         Register toAdd, count, itemSize;
         Type ptr;
         if ( type().isPointer() ) {
@@ -179,7 +178,7 @@ Register Register::operator-=( Register r ) {
             ptr = type();
         }
         if ( r.type().isPointer() )
-            throw exception::InternalError( "illegal formation" );
+            return raisePointerProblem();
 
         itemSize *= count;
         toSub -= itemSize;
@@ -201,10 +200,10 @@ Register Register::operator-=( Register r ) {
 
 Register Register::operator<<=( Register r ) {
     if ( type().isPointer() || r.type().isPointer() )
-        throw exception::InternalError( "illegal operation" );
+        return raisePointerProblem();
 
     if ( type().isSigned() )
-        throw exception::InternalError( "bitwise operation on signed type" );
+        return raiseSignedProblem();
 
     promote();
     r.promote();
@@ -214,7 +213,7 @@ Register Register::operator<<=( Register r ) {
     case Type::Kind::Int32:  shift = r.get32();  break;
     case Type::Kind::UInt32: shift = r.getu32(); break;
     case Type::Kind::Int64:  shift = int( r.get64() );  break;
-    case Type::Kind::UInt64: shift = int(r.getu64()); break;
+    case Type::Kind::UInt64: shift = int( r.getu64() ); break;
     }
 
     switch ( type().kind() ) {
@@ -226,10 +225,10 @@ Register Register::operator<<=( Register r ) {
 
 Register Register::operator>>=( Register r ) {
     if ( type().isPointer() || r.type().isPointer() )
-        throw exception::InternalError( "illegal operation" );
+        return raisePointerProblem();
 
     if ( type().isSigned() )
-        throw exception::InternalError( "bitwise operation on signed type" );
+        return raiseSignedProblem();
 
     promote();
     r.promote();
@@ -238,8 +237,8 @@ Register Register::operator>>=( Register r ) {
     switch ( r.type().kind() ) {
     case Type::Kind::Int32:  shift = r.get32();  break;
     case Type::Kind::UInt32: shift = r.getu32(); break;
-    case Type::Kind::Int64:  shift = int(r.get64());  break;
-    case Type::Kind::UInt64: shift = int(r.getu64()); break;
+    case Type::Kind::Int64:  shift = int( r.get64() );  break;
+    case Type::Kind::UInt64: shift = int( r.getu64() ); break;
     }
 
     switch ( type().kind() ) {
@@ -258,7 +257,7 @@ Register Register::operator<( Register r ) {
                 *this = Register( 0 );
             return *this;
         }
-        throw exception::InternalError( "invalid operation" );
+        return raisePointerProblem();
     }
 
     arithmeticsConversion( r );
@@ -285,7 +284,7 @@ Register Register::operator<=( Register r ) {
                 *this = Register( 0 );
             return *this;
         }
-        throw exception::InternalError( "invalid operation" );
+        return raisePointerProblem();
     }
 
     arithmeticsConversion( r );
@@ -312,7 +311,7 @@ Register Register::operator>( Register r ) {
                 *this = Register( 0 );
             return *this;
         }
-        throw exception::InternalError( "invalid operation" );
+        return raisePointerProblem();
     }
 
     arithmeticsConversion( r );
@@ -339,7 +338,7 @@ Register Register::operator>=( Register r ) {
                 *this = Register( 0 );
             return *this;
         }
-        throw exception::InternalError( "invalid operation" );
+        return raisePointerProblem();
     }
 
     arithmeticsConversion( r );
@@ -366,7 +365,7 @@ Register Register::operator==( Register r ) {
                 *this = Register( 0 );
             return *this;
         }
-        throw exception::InternalError( "invalid operation" );
+        return raisePointerProblem();
     }
 
     arithmeticsConversion( r );
@@ -393,7 +392,7 @@ Register Register::operator!=( Register r ) {
                 *this = Register( 0 );
             return *this;
         }
-        throw exception::InternalError( "invalid operation" );
+        return raisePointerProblem();
     }
 
     arithmeticsConversion( r );
@@ -414,10 +413,10 @@ Register Register::operator!=( Register r ) {
 
 Register Register::operator&=( Register r ) {
     if ( type().isPointer() || r.type().isPointer() )
-        throw exception::InternalError( "illegal operation" );
+        return raisePointerProblem();
 
     if ( type().isSigned() || r.type().isSigned() )
-        throw exception::InternalError( "bitwise operation on signed type" );
+        return raiseSignedProblem();
 
     arithmeticsConversion( r );
 
@@ -430,10 +429,10 @@ Register Register::operator&=( Register r ) {
 
 Register Register::operator^=( Register r ) {
     if ( type().isPointer() || r.type().isPointer() )
-        throw exception::InternalError( "illegal operation" );
+        return raisePointerProblem();
 
     if ( type().isSigned() || r.type().isSigned() )
-        throw exception::InternalError( "bitwise operation on signed type" );
+        return raiseSignedProblem();
 
     arithmeticsConversion( r );
 
@@ -446,10 +445,10 @@ Register Register::operator^=( Register r ) {
 
 Register Register::operator|=( Register r ) {
     if ( type().isPointer() || r.type().isPointer() )
-        throw exception::InternalError( "illegal operation" );
+        return raisePointerProblem();
 
     if ( type().isSigned() || r.type().isSigned() )
-        throw exception::InternalError( "bitwise operation on signed type" );
+        return raiseSignedProblem();
 
     arithmeticsConversion( r );
 
@@ -461,5 +460,5 @@ Register Register::operator|=( Register r ) {
 }
 
 
-} // namespace ast
+} // namespace common
 } // namespace compiler

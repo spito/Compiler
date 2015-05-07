@@ -1,12 +1,13 @@
 #pragma once
 
-#include "../ast/AST.h"
-#include "../common/Utils.h"
+#include "Utils.h"
+#include "../includes/exceptions.h"
 
 #include <cstdint>
 
 namespace compiler {
-namespace interpret {
+namespace common {
+
 
 struct Register {
 
@@ -57,7 +58,7 @@ struct Register {
                 return Kind::Pointer;
 
             switch ( length() ) {
-            case 1: return isSigned() ? Kind::Int8  : Kind::UInt8;  break;
+            case 1: return isSigned() ? Kind::Int8 : Kind::UInt8;  break;
             case 2: return isSigned() ? Kind::Int16 : Kind::UInt16; break;
             case 4: return isSigned() ? Kind::Int32 : Kind::UInt32; break;
             case 8: return isSigned() ? Kind::Int64 : Kind::UInt64; break;
@@ -97,25 +98,48 @@ struct Register {
     };
 
     Register() {}
-    Register( int8_t v ) : _char( v ), _type( Type( 1, true ) ) {}
-    Register( uint8_t v ) : _uchar( v ), _type( Type( 1, false ) ) {}
-    Register( int16_t v ) : _short( v ), _type( Type( 2, true ) ) {}
-    Register( uint16_t v ) : _ushort( v ), _type( Type( 2, false ) ) {}
-    Register( int32_t v ) : _int( v ), _type( Type( 4, true ) ) {}
-    Register( uint32_t v ) : _uint( v ), _type( Type( 4, false ) ) {}
-    Register( int64_t v ) : _long( v ), _type( Type( 8, true ) ) {}
-    Register( uint64_t v ) : _ulong( v ), _type( Type( 8, false ) ) {}
-    Register( void *v, int8_t l, bool s ) : _type( Type( l, s, true ) ) {
+    Register( int8_t v ) : _char( v ), _type( 1, true ) {}
+    Register( uint8_t v ) : _uchar( v ), _type( 1, false ) {}
+    Register( int16_t v ) : _short( v ), _type( 2, true ) {}
+    Register( uint16_t v ) : _ushort( v ), _type( 2, false ) {}
+    Register( int32_t v ) : _int( v ), _type( 4, true ) {}
+    Register( uint32_t v ) : _uint( v ), _type( 4, false ) {}
+    Register( int64_t v ) : _long( v ), _type( 8, true ) {}
+    Register( uint64_t v ) : _ulong( v ), _type( 8, false ) {}
+    Register( void *v, int8_t l, bool s ) : _type( l, s, true ) {
         _ptr.ptr = v;
     }
 
     template< typename T >
-    Register( T *v ) : _type( Type( sizeof( T ) ) ) {
+    Register( T *v ) : _type( sizeof( T ), std::is_signed< T >::value, true ) {
         _ptr.ptr = v;
+    }
+
+    Register &operator=( Register r ) {
+        _ulong = r._ulong;
+        _type = r._type;
+        clearFlags();
+        return *this;
     }
 
     void clear() {
         getu64() ^= getu64();
+    }
+
+    void quiet( bool v = true ) {
+        _quiet = v;
+    }
+
+    void clearFlags() {
+        _pointerProblem = false;
+        _signedProblem = false;
+    }
+
+    bool isPointerProblem() const {
+        return _pointerProblem;
+    }
+    bool isSignedProblem() const {
+        return _signedProblem;
     }
 
     int8_t &get8() {
@@ -132,10 +156,12 @@ struct Register {
     }
     void set8( int8_t v ) {
         clear();
+        _type = Type( 1, true );
         _char = v;
     }
     void setu8( uint8_t v ) {
         clear();
+        _type = Type( 1, false );
         _uchar = v;
     }
 
@@ -153,10 +179,12 @@ struct Register {
     }
     void set16( int16_t v ) {
         clear();
+        _type = Type( 2, true );
         _short = v;
     }
     void setu16( uint16_t v ) {
         clear();
+        _type = Type( 2, false );
         _ushort = v;
     }
 
@@ -175,10 +203,12 @@ struct Register {
     }
     void set32( int32_t v ) {
         clear();
+        _type = Type( 4, true );
         _int = v;
     }
     void setu32( uint32_t v ) {
         clear();
+        _type = Type( 4, false );
         _uint = v;
     }
 
@@ -196,10 +226,12 @@ struct Register {
     }
     void set64( int64_t v ) {
         clear();
+        _type = Type( 8, true );
         _long = v;
     }
     void setu64( uint64_t v ) {
         clear();
+        _type = Type( 8, false );
         _ulong = v;
     }
 
@@ -239,6 +271,10 @@ struct Register {
         return _type;
     }
 
+    Register assign( Register another ) {
+
+    }
+
     bool zero() const {
         if ( type().isPointer() )
             return getPtr() == nullptr;
@@ -270,12 +306,12 @@ struct Register {
         }
     }
 
-    Register operator++();
-    Register operator--();
-    Register operator~();
-    Register operator-();
-    Register operator+();
-    Register operator!();
+    Register operator++( );
+    Register operator--( );
+    Register operator~( );
+    Register operator-( );
+    Register operator+( );
+    Register operator!( );
 
     Register operator*=( Register );
     Register operator/=( Register );
@@ -363,6 +399,19 @@ private:
         _type = t;
     }
 
+    Register raisePointerProblem() {
+        _pointerProblem = true;
+        if ( !_quiet )
+            throw exception::InternalError( "register: pointer problem" );
+        return *this;
+    }
+    Register raiseSignedProblem() {
+        _signedProblem = true;
+        if ( !_quiet )
+            throw exception::InternalError( "register: signed problem" );
+        return *this;
+    }
+
     union {
 
         union Pointer {
@@ -383,8 +432,11 @@ private:
     };
 
     Type _type;
+    bool _quiet;
+    bool _pointerProblem = false;
+    bool _signedProblem = false;
 };
 
 
-} // namespace ast
+} // namespace common
 } // namespace compiler
