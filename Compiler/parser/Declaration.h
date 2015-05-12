@@ -30,14 +30,11 @@ struct Declaration {
         if ( !_function )
             throw exception::InternalError( "invalid call" );
         ast::Function f( std::move( *_function ) );
-        delete _function;
-        _function = nullptr;
+        _function.release();
         return f;
     }
     ast::Variable *variable() {
-        auto v = _variable;
-        _variable = nullptr;
-        return v;
+        return _variable.release();
     }
 
     Type decide();
@@ -102,8 +99,8 @@ private:
     SmartIterator _begin;
     Parser &_parser;
 
-    ast::Function *_function = nullptr;
-    ast::Variable *_variable = nullptr;
+    std::unique_ptr< ast::Function > _function;
+    std::unique_ptr< ast::Variable > _variable;
     const ast::type::Type *_type = nullptr;
 
     std::vector< std::string > _typeId;
