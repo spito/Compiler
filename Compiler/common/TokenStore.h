@@ -2,9 +2,10 @@
 
 #include "Token.h"
 #include "SmartIterator.h"
+#include "Keyword.h"
 
 #include <vector>
-#include <unordered_set>
+#include <unordered_map>
 
 namespace compiler {
 namespace common {
@@ -32,10 +33,14 @@ struct TokenStore {
             _tokens.back().value() += token.value();
         }
         else {
-
-            if ( token.type() == Token::Type::Word && _keywords.count( token.value() ) )
-                token = Token( std::move( token.value() ), Token::Type::Keyword, std::move( token.position() ) );
-
+            if ( token.type() == Token::Type::Word ) {
+                auto i = _keywords.find( token.value() );
+                if ( i != _keywords.end() ) {
+                    token.replaceBy( Token( std::move( token.value() ), Token::Type::Keyword ) );
+                    token.keyword() = i->second;
+                    return;
+                }
+            }
             _tokens.push_back( std::move( token ) );
         }
     }
@@ -73,7 +78,7 @@ struct TokenStore {
 private:
     std::vector< Token > _tokens;
 
-    static std::unordered_set< std::string > _keywords;
+    static std::unordered_map< std::string, Keyword > _keywords;
 };
 
 
