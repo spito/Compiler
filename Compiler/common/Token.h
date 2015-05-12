@@ -4,6 +4,7 @@
 #include "Utils.h"
 #include "Unicode.h"
 #include "Operator.h"
+#include "Keyword.h"
 
 #include <string>
 #include <iostream>
@@ -39,11 +40,14 @@ private:
         long long integer;
         long double real;
         Operator op;
+        Keyword keyword;
 
         _N( long long i ) : integer( i ) {}
         _N( long double r ) : real( r ) {}
         _N( Operator o ) : op( o ) {}
+        _N( Keyword k ) : keyword( k ) {}
         _N() = default;
+        _N( const _N & ) = default;
     } _detail;
 
 public:
@@ -61,28 +65,16 @@ public:
     Token( const Token &o ) :
         _token( o._token ),
         _type( o._type ),
-        _position( o._position )
-    {
-        if ( _type == Type::Integer )
-            integer() = o.integer();
-        else if ( _type == Type::Real )
-            real() = o.real();
-        else if ( _type == Type::Operator )
-            op() = o.op();
-    }
+        _position( o._position ),
+        _detail( o._detail )
+    {}
 
     Token( Token &&o ) :
         _token( std::move( o._token ) ),
         _type( o._type ),
-        _position( std::move( o._position ) )
-    {
-        if ( _type == Type::Integer )
-            integer() = o.integer();
-        else if ( _type == Type::Real )
-            real() = o.real();
-        else if ( _type == Type::Operator )
-            op() = o.op();
-    }
+        _position( std::move( o._position ) ),
+        _detail( o._detail )
+    {}
 
     void replaceBy( Token o ) {
         swap( o );
@@ -147,6 +139,16 @@ public:
     }
     bool isOperator( Operator o ) const {
         return type() == Type::Operator && op() == o;
+    }
+
+    Keyword &keyword() {
+        return _detail.keyword;
+    }
+    Keyword keyword() const {
+        return _detail.keyword;
+    }
+    bool isKeyword( Keyword k ) const {
+        return type() == Type::Keyword && keyword() == k;
     }
 
     char &operator[]( size_t index ) {
