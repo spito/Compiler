@@ -38,7 +38,6 @@ struct TokenStore {
                 if ( i != _keywords.end() ) {
                     token.replaceBy( Token( std::move( token.value() ), Token::Type::Keyword ) );
                     token.keyword() = i->second;
-                    return;
                 }
             }
             _tokens.push_back( std::move( token ) );
