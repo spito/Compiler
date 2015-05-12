@@ -43,14 +43,5 @@ private:
     std::string _name;
 };
 
-struct Keyword : Symbol {
-    Keyword( std::string name ) :
-        Symbol( std::move( name ) )
-    {}
-};
-
-//using SymbolHandle = std::unique_ptr < Symbol >;
-//using SymbolPtr = Symbol *;
-
 } // namespace common
 } // namespace compiler
