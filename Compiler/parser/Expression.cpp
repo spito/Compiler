@@ -323,7 +323,7 @@ ast::Expression *Expression::descend( Side side, Operator owner ) {
         ++_it;
         break;
     case Type::String:
-        throw exception::InternalError( "not implemented" );
+        self = new ast::StringPlaceholder( _it->position(), _it->value() );
         break;
     case Type::Word:
         if ( _parser.isStatementKeyword( _it->value() ) || _parser.isTypeKeyword( _it->value() ) )
