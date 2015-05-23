@@ -131,7 +131,7 @@ void Interpret::eval( const ast::Variable *v ) {
 }
 
 void Interpret::eval( const ast::Constant *c ) {
-    _info = new Information( common::Register( c->value() ) );
+    _info = new Information( common::Register( int( c->value() ) ) );
     addRegister();
 }
 

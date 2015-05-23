@@ -4,7 +4,7 @@ namespace compiler {
 namespace parser {
 
 void ExpressionEvaluator::eval( const ast::Constant *e ) {
-    _value = common::Register( e->value() );
+    _value = common::Register( int( e->value() ) );
     _type = e->type();
 }
 
