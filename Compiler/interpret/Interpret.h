@@ -53,46 +53,6 @@ struct Interpret : ast::Traversal {
     void eval( const ast::DoWhile * );
     void eval( const ast::For * );
 
-    //InterpretInformation *eval( const StatementEcho *s ) override {
-
-    //    InterpretInformation *data = s->expression()->traverse( *this )->as< InterpretInformation >();
-    //    if ( !data )
-    //        throw std::runtime_error( "internal error - invalid expression" );
-
-    //    auto value = data->impersonalize();
-
-    //    switch ( value.type().length() ) {
-    //    case 1:
-    //        if ( value.type().isSigned() )
-    //            std::cout << value.storage().get8();
-    //        else
-    //            std::cout << value.storage().getu8();
-    //        break;
-    //    case 2:
-    //        if ( value.type().isSigned() )
-    //            std::cout << value.storage().get16();
-    //        else
-    //            std::cout << value.storage().getu16();
-    //        break;
-    //    case 4:
-    //        if ( value.type().isSigned() )
-    //            std::cout << value.storage().get32();
-    //        else
-    //            std::cout << value.storage().getu32();
-    //        break;
-    //    case 8:
-    //        if ( value.type().isSigned() )
-    //            std::cout << value.storage().get64();
-    //        else
-    //            std::cout << value.storage().getu64();
-    //        break;
-    //    }
-
-    //    std::cout << std::endl;
-
-    //    return nullptr;
-    //}
-
 };
 
 } // namespace interpret
