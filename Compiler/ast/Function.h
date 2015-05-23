@@ -13,13 +13,15 @@ struct Function {
     Function( Function &&other ) :
         _parameters( std::move( other._parameters ) ),
         _body( std::move( other._body ) ),
-        _returnType( std::move( other._returnType ) )
+        _returnType( std::move( other._returnType ) ),
+        _definition( other._definition )
     {}
 
     Function( const type::Type *t, std::string name, bool definition ) :
         _body( false ),
         _returnType( *t ),
-        _name( std::move( name ) )
+        _name( std::move( name ) ),
+        _definition( definition )
     {}
 
     MemoryHolder &parameters() {
@@ -64,7 +66,7 @@ struct Function {
 
         _parameters.import( f._parameters );
         _body.import( f._body );
-        _definition = true;
+        _definition = f.definition();
     }
 
 private:
