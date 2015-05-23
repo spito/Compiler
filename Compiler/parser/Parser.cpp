@@ -1,11 +1,18 @@
 #include "Parser.h"
-#include "Expression.h"
+#include "Statement.h"
+
 namespace compiler {
 namespace parser {
 
 void Parser::obtain() {
+
     SmartIterator it( _store.begin() );
-    _ast.global().add( Expression( *this, it ) );
+
+    Statement stmt( *this, it );
+    
+    auto v = stmt.block();
+    tree().global().import( *v );
+    delete v;
 }
 
 std::unordered_set< std::string > Parser::_typeKeywords = {
