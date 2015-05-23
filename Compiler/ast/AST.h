@@ -36,6 +36,8 @@ namespace ast {
 
 struct AST {
 
+    using FunctionHandle = std::unique_ptr < Function > ;
+
     AST() {
         _typeStorage.addType< type::Elementary >( "void", 0, true );
         _typeStorage.addType< type::Elementary >( "char", 1, true );
@@ -89,11 +91,16 @@ struct AST {
         _global( std::move( o._global ) )
     {}
 
-    void add( Function &&f ) {
-        std::string name = f.name();
-        if ( _functions.count( name ) )
-            throw exception::InternalError( "multiple definition of function" );
-        _functions.emplace( std::move( name ), std::move( f ) );
+    void add( FunctionHandle &&f ) {
+        std::string name = f->name();
+        auto i = _functions.find( name );
+        if ( i != _functions.end() ) {
+            if ( i->second->definition() && f->definition() )
+                throw exception::InternalError( "multiple definition of function" );
+            i->second->import( *f );
+        }
+        else 
+            _functions.emplace( std::move( name ), std::move( f ) );
     }
 
     template< typename S, typename... Args >
@@ -109,11 +116,17 @@ struct AST {
         return _global;
     }
 
-    const Function &findFunction( const std::string &name ) const {
+    const Function *findFunction( const std::string &name ) const {
         if ( !_functions.count( name ) )
             throw exception::InternalError( "function not found" );
 
-        return _functions.find( name )->second;
+        return _functions.find( name )->second.get();
+    }
+    Function *findFunction( const std::string &name ) {
+        if ( !_functions.count( name ) )
+            throw exception::InternalError( "function not found" );
+
+        return _functions.find( name )->second.get();
     }
 
     TypeStorage &typeStorage() {
@@ -126,7 +139,7 @@ struct AST {
 
 private:
     TypeStorage _typeStorage;
-    std::map< std::string, Function > _functions;
+    std::map< std::string, FunctionHandle > _functions;
     Block _global;
 };
 
