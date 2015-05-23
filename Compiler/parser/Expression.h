@@ -11,7 +11,9 @@ namespace parser {
 
 struct Expression {
 
+    using Type = common::Token::Type;
     using Operator = common::Operator;
+    using Keyword = common::Keyword;
 
     Expression( Parser &p, SmartIterator &it ) :
         _it( it ),
@@ -32,6 +34,7 @@ private:
 
     ast::Expression *descend( Side, Operator );
     ast::Expression *sizeofExpression();
+    ast::Expression *bracketExpression();
     ast::Expression *functionCall( std::string );
 
     bool leaving();
@@ -51,5 +54,6 @@ private:
     bool _functionArguments = false;
     bool _sizeofProcessing = false;
 };
+
 } // namespace parser
 } // namespace compiler
