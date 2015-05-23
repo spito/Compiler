@@ -341,40 +341,99 @@ void Interpret::eval( const ast::For *s ) {
 }
 
 void Interpret::intrinsicPrintf( std::vector< common::Register > values ) {
-    for ( common::Register r : values ) {
+    if ( values.empty() )
+        throw exception::InternalError( "printf: missing formating" );
 
-        switch ( r.type().kind() ) {
-        case common::Register::Type::Kind::Int8:   std::cout << r.get8() << std::endl; break;
-        case common::Register::Type::Kind::UInt8:  std::cout << r.getu8() << std::endl; break;
-        case common::Register::Type::Kind::Int16:  std::cout << r.get16() << std::endl; break;
-        case common::Register::Type::Kind::UInt16: std::cout << r.getu16() << std::endl; break;
-        case common::Register::Type::Kind::Int32:  std::cout << r.get32() << std::endl; break;
-        case common::Register::Type::Kind::UInt32: std::cout << r.getu32() << std::endl; break;
-        case common::Register::Type::Kind::Int64:  std::cout << r.get64() << std::endl; break;
-        case common::Register::Type::Kind::UInt64: std::cout << r.getu64() << std::endl; break;
+    const char *fmt = static_cast<const char *>( values.front().getPtr() );
+    bool formating = false;
+    auto argument = values.begin();
+
+    for ( ;; ++fmt ) {
+        if ( !checkRange( fmt ) )
+            throw exception::InternalError( "segfault" );
+        if ( !*fmt )
+            break;
+
+        if ( !formating ) {
+            if ( *fmt != '%' )
+                std::cout << *fmt;
+            else
+                formating = true;
+            continue;
         }
+        formating = false;
+        ++argument;
+        if ( argument == values.end() )
+            throw exception::InternalError( "printf: not enough arguments" );
 
+        switch ( *fmt ) {
+        case 'c': std::cout << argument->get8(); break;
+        case 'i':
+        case 'd': std::cout << argument->get32(); break;
+        case 'u': std::cout << argument->getu32(); break;
+        case 's': {
+            const char *s = static_cast<const char *>( argument->getPtr() );
+            for ( ;; ++s ) {
+                if ( !checkRange( s ) )
+                    throw exception::InternalError( "segfault" );
+                if ( !*s )
+                    break;
+                std::cout << *s;
+            }
+        }
+            break;
+        default:
+            throw exception::InternalError( "printf: unsupported formating specifier" );
+        }
     }
 }
 
 void Interpret::intrinsicScanf( std::vector< common::Register > values ) {
-    for ( common::Register r : values ) {
+    if ( values.empty() )
+        throw exception::InternalError( "printf: missing formating" );
 
-        if ( !r.type().isPointer() )
-            throw exception::InternalError( "Not-pointer passed to scanf" );
+    const char *fmt = static_cast<const char *>( values.front().getPtr() );
+    bool formating = false;
+    auto argument = values.begin();
 
-        if ( !checkRange( r.getPtr() ) )
-            throw exception::InternalError( "ptr out of range" );
+    for ( ;; ++fmt ) {
+        if ( !checkRange( fmt ) )
+            throw exception::InternalError( "segfault" );
+        if ( !*fmt )
+            break;
 
-        switch ( r.type().kindOfPointer() ) {
-        case common::Register::Type::Kind::Int8:   std::cin >> *static_cast< int8_t * >( r.getPtr() ); break;
-        case common::Register::Type::Kind::UInt8:  std::cin >> *static_cast< uint8_t * >( r.getPtr() ); break;
-        case common::Register::Type::Kind::Int16:  std::cin >> *static_cast< int16_t * >( r.getPtr() ); break;
-        case common::Register::Type::Kind::UInt16: std::cin >> *static_cast< uint16_t * >( r.getPtr() ); break;
-        case common::Register::Type::Kind::Int32:  std::cin >> *static_cast< int32_t * >( r.getPtr() ); break;
-        case common::Register::Type::Kind::UInt32: std::cin >> *static_cast< uint32_t * >( r.getPtr() ); break;
-        case common::Register::Type::Kind::Int64:  std::cin >> *static_cast< int64_t * >( r.getPtr() ); break;
-        case common::Register::Type::Kind::UInt64: std::cin >> *static_cast< uint64_t * >( r.getPtr() ); break;
+        // just skip other characters
+        if ( !formating ) {
+            if ( *fmt == '%' )
+                formating = true;
+            continue;
+        }
+        formating = false;
+        ++argument;
+        if ( argument == values.end() )
+            throw exception::InternalError( "scanf: not enough arguments" );
+
+        switch ( *fmt ) {
+        case 'c': std::cin >> *static_cast< int8_t * >( argument->getPtr() ); break;
+        case 'i':
+        case 'd': std::cin >> *static_cast< int32_t * >( argument->getPtr() ); break;
+        case 'u': std::cin >> *static_cast< uint32_t * >( argument->getPtr() ); break;
+        case 's': {
+            char *s = static_cast< char *>( argument->getPtr() );
+            for ( ;; ++s ) {
+                if ( !checkRange( s ) )
+                    throw exception::InternalError( "segfault" );
+                char c;
+                std::cin >> c;
+                if ( std::cin.eof() || std::isspace( c ) ) {
+                    *s = '\0';
+                    break;
+                }
+                *s = c;
+            }
+        }
+        default:
+            throw exception::InternalError( "scanf: unsupported formating specifier" );
         }
     }
 }
