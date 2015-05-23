@@ -161,20 +161,20 @@ void Interpret::eval( const ast::Call *e ) {
         return;
     }
 
-    const ast::Function &f = _ast.findFunction( e->name() );
-    if ( values.size() < f.parameters().size() )
+    const ast::Function *f = _ast.findFunction( e->name() );
+    if ( values.size() < f->parameters().size() )
         throw exception::InternalError( "too few arguments" );
 
-    _frames.emplace_back( f.parameters(), width );
+    _frames.emplace_back( f->parameters(), width );
 
     int paramIndex = 0;
-    f.parameters().forVariables( [&, this]( const std::string &name, ast::MemoryHolder::Variable ) {
+    f->parameters().forVariables( [&, this]( const std::string &name, ast::MemoryHolder::Variable ) {
         Information proxy( findSymbol( name ) );
         proxy.store( values[ paramIndex ] );
         ++paramIndex;
     } );
 
-    eval( &f.body() );
+    eval( &f->body() );
 
     auto info = new Information;
     if ( _info )
