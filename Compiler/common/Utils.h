@@ -51,6 +51,18 @@ Defer make_defer( F &&f ) {
     return Defer( std::move( f ) );
 }
 
+template< typename T, typename V >
+T find_last( T begin, T end, const V &toSearch ) {
+
+    T remember = end;
+
+    for ( ; begin != end; ++begin ) {
+        if ( *begin == toSearch )
+            remember = begin;
+    }
+    return remember;
+}
+
 template< typename T >
 struct Adaptor {
     Adaptor( T begin, T end ) :
