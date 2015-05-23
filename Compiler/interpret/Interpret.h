@@ -30,6 +30,7 @@ struct Interpret : ast::Traversal {
 
     void intrinsicPrintf( std::vector< common::Register > );
     void intrinsicScanf( std::vector< common::Register > );
+    void intrinsicPutc( std::vector< common::Register > );
 
     bool checkRange( const void * );
 

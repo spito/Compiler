@@ -8,6 +8,7 @@ namespace interpret {
 std::map< std::string, void( Interpret::* )( std::vector< common::Register > ) > Interpret::_intrinsicFunctions = {
         { "printf", &Interpret::intrinsicPrintf },
         { "scanf", &Interpret::intrinsicScanf },
+        { "putc", &Interpret::intrinsicPutc },
 };
 
 void Interpret::eval( const ast::Statement *s ) {
@@ -436,6 +437,10 @@ void Interpret::intrinsicScanf( std::vector< common::Register > values ) {
             throw exception::InternalError( "scanf: unsupported formating specifier" );
         }
     }
+}
+
+void Interpret::intrinsicPutc( std::vector< common::Register > values ) {
+    std::cout << values.front().get8();
 }
 
 } // namespace interpret
