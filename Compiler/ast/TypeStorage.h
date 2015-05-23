@@ -58,7 +58,7 @@ struct TypeStorage {
 
 private:
     ConstPtr insertNamed( std::string name, Ptr t ) {
-        return _named.insert( { std::move( name ), Handle( t ) } ).first->second.get();
+        return _named.emplace( std::move( name ), Handle( t ) ).first->second.get();
     }
 
     ConstPtr insertUnnamed( Ptr t ) {
