@@ -100,6 +100,18 @@ struct MemoryHolder {
         return _variables.size();
     }
 
+    void import( MemoryHolder &other ) {
+        using std::swap;
+
+        swap( _variables, other._variables );
+        swap( _prototypes, other._prototypes );
+        swap( _memoryLength, other._memoryLength );
+        swap( _variadic, other._variadic );
+    }
+
+    bool declarationOf( const MemoryHolder &other ) const {
+        return _prototypes == other._prototypes;
+    }
 private:
     std::map< std::string, Variable > _variables;
     std::vector< const type::Type * > _prototypes;

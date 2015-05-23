@@ -24,6 +24,15 @@ struct Block : Statement, MemoryHolder {
         _soft( soft )
     {}
 
+    void import( Block &other ) {
+        using std::swap;
+
+        Statement::import( other );
+        MemoryHolder::import( other );
+
+        swap( _descendants, other._descendants );
+    }
+
     void add( Ptr p ) {
         _descendants.emplace_back( p );
     }

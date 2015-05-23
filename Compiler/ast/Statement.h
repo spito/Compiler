@@ -66,6 +66,15 @@ struct Statement : DynamicCast {
     const common::Position &position() const {
         return _position;
     }
+protected:
+    void import( Statement &other ) {
+        using std::swap;
+
+        swap( _kind, other._kind );
+        swap( _parentBreak, other._parentBreak );
+        swap( _parentContinue, other._parentContinue );
+        swap( _position, other._position );
+    }
 private:
     Kind _kind;
     Ptr _parentBreak = nullptr;

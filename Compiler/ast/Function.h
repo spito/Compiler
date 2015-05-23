@@ -3,6 +3,8 @@
 #include "Block.h"
 #include "Type.h"
 
+#include "../includes/exceptions.h"
+
 namespace compiler {
 namespace ast {
 
@@ -15,6 +17,7 @@ struct Function {
     {}
 
     Function( const type::Type *t, std::string name, bool definition ) :
+        _body( false ),
         _returnType( *t ),
         _name( std::move( name ) )
     {}
@@ -42,6 +45,26 @@ struct Function {
 
     bool definition() const {
         return _definition;
+    }
+
+    void import( Function &f ) {
+        using std::swap;
+
+        if ( !f.definition() )
+            return;
+
+        if ( name() != f.name() )
+            throw exception::InternalError( "mismatch between function names" );
+
+        if ( returnType() != f.returnType() )
+            throw exception::InternalError( "mismatch between function return types" );
+
+        if ( !parameters().declarationOf( f.parameters() ) )
+            throw exception::InternalError( "mismatch between parameters inside function" );
+
+        _parameters.import( f._parameters );
+        _body.import( f._body );
+        _definition = true;
     }
 
 private:
