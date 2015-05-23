@@ -283,20 +283,19 @@ ast::Expression *Expression::functionCall( std::string name ) {
             _functionArguments = true;
             arguments.emplace_back( descend( Side::Left, Operator::None ) );
 
-            if ( _it ) {
-                if ( _it->isOperator( Operator::Comma ) ) {
-                    ++_it;
-                    continue;
-                }
-                if ( _it->isOperator( Operator::BracketClose ) )
-                    break;
+            if ( _it->isOperator( Operator::Comma ) ) {
+                ++_it;
+                continue;
             }
+            if ( _it->isOperator( Operator::BracketClose ) )
+                break;
             throw exception::InvalidToken( *_it );
         }
     }
     if ( !_it->isOperator( Operator::BracketClose ) )
         throw exception::InvalidToken( *_it );
     _functionArguments = false;
+    ++_it;
     return new ast::Call( position, std::move( name ), std::move( arguments ) );
 }
 
