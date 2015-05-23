@@ -97,7 +97,7 @@ struct Register {
         bool _pointer;
     };
 
-    Register() {}
+    Register() : _ulong( 0 ) {}
     Register( int8_t v ) : _char( v ), _type( 1, true ) {}
     Register( uint8_t v ) : _uchar( v ), _type( 1, false ) {}
     Register( int16_t v ) : _short( v ), _type( 2, true ) {}
