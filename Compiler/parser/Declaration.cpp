@@ -1,5 +1,6 @@
 #include "Declaration.h"
 #include "Expression.h"
+#include "Statement.h"
 #include "ExpressionEvaluator.h"
 
 namespace compiler {
@@ -27,9 +28,9 @@ auto Declaration::stTypeword() -> States {
     if ( _it->isOperator( Operator::Star ) )
         return toStar();
 
-    if ( _it->isOperator( Operator::BracketIndexOpen ) )
+    if ( _fullExpression && _it->isOperator( Operator::BracketIndexOpen ) )
         return toArray();
-    if ( _it->type() == Token::Type::Operator )
+    if ( _fullExpression && _it->type() == Token::Type::Operator )
         return beTypeOnly();
     if ( _it->type() == Token::Type::Word )
         return toWord();
@@ -39,11 +40,11 @@ auto Declaration::stTypeword() -> States {
 auto Declaration::stStar() -> States {
     if ( _it->isOperator( Operator::Star ) )
         return toStar();
-    if ( _it->isOperator( Operator::BracketIndexOpen ) )
+    if ( _fullExpression && _it->isOperator( Operator::BracketIndexOpen ) )
         return toArray();
     if ( _it->type() == Token::Type::Word )
         return toWord();
-    if ( _it->type() == Token::Type::Operator )
+    if ( _fullExpression && _it->type() == Token::Type::Operator )
         return beTypeOnly();
     return toError();
 }
@@ -57,9 +58,9 @@ auto Declaration::stArray() -> States {
 }
 
 auto Declaration::stWord() -> States {
-    if ( _it->isOperator( Operator::BracketIndexOpen ) )
+    if ( _fullExpression && _it->isOperator( Operator::BracketIndexOpen ) )
         return toArray();
-    if ( _it->isOperator( Operator::BracketOpen ) )
+    if ( _fullExpression && _it->isOperator( Operator::BracketOpen ) )
         return toOpenParametres();
     if ( _it->type() == Token::Type::Operator )
         return beVariable();
@@ -168,6 +169,7 @@ auto Declaration::toDeclaration() -> States {
     const ast::type::Type *type;
 
     auto decision = descendant.decide();
+    _wait = true;
 
     switch ( decision ) {
     case Type::SingleVariable:
@@ -238,6 +240,7 @@ auto Declaration::beVoid() -> States {
 auto Declaration::beVariadicPack() -> States {
     _type = _parser.typeStorage().fetchType( "void" );
     _declarationType = Type::VariadicPack;
+    ++_it;
     return quit();
 }
 
@@ -245,23 +248,29 @@ auto Declaration::beVariable() -> States {
     if ( _void )
         return toError();
 
-    _variable = new ast::Variable( _begin->position(), std::move( _name ) );
+    _variable.reset( new ast::Variable( _begin->position(), std::move( _name ) ) );
     _declarationType = Type::SingleVariable;
     return quit();
 }
 
 auto Declaration::beFunction( bool definition ) -> States {
-    _function = new ast::Function( _type, std::move( _name ), definition );
-    // FIXME: off-by-one here
-    ++_it;
+    _parser.addFunction( new ast::Function( _type, _name, definition ) );
+    _declarationType = Type::Function;
+
+    _function = _parser.tree().findFunction( _name );
 
     if ( definition ) {
         for ( auto &p : _parametres ) {
             _function->parameters().add( std::move( p.first ), p.second );
         }
-        // process statement
+        auto d = _parser.openFunction( _function );
 
-        if ( _it->isOperator( Operator::BraceClose ) )
+        ++_it;
+        Statement stmt( _parser, _it );
+        std::unique_ptr< ast::Block > h( stmt.block() );
+        _function->body().import( *h );
+
+        if ( !_it->isOperator( Operator::BraceClose ) )
             return toError();
     }
     else {
@@ -269,6 +278,7 @@ auto Declaration::beFunction( bool definition ) -> States {
             _function->parameters().addPrototype( p );
         }
     }
+    ++_it;
     return quit();
 }
 
@@ -277,10 +287,11 @@ auto Declaration::quit() -> States {
     return States::Quit;
 }
 
-Declaration::Type Declaration::decide() {
+Declaration::Type Declaration::decide( bool fullExpression ) {
     States state = States::Start;
+    _fullExpression = fullExpression;
 
-    for ( ; _it && !_quit; ++_it ) {
+    while ( _it && !_quit ) {
         switch ( state ) {
         case States::Start: state = stStart(); break;
         case States::Typeword: state = stTypeword(); break;
@@ -296,6 +307,10 @@ Declaration::Type Declaration::decide() {
         default:
         case States::Error: stError(); break;
         }
+
+        if ( !_quit && !_wait )
+            ++_it;
+        _wait = false;
     }
 
     return _declarationType;

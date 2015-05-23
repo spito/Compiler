@@ -26,22 +26,18 @@ struct Declaration {
     const ast::type::Type *typeOnly() const {
         return _type;
     }
-    ast::Function function() {
-        if ( !_function )
-            throw exception::InternalError( "invalid call" );
-        ast::Function f( std::move( *_function ) );
-        _function.release();
-        return f;
+    const ast::Function *function() {
+        return _function;
     }
     ast::Variable *variable() {
         return _variable.release();
     }
 
-    Type decide();
-    SmartIterator begin() {
+    Type decide( bool = true );
+    SmartIterator begin() const {
         return _begin;
     }
-    SmartIterator end() {
+    SmartIterator end() const {
         return _it;
     }
 
@@ -99,7 +95,7 @@ private:
     SmartIterator _begin;
     Parser &_parser;
 
-    std::unique_ptr< ast::Function > _function;
+    ast::Function *_function;
     std::unique_ptr< ast::Variable > _variable;
     const ast::type::Type *_type = nullptr;
 
@@ -111,7 +107,8 @@ private:
     bool _quit = false;
     bool _void = false;
     bool _constness = false;
-
+    bool _wait = false;
+    bool _fullExpression;
 };
 
 } // namespace parser
