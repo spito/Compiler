@@ -126,7 +126,7 @@ void Worker::processDefine() {
     if ( symbol.name() == "defined" )
         throw exception::DuplicateSymbol( symbol, token.position() );
 
-    token = _tokenizer.readToken();
+    token = _tokenizer.readToken( true );
     bool function = false;
     // parse formal parameters
     if ( token.isOperator( Operator::BracketOpen ) ) {
@@ -150,7 +150,18 @@ void Worker::processDefine() {
         if ( !token.isOperator( Operator::BracketClose ) )
             throw exception::InvalidToken( token );
 
+        token = _tokenizer.readToken( true );
+    }
+    
+    switch ( token.type() ) {
+    case Type::Space:
         token = _tokenizer.readToken();
+        break;
+    case Type::NewLine:
+    case Type::Eof:
+        break;
+    default:
+        throw exception::InvalidToken( token );
     }
 
     while ( true ) {
@@ -215,11 +226,19 @@ void Worker::processInclude() {
              throw exception::InvalidToken( token );
     }
 
-    std::string name = token.value();
+
+
+    std::string name( _name->begin(), common::find_last( _name->begin(), _name->end(), '/' ) );
+    if ( !name.empty() )
+        name += '/';
+    name += token.value();
+
     token = _tokenizer.readToken();
     if ( token.type() != Type::NewLine )
         throw exception::InvalidToken( token );
     _tokenizer.giveBack( token );
+
+
 
     context::file( name );
     if ( !_global.seenFiles.count( &context::file() ) )
