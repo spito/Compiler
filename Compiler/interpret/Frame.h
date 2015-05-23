@@ -57,9 +57,9 @@ struct Frame {
         _registers.emplace_back( info );
     }
 
-    bool containsMemoryLocation( void *ptr ) {
+    bool containsMemoryLocation( const void *ptr ) {
         union Pointer {
-            void *ptr;
+            const void *ptr;
             uintptr_t number;
         };
 
