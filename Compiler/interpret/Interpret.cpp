@@ -215,15 +215,20 @@ void Interpret::eval( const ast::Block *s ) {
 }
 
 void Interpret::eval( const ast::If *s ) {
-    eval( s );
+    _frames.emplace_back( s );
 
-    if ( !_info->load().zero() )
-        eval( s->ifPath() );
+    eval( s->condition() );
+    if ( !_info->load().zero() ) {
+        if ( s->ifPath() )
+            eval( s->ifPath() );
+    }
     else if ( s->elsePath() )
         eval( s->elsePath() );
 
     if ( _info && !_info->skipping() )
         _info = nullptr;
+
+    _frames.pop_back();
 }
 
 void Interpret::eval( const ast::Break *s ) {
@@ -262,6 +267,7 @@ void Interpret::eval( const ast::Return *s ) {
 }
 
 void Interpret::eval( const ast::While *s ) {
+    _frames.emplace_back( s );
 
     _frames.back().stopAtBreak();
     _frames.back().stopAtContinue();
@@ -280,9 +286,7 @@ void Interpret::eval( const ast::While *s ) {
     if ( _info && !_info->returning() )
         _info = nullptr;
 
-    _frames.back().stopAtBreak( false );
-    _frames.back().stopAtContinue( false );
-
+    _frames.pop_back();
 }
 
 void Interpret::eval( const ast::DoWhile *s ) {
@@ -308,29 +312,32 @@ void Interpret::eval( const ast::DoWhile *s ) {
 }
 
 void Interpret::eval( const ast::For *s ) {
+    _frames.emplace_back( s );
 
     _frames.back().stopAtBreak();
     _frames.back().stopAtContinue();
 
-    eval( s->initialization() );
+    if ( s->initialization() )
+        eval( s->initialization() );
     while ( true ) {
 
-        eval( s->condition() );
-        if ( _info->load().zero() )
-            break;
+        if ( s->condition() ) {
+            eval( s->condition() );
+            if ( _info->load().zero() )
+                break;
+        }
 
         eval( s->body() );
         if ( _info && ( _info->breaking() || _info->returning() ) )
             break;
 
-        eval( s->increment() );
+        if ( s->increment() )
+            eval( s->increment() );
     }
     if ( _info && !_info->returning() )
         _info = nullptr;
 
-    _frames.back().stopAtBreak( false );
-    _frames.back().stopAtContinue( false );
-
+    _frames.pop_back();
 }
 
 void Interpret::intrinsicPrintf( std::vector< common::Register > values ) {
