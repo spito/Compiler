@@ -54,7 +54,7 @@ Defer make_defer( F &&f ) {
 template< typename T, typename V >
 T find_last( T begin, T end, const V &toSearch ) {
 
-    T remember = end;
+    T remember = begin;
 
     for ( ; begin != end; ++begin ) {
         if ( *begin == toSearch )
