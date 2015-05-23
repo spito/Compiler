@@ -104,14 +104,15 @@ public:
         return !( *this == p );
     }
 };
-}
-}
+} // namespace common
+} // namespace compiler
+
 namespace std {
 template<>
 inline void swap( ::compiler::common::Position &lhs, ::compiler::common::Position &rhs ) {
     lhs.swap( rhs );
 }
-}
+} // namespace std
 
 inline std::ostream &operator<<( std::ostream &out, const ::compiler::common::Position &p ) {
     return out << p.file() << ": " <<

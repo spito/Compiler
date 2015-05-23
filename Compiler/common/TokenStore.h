@@ -15,9 +15,7 @@ struct TokenStore {
     using Iterator = SmartIterator< std::vector< Token >::iterator > ;
     using ConstIterator = SmartIterator < std::vector< Token >::const_iterator >;
 
-    TokenStore()
-    {}
-
+    TokenStore() = default;
     TokenStore( const TokenStore & ) = default;
     TokenStore( TokenStore &&other ) :
         _tokens( std::move( other._tokens ) )
