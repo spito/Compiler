@@ -8,7 +8,6 @@
 namespace compiler {
 namespace parser {
 
-using Type = common::Token::Type;
 using Operator = common::Operator;
 
 enum class Asociativity : bool {
@@ -305,59 +304,50 @@ ast::Expression *Expression::descend( Side side, Operator owner ) {
 
     solvePrefixAmbiguity();
 
-    ast::Expression *self = nullptr;
+    ast::Expression::EHandle self;
     Operator op;
 
 
     switch ( _it->type() ) {
     case Type::Char:
-        self = new ast::Constant( _it->position(), _it->value().front(), _parser.typeStorage().fetchType( "char" ) );
+        self.reset( new ast::Constant( _it->position(), _it->value().front(), _parser.typeStorage().fetchType( "char" ) ) );
         ++_it;
         break;
     case Type::Integer:
-        self = new ast::Constant( _it->position(), _it->integer(), _parser.typeStorage().fetchType( "int" ) );
+        self.reset( new ast::Constant( _it->position(), _it->integer(), _parser.typeStorage().fetchType( "int" ) ) );
         ++_it;
         break;
     case Type::Real:
-        self = new ast::Constant( _it->position(), int64_t( _it->real() ), _parser.typeStorage().fetchType( "int" ) );
+        self.reset( new ast::Constant( _it->position(), int64_t( _it->real() ), _parser.typeStorage().fetchType( "int" ) ) );
         ++_it;
         break;
     case Type::String:
-        self = new ast::StringPlaceholder( _it->position(), _it->value() );
+        self.reset( new ast::StringPlaceholder( _it->position(), _it->value() ) );
+        ++_it;
+        break;
+    case Type::Keyword:
+        if ( _it->isKeyword( Keyword::Sizeof ) )
+            self.reset( sizeofExpression() );
+        else
+            throw exception::InvalidToken( *_it );
         break;
     case Type::Word:
-        if ( _parser.isStatementKeyword( _it->value() ) || _parser.isTypeKeyword( _it->value() ) )
-            throw exception::InvalidToken( *_it );
-
-        if ( _it->value() == "sizeof" )
-            self = sizeofExpression();
-        else {
-            self = new ast::Variable( _it->position(), _it->value() );
-            ++_it;
-        }
+        self.reset( new ast::Variable( _it->position(), _it->value() ) );
+        ++_it;
         break;
     case Type::Operator:
         if ( !unary() )
             throw exception::InvalidToken( *_it );
         op = _it->op();
         ++_it;
-        if ( op == Operator::BracketOpen ) {
-            bool fa = _functionArguments;
-            _functionArguments = false;
-            self = descend( Side::Left, Operator::None );
-
-            if ( !_it->isOperator( Operator::BracketClose ) )
-                throw exception::InvalidToken( *_it );
-            ++_it;
-            _functionArguments = fa;
-        }
+        if ( op == Operator::BracketOpen )
+            self.reset( bracketExpression() );
         else
-            self = new ast::UnaryOperator( _it->position(), _it->op(), descend( Side::Right, op ) );
+            self.reset( new ast::UnaryOperator( _it->position(), op, descend( Side::Right, op ) ) );
 
-        if ( _evaluator.start( self, true ) ) {
-            auto s = self;
-            self = new ast::Constant( s->position(), _evaluator.value().get64(), _evaluator.type() );
-            delete s;
+        if ( _evaluator.start( self.get(), true ) ) {
+            ast::Expression::EHandle s( self.release() );
+            self.reset( new ast::Constant( s->position(), _evaluator.value().get64(), _evaluator.type() ) );
         }
         break;
     default:
@@ -379,25 +369,35 @@ ast::Expression *Expression::descend( Side side, Operator owner ) {
             break;
 
         if ( nnary() ) {
-            ast::Variable *s = self->as< ast::Variable >();
+            std::unique_ptr< ast::Variable > s( self.release()->as< ast::Variable >() );
             if ( !s )
                 throw exception::InvalidToken( *_it );
             ++_it;
-            self = functionCall( s->name() );
+            self.reset( functionCall( s->name() ) );
+            continue;
         }
-        else if ( ternary() ) {
+        if ( self->kind() == ast::Kind::Variable ) {
+            auto v = self->as< ast::Variable >();
+
+            if ( !_parser.getVariable( v->name() ) )
+                throw exception::InternalError( "undeclared variable" );
+        }
+
+        if ( ternary() ) {
             ++_it;
-            ast::Expression *middle = descend( Side::Left, Operator::None );
+            ast::Expression::EHandle middle( descend( Side::Left, Operator::None ) );
             if ( !_it->isOperator( Operator::Colon ) )
                 throw exception::InvalidToken( *_it );
-            ast::Expression *right = descend( Side::Right, Operator::TernaryOperator );
-
-            self = new ast::TernaryOperator( token.position(), self, middle, right );
+            ++_it;
+            ast::Expression::EHandle right( descend( Side::Right, Operator::TernaryOperator ) );
+            auto s = self.release();
+            self.reset( new ast::TernaryOperator( token.position(), s, middle.release(), right.release() ) );
         }
         else if ( binary() ) {
             ++_it;
-            ast::Expression *right = descend( Side::Right, token.op() );
-            self = new ast::BinaryOperator( token.position(), token.op(), self, right );
+            ast::Expression::EHandle right( descend( Side::Right, token.op() ) );
+            auto s = self.release();
+            self.reset( new ast::BinaryOperator( token.position(), token.op(), s, right.release() ) );
             if ( token.op() == Operator::ArrayAccess ) {
                 if ( !_it->isOperator( Operator::BracketIndexClose ) )
                     throw exception::InvalidToken( *_it );
@@ -408,18 +408,18 @@ ast::Expression *Expression::descend( Side side, Operator owner ) {
             if ( token.op() != Operator::SuffixIncrement && token.op() != Operator::SuffixDecrement )
                 throw exception::InvalidToken( *_it );
             ++_it;
-            self = new ast::UnaryOperator( token.position(), token.op(), descend( Side::Left, token.op() ) );
+            auto s = self.release();
+            self.reset( new ast::UnaryOperator( token.position(), token.op(), s ) );
         }
         else
             throw exception::InvalidToken( *_it );
 
-        if ( _evaluator.start( self, true ) ) {
-            auto s = self;
-            self = new ast::Constant( s->position(), _evaluator.value().get64(), _evaluator.type() );
-            delete s;
+        if ( _evaluator.start( self.get(), true ) ) {
+            ast::Expression::EHandle s( self.release() );
+            self.reset( new ast::Constant( s->position(), _evaluator.value().get64(), _evaluator.type() ) );
         }
     }
-    return self;
+    return self.release();
 }
 
 ast::Expression *Expression::sizeofExpression() {
@@ -430,8 +430,6 @@ ast::Expression *Expression::sizeofExpression() {
         ++_it;
 
     Declaration d( _parser, _it );
-
-
 
     if ( d.decide() == Declaration::Type::SingleVariable )
          result.reset( new ast::Constant( d.begin()->position(), d.typeOnly()->size(), _parser.typeStorage().fetchType( "unsigned long" ) ) );
@@ -447,6 +445,41 @@ ast::Expression *Expression::sizeofExpression() {
         ++_it;
     }
 
+    return result.release();
+}
+
+ast::Expression *Expression::bracketExpression() {
+    bool fa = _functionArguments;
+    ast::Expression::EHandle result;
+    _functionArguments = false;
+    const auto &position = _it->position();
+
+    ++_it;
+
+    Declaration d( _parser, _it );
+
+    if ( d.decide() == Declaration::Type::TypeOnly ) {
+
+        switch ( d.typeOnly()->kind() ) {
+        case ast::type::Kind::Elementary:
+        case ast::type::Kind::Pointer:
+            break;
+        default:
+            throw exception::InternalError( "cast to not elementary or not to pointer" );
+        }
+
+        result.reset( new ast::BinaryOperator( position, Operator::TypeCast, new ast::Constant( position, 0, d.typeOnly() ), descend( Side::Right, Operator::TypeCast ) ) );
+    }
+    else {
+        _it = d.begin();
+        result.reset( descend( Side::Left, Operator::None ) );
+    }
+
+    if ( !_it->isOperator( Operator::BracketClose ) )
+        throw exception::InvalidToken( *_it );
+    ++_it;
+
+    _functionArguments = fa;
     return result.release();
 }
 
