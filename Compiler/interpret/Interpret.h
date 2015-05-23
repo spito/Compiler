@@ -11,6 +11,7 @@ namespace interpret {
 struct Interpret : ast::Traversal {
 
     std::list< Frame > _frames;
+    std::unordered_map< const char *, size_t > _whitelistPointers;
     ast::AST &_ast;
     bool _processingGlobal;
     common::AutoCheckPointer< Information > _info;
@@ -30,12 +31,13 @@ struct Interpret : ast::Traversal {
     void intrinsicPrintf( std::vector< common::Register > );
     void intrinsicScanf( std::vector< common::Register > );
 
-    bool checkRange( void * );
+    bool checkRange( const void * );
 
     void eval( const ast::Statement * ) override;
 
-    void eval( const ast::Variable * );
     void eval( const ast::Constant * );
+    void eval( const ast::StringPlaceholder * );
+    void eval( const ast::Variable * );
     void eval( const ast::UnaryOperator * );
     void eval( const ast::BinaryOperator * );
     void eval( const ast::TernaryOperator * );
