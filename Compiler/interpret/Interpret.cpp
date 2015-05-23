@@ -13,6 +13,12 @@ std::map< std::string, void( Interpret::* )( std::vector< common::Register > ) >
 void Interpret::eval( const ast::Statement *s ) {
 
     switch ( s->kind() ) {
+    case ast::Kind::Constant:
+        return eval( s->as< ast::Constant >() );
+    case ast::Kind::StringPlaceholder:
+        return eval( s->as< ast::StringPlaceholder >() );
+    case ast::Kind::Variable:
+        return eval( s->as< ast::Variable >() );
     case ast::Kind::UnaryOperator:
         return eval( s->as< ast::UnaryOperator >() );
     case ast::Kind::BinaryOperator:
@@ -21,10 +27,6 @@ void Interpret::eval( const ast::Statement *s ) {
         return eval( s->as< ast::TernaryOperator >() );
     case ast::Kind::Call:
         return eval( s->as< ast::Call >() );
-    case ast::Kind::Variable:
-        return eval( s->as< ast::Variable >() );
-    case ast::Kind::Constant:
-        return eval( s->as< ast::Constant >() );
     case ast::Kind::Block:
         return eval( s->as< ast::Block >() );
     case ast::Kind::If:
@@ -129,6 +131,12 @@ void Interpret::eval( const ast::Variable *v ) {
 
 void Interpret::eval( const ast::Constant *c ) {
     _info = new Information( common::Register( c->value() ) );
+    addRegister();
+}
+
+void Interpret::eval( const ast::StringPlaceholder *s ) {
+    _whitelistPointers.insert( { s->value().data(), s->value().size() + 1 } );
+    _info = new Information( common::Register( const_cast< char * >( s->value().data() ), 1, true ) );
     addRegister();
 }
 
