@@ -9,22 +9,27 @@ struct DoWhile : Statement {
 
     using Base = Statement;
 
-    DoWhile( common::Position p, EPtr condition, Ptr body ) :
-        Base( Kind::DoWhile, std::move( p ) ),
-        _condition( condition ),
-        _body( body )
-    {
-        parentBreak( this );
-        parentContinue( this );
-        _body->parentBreak( this );
-        _body->parentContinue( this );
-    }
+    DoWhile( common::Position p ) :
+        Base( Kind::DoWhile, std::move( p ) )
+    {}
 
     EPtr condition() const {
         return _condition.get();
     }
     Ptr body() const {
         return _body.get();
+    }
+
+    void assign( EPtr condition, Ptr body ) {
+        _condition.reset( condition );
+        _body.reset( body );
+
+        parentBreak( this );
+        parentContinue( this );
+        if ( _body ) {
+            _body->parentBreak( this );
+            _body->parentContinue( this );
+        }
     }
 
 private:

@@ -1,19 +1,17 @@
 #pragma once
 
 #include "Statement.h"
+#include "MemoryHolder.h"
 
 namespace compiler {
 namespace ast {
 
-struct If : Statement {
+struct If : Statement, MemoryHolder {
 
     using Base = Statement;
 
-    If ( common::Position p, EPtr condition, Ptr ifPath, Ptr elsePath ) :
-        Base( Kind::If, std::move( p ) ),
-        _condition( condition ),
-        _ifPath( ifPath ),
-        _elsePath( elsePath )
+    If ( common::Position p ) :
+        Base( Kind::If, std::move( p ) )
     {}
 
     EPtr condition() const {
@@ -27,13 +25,23 @@ struct If : Statement {
     }
 
     void parentBreak( Ptr s ) override {
-        _ifPath->parentBreak( s );
-        _elsePath->parentBreak( s );
+        if ( _ifPath )
+            _ifPath->parentBreak( s );
+        if ( _elsePath )
+            _elsePath->parentBreak( s );
     }
 
     void parentContinue( Ptr s ) override {
-        _ifPath->parentContinue( s );
-        _elsePath->parentContinue( s );
+        if ( _ifPath )
+            _ifPath->parentContinue( s );
+        if ( _elsePath )
+            _elsePath->parentContinue( s );
+    }
+
+    void assign( EPtr c, Ptr i, Ptr e ) {
+        _condition.reset( c );
+        _ifPath.reset( i );
+        _elsePath.reset( e );
     }
 
 private:

@@ -1,26 +1,18 @@
 #pragma once
 
 #include "Statement.h"
+#include "MemoryHolder.h"
 
 namespace compiler {
 namespace ast {
 
-struct For : Statement {
+struct For : Statement, MemoryHolder {
 
     using Base = Statement;
 
-    For( common::Position p, EPtr initialization, EPtr condition, EPtr increment, Ptr body ) :
-        Base( Kind::For, std::move( p ) ),
-        _initialization( initialization ),
-        _condition( condition ),
-        _increment( increment ),
-        _body( body )
-    {
-        parentBreak( this );
-        parentContinue( this );
-        _body->parentBreak( this );
-        _body->parentContinue( this );
-    }
+    For( common::Position p ) :
+        Base( Kind::For, std::move( p ) )
+    {}
 
     EPtr initialization() const {
         return _initialization.get();
@@ -33,6 +25,20 @@ struct For : Statement {
     }
     Ptr body() const {
         return _body.get();
+    }
+
+    void assign( EPtr ini, EPtr c, EPtr inc, Ptr b ) {
+        _initialization.reset( ini );
+        _condition.reset( c );
+        _increment.reset( inc );
+        _body.reset( b );
+
+        parentBreak( this );
+        parentContinue( this );
+        if ( _body ) {
+            _body->parentBreak( this );
+            _body->parentContinue( this );
+        }
     }
 
 private:

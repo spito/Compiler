@@ -1,30 +1,37 @@
 #pragma once
 
 #include "Statement.h"
+#include "MemoryHolder.h"
 
 namespace compiler {
 namespace ast {
 
-struct While : Statement {
+struct While : Statement, MemoryHolder {
 
     using Base = Statement;
 
-    While( common::Position p, EPtr condition, Ptr body ) :
-        Base( Kind::While, std::move( p ) ),
-        _condition( condition ),
-        _body( body )
-    {
-        parentBreak( this );
-        parentContinue( this );
-        _body->parentBreak( this );
-        _body->parentContinue( this );
-    }
+    While( common::Position p ) :
+        Base( Kind::While, std::move( p ) )
+    {}
 
     EPtr condition() const {
         return _condition.get();
     }
     Ptr body() const {
         return _body.get();
+    }
+
+    void assign( EPtr c, Ptr b ) {
+        _condition.reset( c );
+        _body.reset( b );
+
+        parentBreak( this );
+        parentContinue( this );
+
+        if ( _body ) {
+            _body->parentBreak( this );
+            _body->parentContinue( this );
+        }
     }
 
 private:
