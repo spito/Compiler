@@ -98,7 +98,21 @@ void Interpret::addRegister( bool( *selector )( FrameIterator ) ) {
     throw exception::InternalError( "not suitable frame" );
 }
 
-bool Interpret::checkRange( void *ptr ) {
+bool Interpret::checkRange( const void *ptr ) {
+    union Pointer {
+        const char *ptr;
+        uintptr_t number;
+    };
+
+    for ( const auto &p : _whitelistPointers ) {
+
+        Pointer begin, end, examined;
+        begin.ptr = p.first;
+        end.ptr = p.first + p.second;
+        examined.ptr = static_cast< const char * >( ptr );
+        if ( begin.number <= examined.number && examined.number <= end.number )
+            return true;
+    }
 
     for ( auto i = _frames.rbegin(); i != _frames.rend(); ++i ) {
 
