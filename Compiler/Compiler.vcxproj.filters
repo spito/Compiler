@@ -283,6 +283,18 @@
     <ClInclude Include="parser\SmartIterator.h">
       <Filter>Header Files\parser</Filter>
     </ClInclude>
+    <ClInclude Include="common\Keyword.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\StatementExpression.h">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\ArrayInitiaizer.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\Statement.h">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\Unicode.cpp">
@@ -362,6 +374,12 @@
     </ClCompile>
     <ClCompile Include="common\TokenStore.cpp">
       <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="parser\StatementExpression.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="parser\Statement.cpp">
+      <Filter>Source Files\parser</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

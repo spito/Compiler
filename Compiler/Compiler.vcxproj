@@ -145,6 +145,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ast\ArrayInitiaizer.h" />
     <ClInclude Include="ast\AST.h" />
     <ClInclude Include="ast\BinaryOperator.h" />
     <ClInclude Include="ast\Block.h" />
@@ -171,6 +172,7 @@
     <ClInclude Include="ast\While.h" />
     <ClInclude Include="common\AutoCheckPointer.h" />
     <ClInclude Include="common\CharClass.h" />
+    <ClInclude Include="common\Keyword.h" />
     <ClInclude Include="common\Register.h" />
     <ClInclude Include="common\Operator.h" />
     <ClInclude Include="common\Position.h" />
@@ -203,6 +205,8 @@
     <ClInclude Include="parser\Parser.h" />
     <ClInclude Include="parser\Declaration.h" />
     <ClInclude Include="parser\SmartIterator.h" />
+    <ClInclude Include="parser\Statement.h" />
+    <ClInclude Include="parser\StatementExpression.h" />
     <ClInclude Include="preprocessor\Expression.h" />
     <ClInclude Include="preprocessor\Global.h" />
     <ClInclude Include="preprocessor\InputBuffer.h" />
@@ -257,6 +261,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="parser\Parser.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="parser\Statement.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="parser\StatementExpression.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="preprocessor\Expression.cpp" />
