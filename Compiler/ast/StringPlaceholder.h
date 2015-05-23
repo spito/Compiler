@@ -9,7 +9,8 @@ struct StringPlaceholder : Expression {
     using Base = Expression;
 
     StringPlaceholder( common::Position p, std::string value ) :
-        Base( Kind::StringPlaceholder, std::move( p ), common::Operator::None )
+        Base( Kind::StringPlaceholder, std::move( p ), common::Operator::None ),
+        _value( std::move( value ) )
     {}
 
     const std::string &value() const {
