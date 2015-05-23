@@ -26,6 +26,18 @@ struct SmartIterator : common::SmartIterator < std::vector< common::Token >::ite
             _begin != _end &&
             _begin->type() != Type::Eof;
     }
+
+    Iterator operator->( ) {
+        while ( skip() )
+            ++_begin;
+        return _begin;
+    }
+    common::Token &operator*( ) {
+        while ( skip() )
+            ++_begin;
+        return *_begin;
+    }
+
     SmartIterator &operator++( ) {
         do { ++_begin; } while ( skip() );
         return *this;
