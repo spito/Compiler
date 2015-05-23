@@ -28,6 +28,7 @@ private:
 
 static bool splitBySpace( common::Token::Type type ) {
     return
+        type == common::Token::Type::Keyword ||
         type == common::Token::Type::Word ||
         type == common::Token::Type::Integer ||
         type == common::Token::Type::Real ||
@@ -46,16 +47,16 @@ void Output::save( const char *name ) const {
 
         if ( token.type() == common::Token::Type::FileBegin ) {
             stack.push( Frame( 1, token.position().file() ) );
-            if ( stack.size() > 1 )
-                file << '\n';
-            file << "# " << stack.top().line() << " " <<
-                stack.top().file() << " 1" << std::endl;
+            if ( stack.size() > 1 ) {
+                file << "\n# " << stack.top().line() << " " <<
+                    stack.top().file() << " 1" << std::endl;
+            }
             continue;
         }
         if ( token.type() == common::Token::Type::FileEnd ) {
             stack.pop();
             if ( !stack.empty() ) {
-                file << "# " << stack.top().line() << " " <<
+                file << "\n# " << stack.top().line() << " " <<
                     stack.top().file() << " 2" << std::endl;
             }
             continue;
