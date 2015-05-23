@@ -4,6 +4,9 @@
 #include "Information.h"
 
 #include <functional>
+#include <vector>
+#include <map>
+#include <list>
 
 namespace compiler {
 namespace interpret {
