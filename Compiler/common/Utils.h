@@ -3,6 +3,7 @@
 #include <utility>
 #include <string>
 #include <vector>
+#include <functional>
 
 namespace compiler {
 namespace common {
@@ -14,10 +15,9 @@ struct Orderable {
     using IsOrderable = bool;
 };
 
-template< typename F >
 struct Defer {
 
-    Defer( F &&f ) :
+    Defer( std::function< void() > &&f ) :
         _f( std::move( f ) ),
         _run( false )
     {}
@@ -42,13 +42,13 @@ struct Defer {
     }
 
 private:
-    F _f;
+    std::function< void() > _f;
     bool _run;
 };
 
 template< typename F >
-Defer< F > make_defer( F &&f ) {
-    return Defer< F >( std::move( f ) );
+Defer make_defer( F &&f ) {
+    return Defer( std::move( f ) );
 }
 
 template< typename T >
