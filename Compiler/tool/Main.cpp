@@ -1,6 +1,8 @@
 #include "Main.h"
 #include "../preprocessor/Preprocessor.h"
 #include "../preprocessor/Output.h"
+#include "../parser/Parser.h"
+#include "../interpret/Interpret.h"
 
 int main( int argc, char **argv ) {
     return compiler::tool::Main( argc, argv ).run();
@@ -62,7 +64,17 @@ int Main::preprocessor() {
     return 0;
 }
 int Main::interpret(){
-    throw exception::InternalError( "not implemented" );
+    
+    if ( _meta.input.size() != 1 )
+        throw exception::InternalError( "invalid size of options (preprocessor)" );
+
+    compiler::preprocessor::Preprocessor p( _meta.input.front() );
+    compiler::parser::Parser parser( p.store() );
+
+    compiler::interpret::Interpret i( parser.tree() );
+
+    i.start();
+    return 0;
 }
 int Main::llvm(){
     throw exception::InternalError( "not implemented" );
