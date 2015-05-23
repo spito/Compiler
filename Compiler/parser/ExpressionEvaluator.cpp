@@ -222,7 +222,7 @@ void ExpressionEvaluator::eval( const ast::TernaryOperator *e ) {
 }
 
 void ExpressionEvaluator::eval( const ast::Call *e ) {
-    _type = &_parser.tree().findFunction( e->name() ).returnType();
+    _type = &_parser.tree().findFunction( e->name() )->returnType();
 }
 
 
