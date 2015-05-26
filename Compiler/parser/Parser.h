@@ -68,7 +68,7 @@ struct Parser {
         ++_nestedCycles;
         if ( s )
             _scopes.push_back( s );
-        return common::Defer( [&,this] {
+        return common::Defer( [s,this] {
             --_nestedCycles;
             if ( s )
                 _scopes.pop_back();
