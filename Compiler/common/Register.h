@@ -297,6 +297,7 @@ struct Register {
         case Type::Kind::UInt16: setu16( getu16() ); break;
         case Type::Kind::Int32:
         case Type::Kind::UInt32: setu32( getu32() ); break;
+        default:
         case Type::Kind::Int64:
         case Type::Kind::UInt64: setu64( getu64() ); break;
         }
@@ -388,6 +389,7 @@ private:
         switch ( toChange.type().kind() ) {
         case Type::Kind::Int64: toChange = Register( uint64_t( toChange.get64() ) ); return;
         case Type::Kind::UInt32:toChange = Register( int64_t( toChange.getu32() ) ); return;
+        default:;
         }
 
         // int -> uint
@@ -395,6 +397,7 @@ private:
         switch ( desired.type().kind() ) {
         case Type::Kind::UInt32: toChange = Register( uint32_t( toChange.get32() ) ); return;
         case Type::Kind::UInt64: toChange = Register( uint64_t( toChange.get32() ) ); return;
+        default:;
         }
     }
 
@@ -415,13 +418,13 @@ private:
         return *this;
     }
 
-    union {
+    union Pointer {
+        void *ptr;
+        uintptr_t unumeric;
+        intptr_t numeric;
+    };
 
-        union Pointer {
-            void *ptr;
-            uintptr_t unumeric;
-            intptr_t numeric;
-        };
+    union {
 
         int8_t _char;
         uint8_t _uchar;

@@ -6,6 +6,7 @@ namespace common {
 
 Register Register::operator++( ) {
     switch ( type().kind() ) {
+    case Type::Kind::None:               break;
     case Type::Kind::Int8:   ++get8();   break;
     case Type::Kind::UInt8:  ++getu8();  break;
     case Type::Kind::Int16:  ++get16();  break;
@@ -21,6 +22,7 @@ Register Register::operator++( ) {
 
 Register Register::operator--( ) {
     switch ( type().kind() ) {
+    case Type::Kind::None:               break;
     case Type::Kind::Int8:   --get8();   break;
     case Type::Kind::UInt8:  --getu8();  break;
     case Type::Kind::Int16:  --get16();  break;
@@ -36,6 +38,7 @@ Register Register::operator--( ) {
 
 Register Register::operator~( ) {
     switch ( type().kind() ) {
+    case Type::Kind::None:               break;
     case Type::Kind::Int8:
     case Type::Kind::Int16:
     case Type::Kind::Int32:
@@ -51,6 +54,7 @@ Register Register::operator~( ) {
 
 Register Register::operator-( ) {
     switch ( type().kind() ) {
+    case Type::Kind::None:               break;
     case Type::Kind::Int8:  set32( -get8() );  break;
     case Type::Kind::Int16: set32( -get16() ); break;
     case Type::Kind::Int32: set32( -get32() ); break;
@@ -88,6 +92,7 @@ Register Register::operator*=( Register r ) {
     case Type::Kind::UInt32: setu32( getu32() * r.getu32() ); break;
     case Type::Kind::Int64:  set64( get64() * r.get64() );    break;
     case Type::Kind::UInt64: setu64( getu64() * r.getu64() ); break;
+    default:;
     }
     return *this;
 }
@@ -105,6 +110,7 @@ Register Register::operator/=( Register r ) {
     case Type::Kind::UInt32: setu32( getu32() / r.getu32() ); break;
     case Type::Kind::Int64:  set64( get64() / r.get64() );    break;
     case Type::Kind::UInt64: setu64( getu64() / r.getu64() ); break;
+    default:;
     }
     return *this;
 }
@@ -120,6 +126,7 @@ Register Register::operator%=( Register r ) {
     case Type::Kind::UInt32: setu32( getu32() % r.getu32() ); break;
     case Type::Kind::Int64:  set64( get64() % r.get64() );    break;
     case Type::Kind::UInt64: setu64( getu64() % r.getu64() ); break;
+    default:;
     }
     return *this;
 }
@@ -157,6 +164,7 @@ Register Register::operator+=( Register r ) {
     case Type::Kind::UInt32: setu32( getu32() + r.getu32() ); break;
     case Type::Kind::Int64:  set64( get64() + r.get64() );    break;
     case Type::Kind::UInt64: setu64( getu64() + r.getu64() ); break;
+    default:;
     }
     return *this;
 }
@@ -194,6 +202,7 @@ Register Register::operator-=( Register r ) {
     case Type::Kind::UInt32: setu32( getu32() - r.getu32() ); break;
     case Type::Kind::Int64:  set64( get64() - r.get64() );    break;
     case Type::Kind::UInt64: setu64( getu64() - r.getu64() ); break;
+    default:;
     }
     return *this;
 }
@@ -214,11 +223,13 @@ Register Register::operator<<=( Register r ) {
     case Type::Kind::UInt32: shift = r.getu32(); break;
     case Type::Kind::Int64:  shift = int( r.get64() );  break;
     case Type::Kind::UInt64: shift = int( r.getu64() ); break;
+    default:;
     }
 
     switch ( type().kind() ) {
     case Type::Kind::UInt32: setu32( getu32() << shift ); break;
     case Type::Kind::UInt64: setu64( getu64() << shift ); break;
+    default:;
     }
     return *this;
 }
@@ -239,11 +250,13 @@ Register Register::operator>>=( Register r ) {
     case Type::Kind::UInt32: shift = r.getu32(); break;
     case Type::Kind::Int64:  shift = int( r.get64() );  break;
     case Type::Kind::UInt64: shift = int( r.getu64() ); break;
+    default:;
     }
 
     switch ( type().kind() ) {
     case Type::Kind::UInt32: setu32( getu32() >> shift ); break;
     case Type::Kind::UInt64: setu64( getu64() >> shift ); break;
+    default:;
     }
     return *this;
 }
@@ -269,6 +282,7 @@ Register Register::operator<( Register r ) {
     case Type::Kind::UInt32: result = getu32() < r.getu32(); break;
     case Type::Kind::Int64:  result = get64() < r.get64();   break;
     case Type::Kind::UInt64: result = getu64() < r.getu64(); break;
+    default:;
     }
     result ?
         *this = Register( 1 ) :
@@ -296,6 +310,7 @@ Register Register::operator<=( Register r ) {
     case Type::Kind::UInt32: result = getu32() <= r.getu32(); break;
     case Type::Kind::Int64:  result = get64() <= r.get64();   break;
     case Type::Kind::UInt64: result = getu64() <= r.getu64(); break;
+    default:;
     }
     result ?
         *this = Register( 1 ) :
@@ -323,6 +338,7 @@ Register Register::operator>( Register r ) {
     case Type::Kind::UInt32: result = getu32() > r.getu32(); break;
     case Type::Kind::Int64:  result = get64() > r.get64();   break;
     case Type::Kind::UInt64: result = getu64() > r.getu64(); break;
+    default:;
     }
     result ?
         *this = Register( 1 ) :
@@ -350,6 +366,7 @@ Register Register::operator>=( Register r ) {
     case Type::Kind::UInt32: result = getu32() >= r.getu32(); break;
     case Type::Kind::Int64:  result = get64() >= r.get64();   break;
     case Type::Kind::UInt64: result = getu64() >= r.getu64(); break;
+    default:;
     }
     result ?
         *this = Register( 1 ) :
@@ -377,6 +394,7 @@ Register Register::operator==( Register r ) {
     case Type::Kind::UInt32: result = getu32() == r.getu32(); break;
     case Type::Kind::Int64:  result = get64() == r.get64();   break;
     case Type::Kind::UInt64: result = getu64() == r.getu64(); break;
+    default:;
     }
     result ?
         *this = Register( 1 ) :
@@ -404,6 +422,7 @@ Register Register::operator!=( Register r ) {
     case Type::Kind::UInt32: result = getu32() != r.getu32(); break;
     case Type::Kind::Int64:  result = get64() != r.get64();   break;
     case Type::Kind::UInt64: result = getu64() != r.getu64(); break;
+    default:;
     }
     result ?
         *this = Register( 1 ) :
@@ -423,6 +442,7 @@ Register Register::operator&=( Register r ) {
     switch ( type().kind() ) {
     case Type::Kind::UInt32: setu32( getu32() & r.getu32() ); break;
     case Type::Kind::UInt64: setu64( getu64() & r.getu64() ); break;
+    default:;
     }
     return *this;
 }
@@ -439,6 +459,7 @@ Register Register::operator^=( Register r ) {
     switch ( type().kind() ) {
     case Type::Kind::UInt32: setu32( getu32() ^ r.getu32() ); break;
     case Type::Kind::UInt64: setu64( getu64() ^ r.getu64() ); break;
+    default:;
     }
     return *this;
 }
@@ -455,6 +476,7 @@ Register Register::operator|=( Register r ) {
     switch ( type().kind() ) {
     case Type::Kind::UInt32: setu32( getu32() | r.getu32() ); break;
     case Type::Kind::UInt64: setu64( getu64() | r.getu64() ); break;
+    default:;
     }
     return *this;
 }
