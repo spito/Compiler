@@ -19,45 +19,11 @@ struct ExpressionEvaluator : ast::Traversal {
     bool start( const ast::Statement *s, bool quiet = false, bool typeOnly = false ) {
         _value.quiet( quiet );
         _typeOnly = typeOnly;
+        _failed = false;
         eval( s );
         return valid();
     }
-
-    void eval( const ast::Statement *s ) override {
-        if ( !valid() )
-            return;
-
-        switch ( s->kind() ) {
-        case ast::Kind::Constant:
-            return eval( s->as< ast::Constant >() );
-        case ast::Kind::Variable:
-            if ( !_typeOnly ) {
-                _failed = true;
-                break;
-            }
-            return eval( s->as< ast::Variable >() );
-        case ast::Kind::UnaryOperator:
-            return eval( s->as< ast::UnaryOperator >() );
-        case ast::Kind::BinaryOperator:
-            return eval( s->as< ast::BinaryOperator >() );
-        case ast::Kind::TernaryOperator:
-            return eval( s->as< ast::TernaryOperator >() );
-        case ast::Kind::Call:
-            if ( !_typeOnly ) {
-                _failed = true;
-                break;
-            }
-            return eval( s->as< ast::Call >() );
-        default:
-            _failed = true;
-        }
-
-    }
-
-    void typeOnly( bool v = true ) {
-        _typeOnly = v;
-    }
-
+    
     common::Register value() {
         _value.clearMess();
         return _value;
@@ -71,6 +37,7 @@ struct ExpressionEvaluator : ast::Traversal {
         return !_failed && !_value.isPointerProblem() && !_value.isSignedProblem();
     }
 private:
+    void eval( const ast::Statement * ) override;
     void eval( const ast::Constant * );
     void eval( const ast::Variable * );
     void eval( const ast::UnaryOperator * );
@@ -85,8 +52,8 @@ private:
     Parser &_parser;
     common::Register _value;
     const ast::type::Type *_type;
-    bool _failed = false;
-    bool _typeOnly = false;
+    bool _failed;
+    bool _typeOnly;
 };
 
 

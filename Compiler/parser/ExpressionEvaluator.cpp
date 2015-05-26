@@ -3,6 +3,37 @@
 namespace compiler {
 namespace parser {
 
+void ExpressionEvaluator::eval( const ast::Statement *s ) {
+    if ( !valid() )
+        return;
+
+    switch ( s->kind() ) {
+    case ast::Kind::Constant:
+        return eval( s->as< ast::Constant >() );
+    case ast::Kind::Variable:
+        if ( !_typeOnly ) {
+            _failed = true;
+            break;
+        }
+        return eval( s->as< ast::Variable >() );
+    case ast::Kind::UnaryOperator:
+        return eval( s->as< ast::UnaryOperator >() );
+    case ast::Kind::BinaryOperator:
+        return eval( s->as< ast::BinaryOperator >() );
+    case ast::Kind::TernaryOperator:
+        return eval( s->as< ast::TernaryOperator >() );
+    case ast::Kind::Call:
+        if ( !_typeOnly ) {
+            _failed = true;
+            break;
+        }
+        return eval( s->as< ast::Call >() );
+    default:
+        _failed = true;
+    }
+
+}
+
 void ExpressionEvaluator::eval( const ast::Constant *e ) {
     _value = common::Register( int( e->value() ) );
     _type = e->type();
@@ -30,11 +61,13 @@ void ExpressionEvaluator::eval( const ast::UnaryOperator *e ) {
         ~_value;
         break;
     case Operator::Ampersand:
+    case Operator::AddressOf:
         if ( !_type )
             throw exception::InternalError( "invalid ast tree" );
         _type = _parser.typeStorage().addType< ast::type::Pointer >( _type );
         break;
     case Operator::Star:
+    case Operator::Dereference:
         if ( !_type )
             throw exception::InternalError( "invalid ast tree" );
         if ( _type->kind() == ast::type::Kind::Array )
@@ -88,6 +121,8 @@ void ExpressionEvaluator::eval( const ast::BinaryOperator *e ) {
             deduceType();
             return;
         }
+        break;
+    default:
         break;
     }
 
