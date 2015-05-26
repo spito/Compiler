@@ -121,7 +121,13 @@ struct MemoryHolder {
     }
 
     bool declarationOf( const MemoryHolder &other ) const {
-        return _prototypes == other._prototypes;
+        bool result = true;
+        auto i = _prototypes.begin();
+        other.forOrderedVariables( [&]( const std::string &, const Variable &v ) {
+            result = result && &v.type() == *i;
+            ++i;
+        } );
+        return result;
     }
 private:
     std::map< std::string, Variable > _variables;

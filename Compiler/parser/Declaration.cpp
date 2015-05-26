@@ -251,8 +251,21 @@ auto Declaration::beVariable() -> States {
 }
 
 auto Declaration::beFunction( bool definition ) -> States {
-    _parser.addFunction( new ast::Function( _type, _name, definition ) );
+    std::unique_ptr< ast::Function > functionHandle( new ast::Function( _type, _name, definition ) );
     _declarationType = Type::Function;
+    if ( definition ) {
+        for ( const auto &p : _parametres ) {
+            functionHandle->parameters().add( p.first, p.second );
+        }
+    }
+    else {
+        for ( auto p : _types ) {
+            functionHandle->parameters().addPrototype( p );
+        }
+    }
+
+
+    _parser.addFunction( functionHandle.release() );
 
     _function = _parser.tree().findFunction( _name );
 
@@ -269,11 +282,6 @@ auto Declaration::beFunction( bool definition ) -> States {
 
         if ( !_it->isOperator( Operator::BraceClose ) )
             return toError();
-    }
-    else {
-        for ( auto p : _types ) {
-            _function->parameters().addPrototype( p );
-        }
     }
     ++_it;
     return quit();
