@@ -62,7 +62,6 @@ ast::Statement *Statement::single() {
 
     StatementExpression se( _parser, _it );
     std::string variableName;
-    //std::unique_ptr< ast::Variable > variable;
     ast::Statement::Handle statement;
     const ast::type::Type *type = nullptr;
 
