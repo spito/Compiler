@@ -378,7 +378,7 @@ ast::Return *Statement::returnStatement() {
         return new ast::Return( position, nullptr );
     }
 
-    std::unique_ptr< ast::Return > stmt( new ast::Return( position, Expression( _parser, _it ) ) );
+    std::unique_ptr< ast::Return > stmt( new ast::Return( position, Expression( _parser, _it ).obtain() ) );
     if ( !_it->isOperator( Operator::Semicolon ) )
         throw exception::InvalidToken( *_it );
     ++_it;

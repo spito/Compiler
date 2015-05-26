@@ -21,7 +21,8 @@ struct Expression {
         _evaluator( p )
     {}
 
-    operator ast::Expression *( ) {
+    ast::Expression *obtain( bool leaveAtComma = false ) {
+        _leaveAtComma = leaveAtComma;
         return descend( Side::Left, Operator::None );
     }
 

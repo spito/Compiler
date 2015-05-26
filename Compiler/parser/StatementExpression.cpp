@@ -14,7 +14,7 @@ auto StatementExpression::decide( bool fullExpression ) -> Type {
 
     switch ( d.decide( fullExpression ) ) {
     case Declaration::Type::None:
-        _expression.reset( Expression( _parser, _it ) );
+        _expression.reset( Expression( _parser, _it ).obtain() );
         return Type::Expression;
 
     case Declaration::Type::TypeOnly:
@@ -41,7 +41,7 @@ auto StatementExpression::decide( bool fullExpression ) -> Type {
                     position,
                     Operator::Assignment,
                     variable.release(),
-                    Expression( _parser, _it )
+                    Expression( _parser, _it ).obtain()
                     ) );
                 break;
             default:
