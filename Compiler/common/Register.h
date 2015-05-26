@@ -271,10 +271,6 @@ struct Register {
         return _type;
     }
 
-    Register assign( Register another ) {
-
-    }
-
     bool zero() const {
         if ( type().isPointer() )
             return getPtr() == nullptr;
