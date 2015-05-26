@@ -53,7 +53,7 @@ auto Declaration::stArray() -> States {
     if ( _it->isOperator( Operator::BracketIndexOpen ) )
         return toArray();
     if ( _it->type() == Token::Type::Operator )
-        return _variable ? beVariable() : beTypeOnly();
+        return _name.empty() ? beTypeOnly() : beVariable();
     return toError();
 }
 
@@ -129,20 +129,15 @@ auto Declaration::toArray() -> States {
     size_t range;
     ++_it;
 
-    if ( _it->type() == common::Token::Type::Integer )
-        range = size_t( _it->integer() );
-    else if ( _it->type() == common::Token::Type::Char )
-        range = _it->value().front();
-    else {
-        evaluator.typeOnly( false );
-        auto position = _it;
-        evaluator.eval( Expression( _parser, _it ) );
-        if ( !evaluator.valid() ) {
-            _it = position;
-            return toError();
-        }
-        range = size_t( evaluator.value().getu64() );
+    auto position = _it;
+    ast::Expression::EHandle h( Expression( _parser, _it ).obtain() );
+    evaluator.start( h.get() );
+    if ( !evaluator.valid() ) {
+        _it = position;
+        return toError();
     }
+    range = size_t( evaluator.value().getu64() );
+
     _type = _parser.tree().typeStorage().addType< ast::type::Array >( _type, range );
     if ( !_it->isOperator( Operator::BracketIndexClose ) )
         return toError();
@@ -181,6 +176,8 @@ auto Declaration::toDeclaration() -> States {
         }
         else
             type = descendant.type();
+    default:
+        break;
     }
 
     switch ( decision ) {
@@ -290,6 +287,7 @@ auto Declaration::quit() -> States {
 Declaration::Type Declaration::decide( bool fullExpression ) {
     States state = States::Start;
     _fullExpression = fullExpression;
+    _declarationType = Type::None;
 
     while ( _it && !_quit ) {
         switch ( state ) {
