@@ -18,6 +18,8 @@ void Interpret::eval( const ast::Statement *s ) {
         return eval( s->as< ast::Constant >() );
     case ast::Kind::StringPlaceholder:
         return eval( s->as< ast::StringPlaceholder >() );
+    case ast::Kind::ArrayInitializer:
+        return eval( s->as< ast::ArrayInitializer >() );
     case ast::Kind::Variable:
         return eval( s->as< ast::Variable >() );
     case ast::Kind::UnaryOperator:
@@ -131,13 +133,14 @@ void Interpret::eval( const ast::Variable *v ) {
 }
 
 void Interpret::eval( const ast::Constant *c ) {
-    _info = new Information( common::Register( int( c->value() ) ) );
+    _info = new Information( common::Register( int( c->value() ) ), c->type() );
     addRegister();
 }
 
 void Interpret::eval( const ast::StringPlaceholder *s ) {
     _whitelistPointers.insert( { s->value().data(), s->value().size() + 1 } );
-    _info = new Information( common::Register( const_cast< char * >( s->value().data() ), 1, true ) );
+    const ast::type::Type *type = _ast.typeStorage().addType< ast::type::Pointer >( _ast.typeStorage().fetchType( "const char" ) );
+    _info = new Information( common::Register( const_cast< char * >( s->value().data() ), 1, true ), type );
     addRegister();
 }
 

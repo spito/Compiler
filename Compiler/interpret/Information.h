@@ -14,9 +14,10 @@ struct Information {
         InfoOnly
     };
 
-    Information( common::Register r ) :
+    Information( common::Register r, const ast::type::Type *type ) :
         _state( State::Constant ),
-        _value( r )
+        _value( r ),
+        _variable( nullptr, type )
     {}
 
     Information( Variable v ) :
