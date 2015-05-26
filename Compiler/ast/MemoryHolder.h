@@ -42,6 +42,7 @@ struct MemoryHolder {
     MemoryHolder( MemoryHolder &&other ) :
         _memoryLength( other._memoryLength ),
         _variables( std::move( other._variables ) ),
+        _ordering( std::move( other._ordering ) ),
         _prototypes( std::move( other._prototypes ) ),
         _variadic( other._variadic )
     {}
@@ -49,6 +50,7 @@ struct MemoryHolder {
     bool add( std::string name, const type::Type *type ) {
         if ( hasVariable( name ) )
             return false;
+        _ordering.push_back( name );
         _variables.emplace( std::move( name ), Variable( _memoryLength, type ) );
         _memoryLength += type->size();
         return true;
@@ -85,6 +87,14 @@ struct MemoryHolder {
             yield( i.first, i.second );
     }
 
+    template< typename Yield >
+    void forOrderedVariables( Yield yield ) const {
+        for ( const auto &name : _ordering ) {
+            auto i = _variables.find( name );
+            yield( i->first, i->second );
+        }
+    }
+
     bool hasVariable( const std::string &name ) {
         return _variables.count( name ) == 1;
     }
@@ -104,6 +114,7 @@ struct MemoryHolder {
         using std::swap;
 
         swap( _variables, other._variables );
+        swap( _ordering, other._ordering );
         swap( _prototypes, other._prototypes );
         swap( _memoryLength, other._memoryLength );
         swap( _variadic, other._variadic );
@@ -114,6 +125,7 @@ struct MemoryHolder {
     }
 private:
     std::map< std::string, Variable > _variables;
+    std::vector< std::string > _ordering;
     std::vector< const type::Type * > _prototypes;
     int _memoryLength;
     bool _variadic;

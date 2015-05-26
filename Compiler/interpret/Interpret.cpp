@@ -189,7 +189,7 @@ void Interpret::eval( const ast::Call *e ) {
     _frames.emplace_back( f->parameters(), width );
 
     int paramIndex = 0;
-    f->parameters().forVariables( [&, this]( const std::string &name, ast::MemoryHolder::Variable ) {
+    f->parameters().forOrderedVariables( [&, this]( const std::string &name, ast::MemoryHolder::Variable ) {
         Information proxy( findSymbol( name ) );
         proxy.store( values[ paramIndex ] );
         ++paramIndex;
