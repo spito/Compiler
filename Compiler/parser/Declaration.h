@@ -23,7 +23,7 @@ struct Declaration {
         _parser( p )
     {}
 
-    const ast::type::Type *typeOnly() const {
+    const ast::type::Type *type() const {
         return _type;
     }
     const ast::Function *function() {

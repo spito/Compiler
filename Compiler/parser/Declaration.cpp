@@ -174,13 +174,13 @@ auto Declaration::toDeclaration() -> States {
     switch ( decision ) {
     case Type::SingleVariable:
     case Type::TypeOnly:
-        if ( descendant.typeOnly()->kind() == ast::type::Kind::Array ) {
+        if ( descendant.type()->kind() == ast::type::Kind::Array ) {
             type = _parser.typeStorage().addType< ast::type::Pointer >(
-                &descendant.typeOnly()->as< ast::type::Array >()->of()
+                &descendant.type()->as< ast::type::Array >()->of()
                 );
         }
         else
-            type = descendant.typeOnly();
+            type = descendant.type();
     }
 
     switch ( decision ) {
@@ -204,7 +204,7 @@ auto Declaration::toDeclaration() -> States {
         if ( !_types.empty() )
             return toError();
     case Type::VariadicPack:
-        _types.push_back( descendant.typeOnly() );
+        _types.push_back( descendant.type() );
         return States::LastNestedDeclaration;
     default:
         return toError();

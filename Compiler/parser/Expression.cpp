@@ -459,7 +459,7 @@ ast::Expression *Expression::bracketExpression() {
 
     if ( d.decide() == Declaration::Type::TypeOnly ) {
 
-        switch ( d.typeOnly()->kind() ) {
+        switch ( d.type()->kind() ) {
         case ast::type::Kind::Elementary:
         case ast::type::Kind::Pointer:
             break;
@@ -467,7 +467,7 @@ ast::Expression *Expression::bracketExpression() {
             throw exception::InternalError( "cast to not elementary or not to pointer" );
         }
 
-        result.reset( new ast::BinaryOperator( position, Operator::TypeCast, new ast::Constant( position, 0, d.typeOnly() ), descend( Side::Right, Operator::TypeCast ) ) );
+        result.reset( new ast::BinaryOperator( position, Operator::TypeCast, new ast::Constant( position, 0, d.type() ), descend( Side::Right, Operator::TypeCast ) ) );
     }
     else {
         _it = d.begin();

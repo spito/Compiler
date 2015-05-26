@@ -25,13 +25,13 @@ auto StatementExpression::decide( bool fullExpression ) -> Type {
     case Declaration::Type::SingleVariable:
         variable.reset( d.variable() );
         _variableName = variable->name();
-        _type = d.typeOnly();
+        _type = d.type();
 
         if ( _it->isOperator( Operator::Assignment ) ) {
             const auto &position = _it->position();
             ++_it;
 
-            switch ( d.typeOnly()->kind() ) {
+            switch ( d.type()->kind() ) {
             case ast::type::Kind::Array:
                 // TODO: implement
                 return Type::VariableDeclaration;
