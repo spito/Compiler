@@ -224,7 +224,6 @@
     <ClInclude Include="tool\ArgumentParser.h" />
     <ClInclude Include="tool\Main.h" />
     <ClInclude Include="tool\Meta.h" />
-    <ClInclude Include="what.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\CharClass.cpp" />
@@ -232,7 +231,6 @@
     <ClCompile Include="common\TokenStore.cpp" />
     <ClCompile Include="common\Unicode.cpp" />
     <ClCompile Include="context\Context.cpp" />
-    <ClCompile Include="exception\InvalidCharacterConstant.cpp" />
     <ClCompile Include="interpret\Interpret.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -241,16 +239,6 @@
     </ClCompile>
     <ClCompile Include="interpret\InterpretEvalUnary.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="main-interpret.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Interpret only|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="main-preprocessor.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Interpret only|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="parser\ArrayInitializer.cpp" />
     <ClCompile Include="parser\Declaration.cpp">
@@ -285,9 +273,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Interpret only|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="Text.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

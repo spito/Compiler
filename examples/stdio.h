@@ -4,4 +4,6 @@
 int printf( const char *, ... );
 int scanf( const char *, ... );
 
+int putc( char );
+
 #endif

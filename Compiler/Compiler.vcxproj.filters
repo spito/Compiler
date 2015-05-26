@@ -156,7 +156,6 @@
     <ClInclude Include="preprocessor\Worker.h">
       <Filter>Header Files\preprocessor</Filter>
     </ClInclude>
-    <ClInclude Include="what.h" />
     <ClInclude Include="preprocessor\Global.h">
       <Filter>Header Files\preprocessor</Filter>
     </ClInclude>
@@ -312,12 +311,6 @@
     <ClCompile Include="common\CharClass.cpp">
       <Filter>Source Files\common</Filter>
     </ClCompile>
-    <ClCompile Include="exception\InvalidCharacterConstant.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="main-preprocessor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="preprocessor\Parametrizer.cpp">
       <Filter>Source Files\preprocessor</Filter>
     </ClCompile>
@@ -350,9 +343,6 @@
     </ClCompile>
     <ClCompile Include="interpret\InterpretEvalBinary.cpp">
       <Filter>Source Files\interpret</Filter>
-    </ClCompile>
-    <ClCompile Include="main-interpret.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="tool\ArgumentParser.cpp">
       <Filter>Source Files\tool</Filter>
@@ -387,8 +377,5 @@
     <ClCompile Include="parser\ArrayInitializer.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="Text.txt" />
   </ItemGroup>
 </Project>

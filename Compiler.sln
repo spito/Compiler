@@ -8,17 +8,11 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
-		Interpret only|Win32 = Interpret only|Win32
-		Preprocessor only|Win32 = Preprocessor only|Win32
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{46A333E3-BA3B-4E12-AE5A-30A52A239AD9}.Debug|Win32.ActiveCfg = Debug|Win32
 		{46A333E3-BA3B-4E12-AE5A-30A52A239AD9}.Debug|Win32.Build.0 = Debug|Win32
-		{46A333E3-BA3B-4E12-AE5A-30A52A239AD9}.Interpret only|Win32.ActiveCfg = Interpret only|Win32
-		{46A333E3-BA3B-4E12-AE5A-30A52A239AD9}.Interpret only|Win32.Build.0 = Interpret only|Win32
-		{46A333E3-BA3B-4E12-AE5A-30A52A239AD9}.Preprocessor only|Win32.ActiveCfg = Preprocessor only|Win32
-		{46A333E3-BA3B-4E12-AE5A-30A52A239AD9}.Preprocessor only|Win32.Build.0 = Preprocessor only|Win32
 		{46A333E3-BA3B-4E12-AE5A-30A52A239AD9}.Release|Win32.ActiveCfg = Release|Win32
 		{46A333E3-BA3B-4E12-AE5A-30A52A239AD9}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection

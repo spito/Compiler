@@ -41,8 +41,10 @@ long factorialWhileBreak( int n ) {
     }
     return r;
 }
+
 #define EVER (;;)
 long factorialForBreak( int n ) {
+
     long r = 1;
     for EVER {
         r *= n;
@@ -53,9 +55,19 @@ long factorialForBreak( int n ) {
     return r;
 }
 
+void drawRectangle( int n ) {
+
+    for ( int i = 0; i != n; ++i ) {
+        for ( int j = 0; j != n; ++j )
+            putc( '*' );
+        putc( '\n' );
+    }
+
+}
 
 int main() {
     int a;
+
     printf( "Zadejte faktorial: " );
     scanf( "%d", &a );
     if ( a > 10 ) {
@@ -71,5 +83,7 @@ int main() {
     printf( "%d! = %d (cyklus while)\n", a, factorialWhile( a ) );
     printf( "%d! = %d (cyklus while+break)\n", a, factorialWhileBreak( a ) );
     printf( "%d! = %d (cyklus do-while)\n", a, factorialDoWhile( a ) );
+
+    drawRectangle( 6 );
     return 0;
 }
