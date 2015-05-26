@@ -136,7 +136,7 @@ auto Declaration::toArray() -> States {
         _it = position;
         return toError();
     }
-    range = size_t( evaluator.value().getu64() );
+    range = evaluator.value().get32();
 
     _type = _parser.tree().typeStorage().addType< ast::type::Array >( _type, range );
     if ( !_it->isOperator( Operator::BracketIndexClose ) )

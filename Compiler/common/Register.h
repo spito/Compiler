@@ -116,6 +116,7 @@ struct Register {
     }
 
     Register &operator=( Register r ) {
+        r.clearMess();
         _ulong = r._ulong;
         _type = r._type;
         clearFlags();
