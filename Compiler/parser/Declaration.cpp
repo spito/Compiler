@@ -266,13 +266,9 @@ auto Declaration::beFunction( bool definition ) -> States {
 
 
     _parser.addFunction( functionHandle.release() );
-
     _function = _parser.tree().findFunction( _name );
 
     if ( definition ) {
-        for ( auto &p : _parametres ) {
-            _function->parameters().add( std::move( p.first ), p.second );
-        }
         auto d = _parser.openFunction( _function );
 
         ++_it;
