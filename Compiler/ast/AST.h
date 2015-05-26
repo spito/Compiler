@@ -5,6 +5,7 @@
 // expressions
 #include "Constant.h"
 #include "StringPlaceholder.h"
+#include "ArrayInitiaizer.h"
 #include "Variable.h"
 #include "UnaryOperator.h"
 #include "BinaryOperator.h"

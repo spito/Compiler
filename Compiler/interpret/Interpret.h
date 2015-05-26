@@ -38,6 +38,7 @@ struct Interpret : ast::Traversal {
 
     void eval( const ast::Constant * );
     void eval( const ast::StringPlaceholder * );
+    void eval( const ast::ArrayInitializer * );
     void eval( const ast::Variable * );
     void eval( const ast::UnaryOperator * );
     void eval( const ast::BinaryOperator * );

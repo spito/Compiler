@@ -141,6 +141,18 @@ void Interpret::eval( const ast::StringPlaceholder *s ) {
     addRegister();
 }
 
+void Interpret::eval( const ast::ArrayInitializer *a ) {
+    eval( a->variable() );
+
+    auto value = a->values().begin();
+    Information *info = _info.get();
+    info->variable().flatten( [&]( Variable v ) {
+        eval( value->get() );
+        Information( v ).store( _info->load() );
+        ++value;
+    } );
+}
+
 void Interpret::eval( const ast::TernaryOperator *e ) {
     eval( e->left() );
 
