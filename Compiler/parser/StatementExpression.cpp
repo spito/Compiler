@@ -1,6 +1,7 @@
 #include "StatementExpression.h"
 #include "Declaration.h"
 #include "Expression.h"
+#include "ArrayInitializer.h"
 
 namespace compiler {
 namespace parser {
@@ -33,8 +34,10 @@ auto StatementExpression::decide( bool fullExpression ) -> Type {
 
             switch ( d.type()->kind() ) {
             case ast::type::Kind::Array:
-                // TODO: implement
-                return Type::VariableDeclaration;
+                _expression.reset(
+                    ArrayInitializer( _parser, _it ).obtain( variable.release(), _type )
+                    );
+                break;
             case ast::type::Kind::Elementary:
             case ast::type::Kind::Pointer:
                 _expression.reset( new ast::BinaryOperator(
