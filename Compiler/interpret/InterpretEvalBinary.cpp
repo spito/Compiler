@@ -3,6 +3,29 @@
 namespace compiler {
 namespace interpret {
 
+static void typeCast( Information *toStore, const ast::type::Type *targetType ) {
+    common::Register r = toStore->load();
+    bool sign;
+    bool ptr;
+    int length = targetType->size();
+    switch ( targetType->kind() ) {
+    case ast::type::Kind::Array:
+        throw exception::InternalError( "cannot cast to array" );
+    case ast::type::Kind::Elementary:
+        ptr = false;
+        sign = targetType->as< ast::type::Elementary >()->isSigned();
+        break;
+    case ast::type::Kind::Pointer:
+        ptr = true;
+        sign = targetType->as< ast::type::Pointer >()->of().kind() == ast::type::Kind::Elementary ?
+            targetType->as< ast::type::Pointer >()->of().as< ast::type::Elementary >()->isSigned() :
+            false;
+        break;
+    }
+    r.castTo( ptr, length, sign );
+    *toStore = Information( r, targetType );
+}
+
 void Interpret::eval( const ast::BinaryOperator *e ) {
     eval( e->left() );
 
@@ -21,6 +44,8 @@ void Interpret::eval( const ast::BinaryOperator *e ) {
             return;
         }
         break;
+    default:
+        break;
     }
 
     auto left = _info.get();
@@ -29,8 +54,20 @@ void Interpret::eval( const ast::BinaryOperator *e ) {
 
     switch ( e->op() ) {
     case common::Operator::ArrayAccess:
+        r.clearMess();
+        switch ( left->type()->kind() ) {
+        case ast::type::Kind::Array:
+        case ast::type::Kind::Pointer:
+            _info = new Information( left->variable()[ r.getu64() ] );
+            addRegister();
+            break;
+        case ast::type::Kind::Elementary:
+            throw exception::InternalError( "cannot use array access operator to elementary" );
+        }
+        break;
     case common::Operator::TypeCast:
-        throw exception::InternalError( "not implemented yet" );
+        typeCast( _info.get(), left->type() );
+        break;
     case common::Operator::Multiplication:
         _info->remember( l *= r );
         break;

@@ -306,6 +306,13 @@ struct Register {
         }
     }
 
+    void castTo( bool pointer, int length, bool sign ) {
+        clearMess();
+        _type = pointer ?
+            Type( length, sign, true ) :
+            Type( length, sign );
+    }
+
     Register operator++( );
     Register operator--( );
     Register operator~( );
