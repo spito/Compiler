@@ -200,6 +200,7 @@
     <ClInclude Include="interpret\Variable.h" />
     <ClInclude Include="interpret\Information.h" />
     <ClInclude Include="interpret\Interpret.h" />
+    <ClInclude Include="parser\ArrayInitializer.h" />
     <ClInclude Include="parser\Expression.h" />
     <ClInclude Include="parser\ExpressionEvaluator.h" />
     <ClInclude Include="parser\Parser.h" />
@@ -251,6 +252,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Interpret only|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="parser\ArrayInitializer.cpp" />
     <ClCompile Include="parser\Declaration.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">true</ExcludedFromBuild>
     </ClCompile>

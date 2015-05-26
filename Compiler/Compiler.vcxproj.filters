@@ -295,6 +295,9 @@
     <ClInclude Include="parser\Statement.h">
       <Filter>Header Files\parser</Filter>
     </ClInclude>
+    <ClInclude Include="parser\ArrayInitializer.h">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\Unicode.cpp">
@@ -379,6 +382,9 @@
       <Filter>Source Files\parser</Filter>
     </ClCompile>
     <ClCompile Include="parser\Statement.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="parser\ArrayInitializer.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
   </ItemGroup>
