@@ -51,7 +51,7 @@ private:
 
     ExpressionEvaluator _evaluator;
 
-    bool _functionArguments = false;
+    bool _leaveAtComma;
     bool _sizeofProcessing = false;
 };
 

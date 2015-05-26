@@ -143,6 +143,7 @@ static Asociativity asociativity( Operator op ) {
 void Expression::solvePrefixAmbiguity() {
     if ( !_it || _it->type() != Type::Operator )
         return;
+
     switch ( _it->op() ) {
     case Operator::Ampersand: _it->op() = Operator::AddressOf; break;
     case Operator::Star: _it->op() = Operator::Dereference; break;
@@ -150,13 +151,14 @@ void Expression::solvePrefixAmbiguity() {
     case Operator::Minus: _it->op() = Operator::UnaryMinus; break;
     case Operator::Increment: _it->op() = Operator::PrefixIncrement; break;
     case Operator::Decrement: _it->op() = Operator::PrefixDecrement; break;
-    default:;
+    default: break;
     }
 }
 
 void Expression::solvePostfixAmbiguity() {
     if ( !_it || _it->type() != Type::Operator )
         return;
+
     switch ( _it->op() ) {
     case Operator::Ampersand: _it->op() = Operator::BitwiseAnd; break;
     case Operator::Star: _it->op() = Operator::Multiplication; break;
@@ -167,7 +169,7 @@ void Expression::solvePostfixAmbiguity() {
     case Operator::QuestionMark: _it->op() = Operator::TernaryOperator; break;
     case Operator::BracketIndexOpen: _it->op() = Operator::ArrayAccess; break;
     case Operator::BracketOpen: _it->op() = Operator::FunctionCall; break;
-    default:;
+    default: break;
     }
 }
 
@@ -263,12 +265,13 @@ bool Expression::nnary() {
 bool Expression::leaving() {
     switch ( _it->op() ) {
     case Operator::BracketClose: // )
-    case Operator::BraceClose: // ]
+    case Operator::BraceClose: // }
+    case Operator::BracketIndexClose: // ]
     case Operator::Colon: // :
     case Operator::Semicolon: // ;
         return true;
     case Operator::Comma:
-        return _functionArguments;
+        return _leaveAtComma;
     default:
         return false;
     }
@@ -280,7 +283,7 @@ ast::Expression *Expression::functionCall( std::string name ) {
     if ( !_it->isOperator( Operator::BracketClose ) ) {
         while ( _it ) {
 
-            _functionArguments = true;
+            _leaveAtComma = true;
             arguments.emplace_back( descend( Side::Left, Operator::None ) );
 
             if ( _it->isOperator( Operator::Comma ) ) {
@@ -294,7 +297,7 @@ ast::Expression *Expression::functionCall( std::string name ) {
     }
     if ( !_it->isOperator( Operator::BracketClose ) )
         throw exception::InvalidToken( *_it );
-    _functionArguments = false;
+    _leaveAtComma = false;
     ++_it;
     return new ast::Call( position, std::move( name ), std::move( arguments ) );
 }
@@ -325,8 +328,10 @@ ast::Expression *Expression::descend( Side side, Operator owner ) {
         ++_it;
         break;
     case Type::Keyword:
-        if ( _it->isKeyword( Keyword::Sizeof ) )
+        if ( _it->isKeyword( Keyword::Sizeof ) ) {
+            ++_it;
             self.reset( sizeofExpression() );
+        }
         else
             throw exception::InvalidToken( *_it );
         break;
@@ -394,10 +399,11 @@ ast::Expression *Expression::descend( Side side, Operator owner ) {
         }
         else if ( binary() ) {
             ++_it;
-            ast::Expression::EHandle right( descend( Side::Right, token.op() ) );
+            Operator parent = token.isOperator( Operator::ArrayAccess ) ? Operator::None : token.op();
+            ast::Expression::EHandle right( descend( Side::Right, parent ) );
             auto s = self.release();
             self.reset( new ast::BinaryOperator( token.position(), token.op(), s, right.release() ) );
-            if ( token.op() == Operator::ArrayAccess ) {
+            if ( token.isOperator( Operator::ArrayAccess ) ) {
                 if ( !_it->isOperator( Operator::BracketIndexClose ) )
                     throw exception::InvalidToken( *_it );
                 ++_it;
@@ -430,12 +436,15 @@ ast::Expression *Expression::sizeofExpression() {
 
     Declaration d( _parser, _it );
 
-    if ( d.decide() == Declaration::Type::SingleVariable )
-         result.reset( new ast::Constant( d.begin()->position(), d.typeOnly()->size(), _parser.typeStorage().fetchType( "unsigned long" ) ) );
+    if ( d.decide() == Declaration::Type::TypeOnly )
+        result.reset( new ast::Constant( d.begin()->position(), d.type()->size(), _parser.typeStorage().fetchType( "unsigned long" ) ) );
     else {
         _it = d.begin();
-
-        result.reset( descend( Side::Right, Operator::Sizeof ) );
+        ast::Expression::EHandle partial( descend( Side::Right, Operator::Sizeof ) );
+        if ( _evaluator.start( partial.get(), true, true ) )
+            result.reset( new ast::Constant( partial->position(), _evaluator.type()->size(), _parser.typeStorage().fetchType( "unsigned long" ) ) );
+        else
+            throw exception::InvalidToken( *d.begin() );
     }
 
     if ( brackets ) {
@@ -448,9 +457,9 @@ ast::Expression *Expression::sizeofExpression() {
 }
 
 ast::Expression *Expression::bracketExpression() {
-    bool fa = _functionArguments;
+    bool fa = _leaveAtComma;
     ast::Expression::EHandle result;
-    _functionArguments = false;
+    _leaveAtComma = false;
     const auto &position = _it->position();
 
     ++_it;
@@ -478,7 +487,7 @@ ast::Expression *Expression::bracketExpression() {
         throw exception::InvalidToken( *_it );
     ++_it;
 
-    _functionArguments = fa;
+    _leaveAtComma = fa;
     return result.release();
 }
 
