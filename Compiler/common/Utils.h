@@ -90,7 +90,7 @@ private:
 
 template< typename T >
 auto revert( T &&container )
--> decltype( container.rbegin() )
+-> Adaptor< decltype( container.rbegin() ) >
 {
     using Iterator = decltype( container.rbegin() );
     return Adaptor< Iterator >( container.rbegin(), container.rend() );
