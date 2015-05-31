@@ -89,6 +89,7 @@ enum class Operator {
 
     // rank 14, right to left
     Assignment, // =
+    Initialization, // =
     AssignmentSum, // +=
     AssignmentDifference, // -=
     AssignmentProduct, // *=
