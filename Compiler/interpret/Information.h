@@ -29,6 +29,13 @@ struct Information {
         _state( State::InfoOnly )
     {}
 
+    void clear() {
+        _state = State::InfoOnly;
+        _break = false;
+        _continue = false;
+        _return = false;
+    }
+
     bool rValue() const {
         return _state == State::Constant;
     }
