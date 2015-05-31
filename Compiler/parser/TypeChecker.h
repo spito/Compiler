@@ -14,14 +14,9 @@ struct TypeChecker : ast::Traversal< Frame > {
         Base( tree ),
         _int( ast::TypeStorage::type( "int" ) ),
         _long( ast::TypeStorage::type( "long" ) )
-    {
-        auto popper = pushFrame( tree.global() );
-        tree.forFunctions( [this]( const ast::Function *f ) {
-            eval( f );
-        } );
-    }
+    {}
 
-
+    void start();
 private:
 
     struct Type : ast::TypeOf {

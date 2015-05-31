@@ -26,6 +26,13 @@ std::map< TypeChecker::SimpleTypes, ast::TypeOf > TypeChecker::_conversionTable 
         { { ast::TypeOf( 8, false ), ast::TypeOf( 8, false ) }, ast::TypeOf( 8, false ) },
 };
 
+void TypeChecker::start() {
+    auto popper = pushFrame( tree().global() );
+    tree().forFunctions( [this]( const ast::Function *f ) {
+        eval( f );
+    } );
+}
+
 void TypeChecker::eval( const ast::Function *f ) {
 
     auto popper = pushFrame( f->parameters() );

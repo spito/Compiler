@@ -15,7 +15,7 @@ void Parser::obtain() {
     tree().global().import( *v );
     delete v;
 
-    TypeChecker typeChecker( tree() );
+    TypeChecker( tree() ).start();
 }
 
 std::unordered_set< std::string > Parser::_typeKeywords = {
