@@ -3,58 +3,57 @@
 namespace compiler {
 namespace interpret {
 
-void Interpret::eval( const ast::UnaryOperator *e ) {
-    eval( e->expression() );
+Information Interpret::eval( const ast::UnaryOperator *e ) {
+    Information info = eval( e->expression() );
 
-    common::Register r1 = _info->load();
+    common::Register r1 = info.load();
     common::Register r2;
     bool sign = false;
 
     switch ( e->op() ) {
     case common::Operator::LogicalNot:
-        _info->remember( !r1 );
-        break;
+        info.remember( !r1 );
+        return info;
     case common::Operator::AddressOf:
-        if ( !_info->lValue() )
+        if ( !info.lValue() )
             throw exception::InternalError( "not l-value" );
 
-        if ( _info->type()->kind() == ast::type::Kind::Elementary )
-            sign = _info->type()->as< ast::type::Elementary >()->isSigned();
-        _info->remember( common::Register( _info->variable().address(), _info->type()->size(), sign ) );
+        sign = info.type().isSigned();
+        info.remember( common::Register( info.variable().address(), info.type().bytes(), sign ) );
 
-        break;
+        return info;
     case common::Operator::Dereference:
         if ( !checkRange( r1.getPtr() ) )
             throw exception::InternalError( "segfault" );
-        _info->variable() = Variable( r1.getPtr(), _ast.typeStorage().addType< ast::type::Pointer >( _info->type() ) );
-        break;
+        info.variable() = Variable( r1.getPtr(), *info.type().of() );
+        return info;
     case common::Operator::PrefixDecrement:
-        _info->store( --r1 );
-        _info->remember( r1 );
-        break;
+        info.store( --r1 );
+        info.remember( r1 );
+        return info;
     case common::Operator::PrefixIncrement:
-        _info->store( ++r1 );
-        _info->remember( r1 );
-        break;
+        info.store( ++r1 );
+        info.remember( r1 );
+        return info;
     case common::Operator::SuffixDecrement:
         r2 = r1;
-        _info->store( --r1 );
-        _info->remember( r2 );
-        break;
+        info.store( --r1 );
+        info.remember( r2 );
+        return info;
     case common::Operator::SuffixIncrement:
         r2 = r1;
-        _info->store( ++r1 );
-        _info->remember( r2 );
-        break;
+        info.store( ++r1 );
+        info.remember( r2 );
+        return info;
     case common::Operator::BitwiseNot:
-        _info->remember( ~r1 );
-        break;
+        info.remember( ~r1 );
+        return info;
     case common::Operator::UnaryMinus:
-        _info->remember( -r1 );
-        break;
+        info.remember( -r1 );
+        return info;
     case common::Operator::UnaryPlus:
-        _info->remember( +r1 );
-        break;
+        info.remember( +r1 );
+        return info;
     default:
         throw exception::InternalError( "invalid operator" );
     }

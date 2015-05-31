@@ -24,145 +24,131 @@ static void typeCast( Information &toStore, const ast::TypeOf &targetType ) {
     toStore = Information( r, targetType );
 }
 
-void Interpret::eval( const ast::BinaryOperator *e ) {
-    eval( e->left() );
-
-    common::Register l = _info->load();
+Information Interpret::eval( const ast::BinaryOperator *e ) {
+    Information left = eval( e->left() );
+    common::Register l = left.load();
 
     switch ( e->op() ) {
     case common::Operator::LogicalAnd:
         if ( l.zero() ) {
-            _info->remember( common::Register( 0 ) );
-            return;
+            return Information( common::Register( 0 ), ast::TypeStorage::type( "int" ) );
         }
         break;
     case common::Operator::LogicalOr:
         if ( !l.zero() ) {
-            _info->remember( common::Register( 1 ) );
-            return;
+            return Information( common::Register( 1 ), ast::TypeStorage::type( "int" ) );
         }
         break;
     default:
         break;
     }
 
-    auto left = _info.get();
-    eval( e->right() );
-    common::Register r = _info->load();
+    Information right = eval( e->right() );
+    common::Register r = right.load();
 
     switch ( e->op() ) {
     case common::Operator::ArrayAccess:
         r.clearMess();
-        switch ( left->type()->kind() ) {
-        case ast::type::Kind::Array:
-        case ast::type::Kind::Pointer:
-            _info = new Information( left->variable()[ r.getu64() ] );
-            addRegister();
-            break;
-        case ast::type::Kind::Elementary:
+        switch ( left.type().kind() ) {
+        case ast::TypeOf::Kind::Array:
+        case ast::TypeOf::Kind::Pointer:
+            return Information( left.variable()[ r.getu64() ] );
+        case ast::TypeOf::Kind::Elementary:
             throw exception::InternalError( "cannot use array access operator to elementary" );
+        default:
+            throw exception::InternalError( "ice: unknown type" );
         }
         break;
     case common::Operator::TypeCast:
-        typeCast( _info.get(), left->type() );
-        break;
+        typeCast( right, left.type() );
+        return right;
     case common::Operator::Multiplication:
-        _info->remember( l *= r );
-        break;
+        right.remember( l *= r );
+        return right;
     case common::Operator::Division:
-        _info->remember( l /= r );
-        break;
+        right.remember( l /= r );
+        return right;
     case common::Operator::Modulo:
-        _info->remember( l %= r );
-        break;
+        right.remember( l %= r );
+        return right;
     case common::Operator::Addition:
-        _info->remember( l += r );
-        break;
+        right.remember( l += r );
+        return right;
     case common::Operator::Subtraction:
-        _info->remember( l -= r );
-        break;
+        right.remember( l -= r );
+        return right;
     case common::Operator::BitwiseLeftShift:
-        _info->remember( l <<= r );
-        break;
+        right.remember( l <<= r );
+        return right;
     case common::Operator::BitwiseRightShift:
-        _info->remember( l >>= r );
-        break;
+        right.remember( l >>= r );
+        return right;
     case common::Operator::LessThan:
-        _info->remember( l < r );
-        break;
+        right.remember( l < r );
+        return right;
     case common::Operator::LessThenOrEqual:
-        _info->remember( l <= r );
-        break;
+        right.remember( l <= r );
+        return right;
     case common::Operator::GreaterThan:
-        _info->remember( l > r );
-        break;
+        right.remember( l > r );
+        return right;
     case common::Operator::GreaterThanOrEqual:
-        _info->remember( l >= r );
-        break;
+        right.remember( l >= r );
+        return right;
     case common::Operator::EqualTo:
-        _info->remember( l == r );
-        break;
+        right.remember( l == r );
+        return right;
     case common::Operator::NotEqualTo:
-        _info->remember( l != r );
-        break;
+        right.remember( l != r );
+        return right;
     case common::Operator::BitwiseAnd:
-        _info->remember( l &= r );
-        break;
+        right.remember( l &= r );
+        return right;
     case common::Operator::BitwiseXor:
-        _info->remember( l ^= r );
-        break;
+        right.remember( l ^= r );
+        return right;
     case common::Operator::BitwiseOr:
-        _info->remember( l |= r );
-        break;
+        right.remember( l |= r );
+        return right;
     case common::Operator::LogicalAnd:
     case common::Operator::LogicalOr:
-        _info->remember( common::Register( int( !r.zero() ) ) );
-        break;
+        right.remember( common::Register( int( !r.zero() ) ) );
+        return right;
 
+    case common::Operator::Initialization:
     case common::Operator::Assignment:
-        left->store( r );
-        _info->remember( r );
-        break;
+        left.store( r );
+        return left;
     case common::Operator::AssignmentProduct:
-        left->store( l *= r );
-        _info->remember( l );
-        break;
+        left.store( l *= r );
+        return left;
     case common::Operator::AssignmentQuotient:
-        left->store( l /= r );
-        _info->remember( l );
-        break;
+        left.store( l /= r );
+        return left;
     case common::Operator::AssignmentRemainder:
-        left->store( l %= r );
-        _info->remember( l );
-        break;
+        left.store( l %= r );
+        return left;
     case common::Operator::AssignmentSum:
-        left->store( l += r );
-        _info->remember( l );
-        break;
+        left.store( l += r );
+        return left;
     case common::Operator::AssignmentDifference:
-        left->store( l -= r );
-        _info->remember( l );
-        break;
+        left.store( l -= r );
+        return left;
     case common::Operator::AssignmentLeftShift:
-        left->store( l <<= r );
-        _info->remember( l );
-        break;
+        left.store( l <<= r );
+        return left;
     case common::Operator::AssignmentRightShift:
-        left->store( l >>= r );
-        _info->remember( l );
-        break;
+        left.store( l >>= r );
+        return left;
     case common::Operator::AssignmentBitwiseAnd:
-        left->store( l &= r );
-        _info->remember( l );
-        break;
+        left.store( l &= r );
+        return left;
     case common::Operator::AssignmentBitwiseXor:
-        left->store( l ^= r );
-        _info->remember( l );
-        break;
+        left.store( l ^= r );
+        return left;
     case common::Operator::AssignmentBitwiseOr:
-        left->store( l |= r );
-        _info->remember( l );
-        break;
+        left.store( l |= r );
+        return left;
     default:
         throw exception::InternalError( "invalid operator" );
     }

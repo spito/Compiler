@@ -1,13 +1,13 @@
 #pragma once
 
-#include "../ast/AST.h"
+#include "../ast/Traversal.h"
 #include "../common/Register.h"
 #include "Parser.h"
 
 namespace compiler {
 namespace parser {
 
-struct ExpressionEvaluator : ast::Traversal {
+struct ExpressionEvaluator : ast::Traversal< void > {
 
     ExpressionEvaluator( Parser &p ) :
         _parser( p ),
@@ -37,7 +37,7 @@ struct ExpressionEvaluator : ast::Traversal {
         return !_failed && !_value.isPointerProblem() && !_value.isSignedProblem();
     }
 private:
-    void eval( const ast::Statement * ) override;
+    void eval( const ast::Statement * );
     void eval( const ast::Constant * );
     void eval( const ast::Variable * );
     void eval( const ast::UnaryOperator * );

@@ -5,13 +5,13 @@
 namespace compiler {
 namespace interpret {
 
-std::map< std::string, void( Interpret::* )( std::vector< common::Register > ) > Interpret::_intrinsicFunctions = {
+std::map< std::string, Information( Interpret::* )( std::vector< common::Register > ) > Interpret::_intrinsicFunctions = {
         { "printf", &Interpret::intrinsicPrintf },
         { "scanf", &Interpret::intrinsicScanf },
         { "putc", &Interpret::intrinsicPutc },
 };
 
-void Interpret::eval( const ast::Statement *s ) {
+Information Interpret::eval( const ast::Statement *s ) {
 
     switch ( s->kind() ) {
     case ast::Kind::Constant:
@@ -49,58 +49,34 @@ void Interpret::eval( const ast::Statement *s ) {
     case ast::Kind::Return:
         return eval( s->as< ast::Return >() );
     }
+    return Information();
 }
 
 void Interpret::start() {
     _processingGlobal = true;
-    eval( &_ast.global() );
+    eval( &tree().global() );
     _processingGlobal = false;
     ast::Call main( common::Position(), "main", {} );
     eval( &main );
 }
 
 Variable Interpret::findSymbol( const std::string &name ) {
-    if ( _frames.empty() )
+    if ( emptyFrames() )
         throw exception::InternalError( "empty stack" );
     Variable v;
 
-    for ( auto frame = _frames.rbegin(); frame != _frames.rend(); ++frame ) {
-        v = frame->find( name );
+    Frame *frame = topFrame( [&]( const Frame *f ) {
+        return !f->soft() || f->find( name ).valid();
+    } );
 
-        if ( v.valid() || !frame->soft() )
-            break;
-    }
+    v = frame->find( name );
 
     if ( !v.valid() )
-        v = _frames.front().find( name );
+        v = baseFrame()->find( name );
 
     if ( !v.valid() )
         throw exception::InternalError( "cannot find symbol" );
     return v;
-}
-
-void Interpret::addRegister() {
-    std::unique_ptr< Information > handle( _info.get() );
-
-    if ( _frames.empty() )
-        throw exception::InternalError( "empty stack" );
-
-    _frames.back().addRegister( handle.release() );
-}
-
-void Interpret::addRegister( bool( *selector )( FrameIterator ) ) {
-    std::unique_ptr< Information > handle( _info.get() );
-
-    if ( _frames.empty() )
-        throw exception::InternalError( "empty stack" );
-
-    for ( auto frame = _frames.rbegin(); frame != _frames.rend(); ++frame ) {
-        if ( selector( frame ) ) {
-            frame->addRegister( handle.release() );
-            return;
-        }
-    }
-    throw exception::InternalError( "not suitable frame" );
 }
 
 bool Interpret::checkRange( const void *ptr ) {
@@ -119,60 +95,60 @@ bool Interpret::checkRange( const void *ptr ) {
             return true;
     }
 
-    for ( auto i = _frames.rbegin(); i != _frames.rend(); ++i ) {
+    bool found = false;
 
-        if ( i->containsMemoryLocation( ptr ) )
-            return true;
-    }
-    return false;
+    allFrames( [&]( const Frame *f ) {
+        if ( f->containsMemoryLocation( ptr ) ) {
+            found = true;
+            return false;
+        }
+        return true;
+    } );
+
+    return found;
 }
 
-void Interpret::eval( const ast::Variable *v ) {
-    _info = new Information( findSymbol( v->name() ) );
-    addRegister();
+Information Interpret::eval( const ast::Variable *v ) {
+    return Information( findSymbol( v->name() ) );
 }
 
-void Interpret::eval( const ast::Constant *c ) {
-    _info = new Information( common::Register( int( c->value() ) ), c->type() );
-    addRegister();
+Information Interpret::eval( const ast::Constant *c ) {
+    return Information( common::Register( int( c->value() ) ), c->type() );
 }
 
-void Interpret::eval( const ast::StringPlaceholder *s ) {
+Information Interpret::eval( const ast::StringPlaceholder *s ) {
     _whitelistPointers.insert( { s->value().data(), s->value().size() + 1 } );
-    const ast::type::Type *type = _ast.typeStorage().addType< ast::type::Pointer >( _ast.typeStorage().fetchType( "const char" ) );
-    _info = new Information( common::Register( const_cast< char * >( s->value().data() ), 1, true ), type );
-    addRegister();
+    ast::TypeOf type = ast::TypeStorage::type( "char" ).constness().pointer();
+    return Information( common::Register( const_cast<char *>( s->value().data() ), 1, true ), std::move( type ) );
 }
 
-void Interpret::eval( const ast::ArrayInitializer *a ) {
-    eval( a->variable() );
+Information Interpret::eval( const ast::ArrayInitializer *a ) {
+    auto info = eval( a->variable() );
 
     auto value = a->values().begin();
-    Information *info = _info.get();
-    info->variable().flatten( [&]( Variable v ) {
-        eval( value->get() );
-        Information( v ).store( _info->load() );
+    info.variable().flatten( [&]( Variable v ) {
+        Information( v ).store( eval( value->get() ).load() );
         ++value;
     } );
+    return Information();
 }
 
-void Interpret::eval( const ast::TernaryOperator *e ) {
-    eval( e->left() );
+Information Interpret::eval( const ast::TernaryOperator *e ) {
+    auto info = eval( e->left() );
 
-    if ( !_info->load().zero() )
-        eval( e->middle() );
+    if ( !info.load().zero() )
+        return eval( e->middle() );
     else
-        eval( e->right() );
+        return eval( e->right() );
 }
 
-void Interpret::eval( const ast::Call *e ) {
+Information Interpret::eval( const ast::Call *e ) {
     int width = 0;
 
     std::vector< common::Register > values;
 
     for ( const auto &exp : e->parametres() ) {
-        eval( exp.get() );
-        auto r = _info->load();
+        auto r = eval( exp.get() ).load();
         values.push_back( r );
         width += r.type().isPointer() ?
             sizeof( void  * ) :
@@ -180,185 +156,175 @@ void Interpret::eval( const ast::Call *e ) {
     }
 
     auto intrinsic = _intrinsicFunctions.find( e->name() );
-    if ( intrinsic != _intrinsicFunctions.end() ) {
-        ( this->*intrinsic->second )( values );
-        return;
-    }
+    if ( intrinsic != _intrinsicFunctions.end() )
+        return ( this->*intrinsic->second )( values );
 
-    const ast::Function *f = _ast.findFunction( e->name() );
-    if ( values.size() < f->parameters().size() )
+    const ast::Function &f = tree().findFunction( e->name() );
+    if ( values.size() < f.parameters().size() )
         throw exception::InternalError( "too few arguments" );
 
-    _frames.emplace_back( f->parameters(), width );
+    auto popper = pushFrame( f.parameters(), width );
 
     int paramIndex = 0;
-    f->parameters().forOrderedVariables( [&, this]( const std::string &name, ast::MemoryHolder::Variable ) {
+    f.parameters().forOrderedVariables( [&, this]( const std::string &name, ast::MemoryHolder::Variable ) {
         Information proxy( findSymbol( name ) );
         proxy.store( values[ paramIndex ] );
         ++paramIndex;
     } );
 
-    eval( &f->body() );
 
-    auto info = new Information;
-    if ( _info )
-        info->remember( _info->load() );
-    _info = info;
+    auto info = eval( &f.body() );
 
-    _frames.pop_back();
-
-    addRegister();
+    return info;
 }
 
-void Interpret::eval( const ast::Block *s ) {
-    if ( _processingGlobal )
-        _frames.emplace_back( s, false );
-    else
-        _frames.emplace_back( s );
+Information Interpret::eval( const ast::Block *s ) {
+    auto popper = pushFrame( s, !_processingGlobal );
+
+    Information info;
 
     s->forDescendatns( [&]( ast::Block::Ptr p ) -> bool {
-        eval( p );
-        if ( _info && _info->skipping() )
+        info = eval( p );
+        if ( info.skipping() )
             return false;
         return true;
     } );
 
-    if ( _info && !_info->skipping() )
-        _info = nullptr;
+    if ( !info.skipping() )
+        info.clear();
 
-    if ( !_processingGlobal )
-        _frames.pop_back();
+    if ( _processingGlobal )
+        popper.pass();
+
+    return info;
 }
 
-void Interpret::eval( const ast::If *s ) {
-    _frames.emplace_back( s );
+Information Interpret::eval( const ast::If *s ) {
+    auto popper = pushFrame( s );
 
-    eval( s->condition() );
-    if ( !_info->load().zero() ) {
+    Information info;
+
+    if ( !eval( s->condition() ).load().zero() ) {
         if ( s->ifPath() )
-            eval( s->ifPath() );
+            info = eval( s->ifPath() );
     }
     else if ( s->elsePath() )
-        eval( s->elsePath() );
+        info = eval( s->elsePath() );
 
-    if ( _info && !_info->skipping() )
-        _info = nullptr;
+    if ( !info.skipping() )
+        info.clear();
 
-    _frames.pop_back();
+    return info;
 }
 
-void Interpret::eval( const ast::Break *s ) {
+Information Interpret::eval( const ast::Break *s ) {
     if ( !s->parentBreak() )
         throw exception::InternalError( "continue without cycle" );
-    _info = new Information();
-    _info->breaking( true );
-    addRegister( []( FrameIterator i ) -> bool {
-        return i->breakStop();
-    } );
+    Information info;
+    info.breaking( true );
+    return info;
 }
 
-void Interpret::eval( const ast::Continue *s ) {
+Information Interpret::eval( const ast::Continue *s ) {
     if ( !s->parentContinue() )
         throw exception::InternalError( "continue without cycle" );
-    _info = new Information();
-    _info->continuing( true );
-    addRegister( []( FrameIterator i ) -> bool {
-        return i->continueStop();
-    } );
+    Information info;
+    info.continuing( true );
+    return info;
 }
 
-void Interpret::eval( const ast::Return *s ) {
-    auto info = new Information();
-    info->returning( true );
+Information Interpret::eval( const ast::Return *s ) {
+    Information info;
+    info.returning( true );
 
-    if ( s->expression() ) {
-        eval( s->expression() );
-        info->remember( _info->load() );
-    }
-
-    _info = info;
-    addRegister( []( FrameIterator i ) -> bool {
-        return !i->soft();
-    } );
+    if ( s->expression() )
+        info.remember( eval( s->expression() ).load() );
+    return info;
 }
 
-void Interpret::eval( const ast::While *s ) {
-    _frames.emplace_back( s );
+Information Interpret::eval( const ast::While *s ) {
 
-    _frames.back().stopAtBreak();
-    _frames.back().stopAtContinue();
+    auto popper = pushFrame( s );
+    topFrame()->stopAtBreak();
+    topFrame()->stopAtContinue();
+
+    Information info;
 
     while ( true ) {
 
-        eval( s->condition() );
-        if ( _info->load().zero() )
+        if ( eval( s->condition() ).load().zero() )
             break;
 
-        eval( s->body() );
-        if ( _info && ( _info->breaking() || _info->returning() ) )
+        info = eval( s->body() );
+        if ( info.breaking() || info.returning() )
             break;
     }
 
-    if ( _info && !_info->returning() )
-        _info = nullptr;
+    if ( !info.returning() )
+        info.clear();
 
-    _frames.pop_back();
+    return info;
 }
 
-void Interpret::eval( const ast::DoWhile *s ) {
+Information Interpret::eval( const ast::DoWhile *s ) {
 
-    _frames.back().stopAtBreak();
-    _frames.back().stopAtContinue();
+    topFrame()->stopAtBreak();
+    topFrame()->stopAtContinue();
+
+    Information info;
 
     while ( true ) {
 
-        eval( s->body() );
-        if ( _info && ( _info->breaking() || _info->returning() ) )
+        info = eval( s->body() );
+        if ( info.breaking() || info.returning() )
             break;
 
-        eval( s->condition() );
-        if ( _info->load().zero() )
+        if ( eval( s->condition() ).load().zero() )
             break;
     }
-    if ( _info && !_info->returning() )
-        _info = nullptr;
+    if ( !info.returning() )
+        info.clear();
 
-    _frames.back().stopAtBreak( false );
-    _frames.back().stopAtContinue( false );
+    topFrame()->stopAtBreak( false );
+    topFrame()->stopAtContinue( false );
+
+    return info;
 }
 
-void Interpret::eval( const ast::For *s ) {
-    _frames.emplace_back( s );
+Information Interpret::eval( const ast::For *s ) {
+    auto popper = pushFrame( s );
+    topFrame()->stopAtBreak();
+    topFrame()->stopAtContinue();
 
-    _frames.back().stopAtBreak();
-    _frames.back().stopAtContinue();
+    Information info;
 
     if ( s->initialization() )
         eval( s->initialization() );
     while ( true ) {
 
         if ( s->condition() ) {
-            eval( s->condition() );
-            if ( _info->load().zero() )
+            if ( eval( s->condition() ).load().zero() )
                 break;
         }
 
-        eval( s->body() );
-        if ( _info && ( _info->breaking() || _info->returning() ) )
+        info = eval( s->body() );
+        if ( info.breaking() || info.returning() )
             break;
 
         if ( s->increment() )
             eval( s->increment() );
     }
-    if ( _info && !_info->returning() )
-        _info = nullptr;
+    if ( !info.returning() )
+        info.clear();
 
-    _frames.pop_back();
+    return info;
 }
 
-void Interpret::intrinsicPrintf( std::vector< common::Register > values ) {
+Information Interpret::intrinsicPrintf( std::vector< common::Register > values ) {
     if ( values.empty() )
         throw exception::InternalError( "printf: missing formating" );
+
+    auto countBefore = std::cout.tellp();
 
     const char *fmt = static_cast<const char *>( values.front().getPtr() );
     bool formating = false;
@@ -402,9 +368,13 @@ void Interpret::intrinsicPrintf( std::vector< common::Register > values ) {
             throw exception::InternalError( "printf: unsupported formating specifier" );
         }
     }
+
+    return Information( 
+        common::Register( int( std::cout.tellp() - countBefore ) ),
+        ast::TypeStorage::type( "int" ) );
 }
 
-void Interpret::intrinsicScanf( std::vector< common::Register > values ) {
+Information Interpret::intrinsicScanf( std::vector< common::Register > values ) {
     if ( values.empty() )
         throw exception::InternalError( "printf: missing formating" );
 
@@ -452,10 +422,17 @@ void Interpret::intrinsicScanf( std::vector< common::Register > values ) {
             throw exception::InternalError( "scanf: unsupported formating specifier" );
         }
     }
+
+    return Information(
+        common::Register( int( values.size() ) - 1 ),
+        ast::TypeStorage::type( "int" ) );
 }
 
-void Interpret::intrinsicPutc( std::vector< common::Register > values ) {
+Information Interpret::intrinsicPutc( std::vector< common::Register > values ) {
     std::cout << values.front().get8();
+    return Information(
+        common::Register( 1 ),
+        ast::TypeStorage::type( "int" ) );
 }
 
 } // namespace interpret
