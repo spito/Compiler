@@ -58,6 +58,18 @@
     <Filter Include="Source Files\parser">
       <UniqueIdentifier>{f5c02480-d3fb-4c5d-8109-b1b8f413c9a0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\code">
+      <UniqueIdentifier>{cb274c34-62b0-4264-b83e-ad5f902844eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ast">
+      <UniqueIdentifier>{7b156afa-159c-4a65-b624-27d648b7f958}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\generator">
+      <UniqueIdentifier>{a314e928-f112-4998-959d-0f5d9f2630fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\generator">
+      <UniqueIdentifier>{d13c3d58-95e3-4701-9f7b-e06a078c2443}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common\Position.h">
@@ -173,9 +185,6 @@
     </ClInclude>
     <ClInclude Include="interpret\Interpret.h">
       <Filter>Header Files\interpret</Filter>
-    </ClInclude>
-    <ClInclude Include="ast\AST.h">
-      <Filter>Header Files\ast</Filter>
     </ClInclude>
     <ClInclude Include="ast\Expression.h">
       <Filter>Header Files\ast</Filter>
@@ -297,6 +306,33 @@
     <ClInclude Include="parser\ArrayInitializer.h">
       <Filter>Header Files\parser</Filter>
     </ClInclude>
+    <ClInclude Include="code\Code.h">
+      <Filter>Header Files\code</Filter>
+    </ClInclude>
+    <ClInclude Include="code\Instruction.h">
+      <Filter>Header Files\code</Filter>
+    </ClInclude>
+    <ClInclude Include="code\Operand.h">
+      <Filter>Header Files\code</Filter>
+    </ClInclude>
+    <ClInclude Include="code\Function.h">
+      <Filter>Header Files\code</Filter>
+    </ClInclude>
+    <ClInclude Include="generator\Intermediate.h">
+      <Filter>Header Files\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\TypeChecker.h">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\Frame.h">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="generator\Frame.h">
+      <Filter>Header Files\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\Tree.h">
+      <Filter>Header Files\ast</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\Unicode.cpp">
@@ -376,6 +412,15 @@
     </ClCompile>
     <ClCompile Include="parser\ArrayInitializer.cpp">
       <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="ast\TypeStorage.cpp">
+      <Filter>Source Files\ast</Filter>
+    </ClCompile>
+    <ClCompile Include="parser\TypeChecker.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="generator\Intermediate.cpp">
+      <Filter>Source Files\generator</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -146,7 +146,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ast\ArrayInitiaizer.h" />
-    <ClInclude Include="ast\AST.h" />
+    <ClInclude Include="ast\Tree.h" />
     <ClInclude Include="ast\BinaryOperator.h" />
     <ClInclude Include="ast\Block.h" />
     <ClInclude Include="ast\Break.h" />
@@ -170,6 +170,10 @@
     <ClInclude Include="ast\UnaryOperator.h" />
     <ClInclude Include="ast\Variable.h" />
     <ClInclude Include="ast\While.h" />
+    <ClInclude Include="code\Code.h" />
+    <ClInclude Include="code\Function.h" />
+    <ClInclude Include="code\Instruction.h" />
+    <ClInclude Include="code\Operand.h" />
     <ClInclude Include="common\AutoCheckPointer.h" />
     <ClInclude Include="common\CharClass.h" />
     <ClInclude Include="common\Keyword.h" />
@@ -195,6 +199,8 @@
     <ClInclude Include="exception\InvalidToken.h" />
     <ClInclude Include="exception\Unicode.h" />
     <ClInclude Include="exception\UnsupportedFeature.h" />
+    <ClInclude Include="generator\Frame.h" />
+    <ClInclude Include="generator\Intermediate.h" />
     <ClInclude Include="includes\exceptions.h" />
     <ClInclude Include="interpret\Frame.h" />
     <ClInclude Include="interpret\Variable.h" />
@@ -203,11 +209,13 @@
     <ClInclude Include="parser\ArrayInitializer.h" />
     <ClInclude Include="parser\Expression.h" />
     <ClInclude Include="parser\ExpressionEvaluator.h" />
+    <ClInclude Include="parser\Frame.h" />
     <ClInclude Include="parser\Parser.h" />
     <ClInclude Include="parser\Declaration.h" />
     <ClInclude Include="parser\SmartIterator.h" />
     <ClInclude Include="parser\Statement.h" />
     <ClInclude Include="parser\StatementExpression.h" />
+    <ClInclude Include="parser\TypeChecker.h" />
     <ClInclude Include="preprocessor\Expression.h" />
     <ClInclude Include="preprocessor\Global.h" />
     <ClInclude Include="preprocessor\InputBuffer.h" />
@@ -226,11 +234,13 @@
     <ClInclude Include="tool\Meta.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ast\TypeStorage.cpp" />
     <ClCompile Include="common\CharClass.cpp" />
     <ClCompile Include="common\Register.cpp" />
     <ClCompile Include="common\TokenStore.cpp" />
     <ClCompile Include="common\Unicode.cpp" />
     <ClCompile Include="context\Context.cpp" />
+    <ClCompile Include="generator\Intermediate.cpp" />
     <ClCompile Include="interpret\Interpret.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -259,6 +269,7 @@
     <ClCompile Include="parser\StatementExpression.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Preprocessor only|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="parser\TypeChecker.cpp" />
     <ClCompile Include="preprocessor\Expression.cpp" />
     <ClCompile Include="preprocessor\NumberParser.cpp" />
     <ClCompile Include="preprocessor\OperatorParser.cpp" />
