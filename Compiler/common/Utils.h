@@ -123,9 +123,9 @@ inline std::string join( const std::vector< std::string > &v, const std::string 
 } // namespace common
 } // namespace compiler
 
-template< typename T >
-auto operator!=( const T &lhs, const T &rhs )
--> typename T::IsComparable
+template< typename T, typename R >
+auto operator!=( const T &lhs, const R &rhs )
+-> typename std::enable_if< std::is_convertible< R, T >::value, typename T::IsComparable >::type
 {
     return !( lhs == rhs );
 }
