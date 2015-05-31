@@ -1,7 +1,7 @@
 #include "Expression.h"
 #include "Declaration.h"
 #include "ExpressionEvaluator.h"
-#include "../ast/AST.h"
+#include "../ast/Tree.h"
 #include "../includes/exceptions.h"
 
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../ast/AST.h"
+#include "../ast/Tree.h"
 
 namespace compiler {
 namespace interpret {

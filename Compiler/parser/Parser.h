@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../common/TokenStore.h"
-#include "../ast/AST.h"
+#include "../ast/Tree.h"
 
 #include <unordered_set>
 #include <stack>
@@ -14,17 +14,13 @@ struct Parser {
     Parser( common::TokenStore &store ) :
         _store( store )
     {
-        _scopes.push_back( &_ast.global() );
-        _blocks.push( &_ast.global() );
+        _scopes.push_back( &_tree.global() );
+        _blocks.push( &_tree.global() );
         obtain();
     }
 
-    ast::AST &tree() {
-        return _ast;
-    }
-
-    ast::TypeStorage &typeStorage() {
-        return _ast.typeStorage();
+    ast::Tree &tree() {
+        return _tree;
     }
 
     bool isTypeKeyword( const std::string &word ) const {
@@ -106,7 +102,7 @@ struct Parser {
     }
 
     void addFunction( ast::Function *f ) {
-        tree().add( ast::AST::FunctionHandle( f ) );
+        tree().add( ast::Tree::FunctionHandle( f ) );
     }
 
     ast::Function *function() {
@@ -119,7 +115,7 @@ private:
 
     void obtain();
 
-    ast::AST _ast;
+    ast::Tree _tree;
     common::TokenStore &_store;
     std::vector< ast::MemoryHolder * > _scopes;
     std::stack< ast::Block * > _blocks;
