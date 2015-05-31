@@ -32,7 +32,7 @@ struct Frame {
     }
 
 
-    Variable find( const std::string &name ) {
+    Variable find( const std::string &name ) const {
         auto i = _variables.find( name );
         if ( i == _variables.end() )
             return Variable();
@@ -60,7 +60,7 @@ struct Frame {
         _registers.emplace_back( info );
     }
 
-    bool containsMemoryLocation( const void *ptr ) {
+    bool containsMemoryLocation( const void *ptr ) const {
         union Pointer {
             const void *ptr;
             uintptr_t number;
