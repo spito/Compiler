@@ -42,7 +42,7 @@ auto StatementExpression::decide( bool fullExpression ) -> Type {
             case ast::type::Kind::Pointer:
                 _expression.reset( new ast::BinaryOperator(
                     position,
-                    Operator::Assignment,
+                    Operator::Initialization,
                     variable.release(),
                     Expression( _parser, _it ).obtain()
                     ) );
