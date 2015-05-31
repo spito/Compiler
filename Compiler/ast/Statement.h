@@ -25,35 +25,15 @@ struct Statement : DynamicCast {
 
     Statement( const Statement &o ) :
         _kind( o._kind ),
-        _position( o._position ),
-        _parentBreak( o._parentBreak ),
-        _parentContinue( o._parentContinue )
+        _position( o._position )
     {}
 
     Statement( Statement &&o ) :
         _kind( o._kind ),
-        _position( std::move( o._position ) ),
-        _parentBreak( o._parentBreak ),
-        _parentContinue( o._parentContinue )
+        _position( std::move( o._position ) )
     {}
 
     virtual ~Statement() = default;
-
-    Ptr parentBreak() const {
-        return _parentBreak;
-    }
-    virtual void parentBreak( Ptr p ) {
-        if ( !_parentBreak )
-            _parentBreak = p;
-    }
-
-    Ptr parentContinue() const {
-        return _parentContinue;
-    }
-    virtual void parentContinue( Ptr p ) {
-        if ( !_parentContinue )
-            _parentContinue = p;
-    }
 
     Kind kind() const {
         return _kind;
@@ -71,14 +51,10 @@ protected:
         using std::swap;
 
         swap( _kind, other._kind );
-        swap( _parentBreak, other._parentBreak );
-        swap( _parentContinue, other._parentContinue );
         swap( _position, other._position );
     }
 private:
     Kind _kind;
-    Ptr _parentBreak = nullptr;
-    Ptr _parentContinue = nullptr;
     common::Position _position;
 };
 

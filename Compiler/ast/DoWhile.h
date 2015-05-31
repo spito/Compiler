@@ -23,13 +23,6 @@ struct DoWhile : Statement {
     void assign( EPtr condition, Ptr body ) {
         _condition.reset( condition );
         _body.reset( body );
-
-        parentBreak( this );
-        parentContinue( this );
-        if ( _body ) {
-            _body->parentBreak( this );
-            _body->parentContinue( this );
-        }
     }
 
 private:

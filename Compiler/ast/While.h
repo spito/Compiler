@@ -24,14 +24,6 @@ struct While : Statement, MemoryHolder {
     void assign( EPtr c, Ptr b ) {
         _condition.reset( c );
         _body.reset( b );
-
-        parentBreak( this );
-        parentContinue( this );
-
-        if ( _body ) {
-            _body->parentBreak( this );
-            _body->parentContinue( this );
-        }
     }
 
 private:

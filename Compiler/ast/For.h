@@ -32,13 +32,6 @@ struct For : Statement, MemoryHolder {
         _condition.reset( c );
         _increment.reset( inc );
         _body.reset( b );
-
-        parentBreak( this );
-        parentContinue( this );
-        if ( _body ) {
-            _body->parentBreak( this );
-            _body->parentContinue( this );
-        }
     }
 
 private:

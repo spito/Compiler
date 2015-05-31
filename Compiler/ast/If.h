@@ -24,20 +24,6 @@ struct If : Statement, MemoryHolder {
         return _elsePath.get();
     }
 
-    void parentBreak( Ptr s ) override {
-        if ( _ifPath )
-            _ifPath->parentBreak( s );
-        if ( _elsePath )
-            _elsePath->parentBreak( s );
-    }
-
-    void parentContinue( Ptr s ) override {
-        if ( _ifPath )
-            _ifPath->parentContinue( s );
-        if ( _elsePath )
-            _elsePath->parentContinue( s );
-    }
-
     void assign( EPtr c, Ptr i, Ptr e ) {
         _condition.reset( c );
         _ifPath.reset( i );

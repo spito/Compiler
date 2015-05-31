@@ -218,16 +218,12 @@ Information Interpret::eval( const ast::If *s ) {
 }
 
 Information Interpret::eval( const ast::Break *s ) {
-    if ( !s->parentBreak() )
-        throw exception::InternalError( "continue without cycle" );
     Information info;
     info.breaking( true );
     return info;
 }
 
 Information Interpret::eval( const ast::Continue *s ) {
-    if ( !s->parentContinue() )
-        throw exception::InternalError( "continue without cycle" );
     Information info;
     info.continuing( true );
     return info;

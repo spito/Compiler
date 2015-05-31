@@ -45,15 +45,6 @@ struct Block : Statement, MemoryHolder {
         }
     }
 
-    void parentBreak( Ptr s ) override {
-        for ( auto &i : _descendants )
-            i->parentBreak( s );
-    }
-    void parentContinue( Ptr s ) override {
-        for ( auto &i : _descendants )
-            i->parentContinue( s );
-    }
-
     bool soft() const {
         return _soft;
     }
