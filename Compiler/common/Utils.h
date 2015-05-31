@@ -41,6 +41,13 @@ struct Defer {
         }
     }
 
+    bool deleted() const {
+        return _run;
+    }
+    void pass() {
+        _run = true;
+    }
+
 private:
     std::function< void() > _f;
     bool _run;
