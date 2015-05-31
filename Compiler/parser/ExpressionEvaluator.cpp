@@ -80,11 +80,11 @@ void ExpressionEvaluator::eval( const ast::UnaryOperator *e ) {
         if ( !_typeOnly )
             _failed = true;
         break;
-    case Operator::Plus:
+    case Operator::UnaryPlus:
         +_value;
         deduceType();
         break;
-    case Operator::Minus:
+    case Operator::UnaryMinus:
         -_value;
         deduceType();
         break;
