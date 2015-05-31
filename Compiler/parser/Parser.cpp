@@ -1,5 +1,6 @@
 #include "Parser.h"
 #include "Statement.h"
+#include "TypeChecker.h"
 
 namespace compiler {
 namespace parser {
@@ -13,6 +14,8 @@ void Parser::obtain() {
     auto v = stmt.block();
     tree().global().import( *v );
     delete v;
+
+    TypeChecker typeChecker( tree() );
 }
 
 std::unordered_set< std::string > Parser::_typeKeywords = {
