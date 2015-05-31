@@ -6,9 +6,7 @@
 namespace compiler {
 namespace ast {
 
-struct While : Statement, MemoryHolder {
-
-    using Base = Statement;
+struct While : Cycle, MemoryHolder {
 
     While( common::Position p ) :
         Base( Kind::While, std::move( p ) )

@@ -17,6 +17,7 @@ struct Statement : DynamicCast {
     using EPtr = Expression *;
     using ConstPtr = const Statement *;
     using ConstEPtr = const Expression *;
+    using Base = Statement;
 
     Statement( Kind k, common::Position p = common::Position() ) :
         _kind( k ),
@@ -56,6 +57,24 @@ protected:
 private:
     Kind _kind;
     common::Position _position;
+};
+
+struct Cycle : Statement {
+
+    using Base = Cycle;
+
+    Cycle( Kind k, common::Position p = common::Position() ) :
+        Statement( k, std::move( p ) )
+    {}
+
+    Cycle( const Cycle &o ) :
+        Statement( o )
+    {}
+
+    Cycle( Cycle &&o ) :
+        Statement( std::move( o ) )
+    {}
+
 };
 
 } // namespace ast

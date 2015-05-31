@@ -6,9 +6,7 @@
 namespace compiler {
 namespace ast {
 
-struct For : Statement, MemoryHolder {
-
-    using Base = Statement;
+struct For : Cycle, MemoryHolder {
 
     For( common::Position p ) :
         Base( Kind::For, std::move( p ) )

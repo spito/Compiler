@@ -5,9 +5,7 @@
 namespace compiler {
 namespace ast {
 
-struct DoWhile : Statement {
-
-    using Base = Statement;
+struct DoWhile : Cycle {
 
     DoWhile( common::Position p ) :
         Base( Kind::DoWhile, std::move( p ) )
