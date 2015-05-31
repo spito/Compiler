@@ -43,7 +43,7 @@ struct StatementExpression {
     ast::Expression *expression() {
         return _expression.release();
     }
-    const ast::type::Type *type() const {
+    const ast::TypeOf &type() const {
         return _type;
     }
 
@@ -56,7 +56,7 @@ private:
     const ast::Function *_function = nullptr;
     std::string _variableName;
     std::unique_ptr< ast::Expression > _expression;
-    const ast::type::Type *_type = nullptr;
+    ast::TypeOf _type;
 };
 
 } // namespace parser

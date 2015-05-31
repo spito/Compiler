@@ -21,9 +21,7 @@ auto Declaration::stTypeword() -> States {
     if ( _it->type() == Token::Type::Keyword &&  _parser.isTypeKeyword( _it->value() ) )
         return toTypeword();
 
-    _type = _parser.tree().typeStorage().fetchType( common::join( _typeId, " " ) );
-    if ( !_type )
-        return toError();
+    _type = ast::TypeStorage::type( common::join( _typeId, " " ) ).constness( _constness );
 
     if ( _it->isOperator( Operator::Star ) )
         return toStar();
@@ -108,15 +106,17 @@ auto Declaration::toTypeword() -> States {
             return toError();
         _constness = true;
     }
-    else if ( _it->value() == "void" )
-        _void = true;
+    else {
+        _typeId.push_back( _it->value() );
+        if ( _it->value() == "void" )
+            _void = true;
+    }
 
-    _typeId.push_back( _it->value() );
     return States::Typeword;
 }
 
 auto Declaration::toStar() -> States {
-    _type = _parser.tree().typeStorage().addType< ast::type::Pointer >( _type );
+    _type = ast::ProxyType( _type ).pointer();
     _void = false;
     return States::Star;
 }
@@ -137,8 +137,10 @@ auto Declaration::toArray() -> States {
         return toError();
     }
     range = evaluator.value().get32();
+    if ( range == 0 )
+        return toError();
 
-    _type = _parser.tree().typeStorage().addType< ast::type::Array >( _type, range );
+    _type = ast::ProxyType( _type ).array( range );
     if ( !_it->isOperator( Operator::BracketIndexClose ) )
         return toError();
     return States::Array;
@@ -161,7 +163,7 @@ auto Declaration::toDeclaration() -> States {
     Declaration descendant( _parser, _it );
     ast::Variable *v;
     bool insertion = true;
-    const ast::type::Type *type;
+    ast::TypeOf type;
 
     auto decision = descendant.decide();
     _wait = true;
@@ -169,11 +171,8 @@ auto Declaration::toDeclaration() -> States {
     switch ( decision ) {
     case Type::SingleVariable:
     case Type::TypeOnly:
-        if ( descendant.type()->kind() == ast::type::Kind::Array ) {
-            type = _parser.typeStorage().addType< ast::type::Pointer >(
-                &descendant.type()->as< ast::type::Array >()->of()
-                );
-        }
+        if ( descendant.type().kind() == ast::TypeOf::Kind::Array )
+            type = ast::ProxyType( *descendant.type().of() ).pointer();
         else
             type = descendant.type();
     default:
@@ -229,13 +228,13 @@ auto Declaration::beTypeOnly() -> States {
 }
 
 auto Declaration::beVoid() -> States {
-    _type = _parser.typeStorage().fetchType( "void" );
+    _type = ast::TypeStorage::type( "void" );
     _declarationType = Type::Void;
     return quit();
 }
 
 auto Declaration::beVariadicPack() -> States {
-    _type = _parser.typeStorage().fetchType( "void" );
+    _type = ast::TypeStorage::type( "void" );
     _declarationType = Type::VariadicPack;
     ++_it;
     return quit();
@@ -266,7 +265,7 @@ auto Declaration::beFunction( bool definition ) -> States {
 
 
     _parser.addFunction( functionHandle.release() );
-    _function = _parser.tree().findFunction( _name );
+    _function = &_parser.tree().findFunction( _name );
 
     if ( definition ) {
         auto d = _parser.openFunction( _function );

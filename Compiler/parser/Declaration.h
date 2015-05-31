@@ -97,12 +97,12 @@ private:
 
     ast::Function *_function;
     std::unique_ptr< ast::Variable > _variable;
-    const ast::type::Type *_type = nullptr;
+    ast::TypeOf _type;
 
     std::vector< std::string > _typeId;
     std::string _name;
-    std::vector< const ast::type::Type * > _types;
-    std::vector< std::pair< std::string, const ast::type::Type * > > _parametres;
+    std::vector< ast::TypeOf > _types;
+    std::vector< std::pair< std::string, ast::TypeOf > > _parametres;
     Type _declarationType = Type::None;
     bool _quit = false;
     bool _void = false;

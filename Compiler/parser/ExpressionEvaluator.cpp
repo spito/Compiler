@@ -43,7 +43,7 @@ void ExpressionEvaluator::eval( const ast::Variable *e ) {
     auto v = _parser.getVariable( e->name() );
     if ( !v )
         throw exception::InternalError( "undefined variable" );
-    _type = &v->type();
+    _type = v->type();
 }
 
 void ExpressionEvaluator::eval( const ast::UnaryOperator *e ) {
@@ -62,18 +62,14 @@ void ExpressionEvaluator::eval( const ast::UnaryOperator *e ) {
         break;
     case Operator::Ampersand:
     case Operator::AddressOf:
-        if ( !_type )
+        if ( _type.count() == 0 )
             throw exception::InternalError( "invalid ast tree" );
-        _type = _parser.typeStorage().addType< ast::type::Pointer >( _type );
+        _type = ast::ProxyType( _type ).pointer();
         break;
     case Operator::Star:
     case Operator::Dereference:
-        if ( !_type )
-            throw exception::InternalError( "invalid ast tree" );
-        if ( _type->kind() == ast::type::Kind::Array )
-            _type = &_type->as< ast::type::Array >()->of();
-        else if ( _type->kind() == ast::type::Kind::Pointer )
-            _type = &_type->as< ast::type::Pointer >()->of();
+        if ( _type.of() )
+            _type = *_type.of();
         else
             throw exception::InternalError( "invalid ast tree" );
         break;
@@ -93,7 +89,7 @@ void ExpressionEvaluator::eval( const ast::UnaryOperator *e ) {
         deduceType();
         break;
     case Operator::Sizeof:
-        _value.setu64( _type->size() );
+        _value.setu64( _type.bytes() );
         break;
     default:
         throw exception::InternalError( "invalid ast tree" );
@@ -127,7 +123,7 @@ void ExpressionEvaluator::eval( const ast::BinaryOperator *e ) {
     }
 
     auto leftValue = _value;
-    const auto *leftType = _type;
+    ast::TypeOf leftType = _type;
 
     eval( e->right() );
     if ( !valid() )
@@ -137,10 +133,8 @@ void ExpressionEvaluator::eval( const ast::BinaryOperator *e ) {
     case common::Operator::ArrayAccess:
         if ( !_typeOnly )
             _failed = true;
-        else if ( leftType->kind() == ast::type::Kind::Array )
-            _type = &leftType->as< ast::type::Array >()->of();
-        else if ( leftType->kind() == ast::type::Kind::Pointer )
-            _type = &leftType->as< ast::type::Pointer >()->of();
+        else if ( leftType.of() )
+            _type = *leftType.of();
         else
             throw exception::InternalError( "invalid ast tree" );
         break;
@@ -257,7 +251,7 @@ void ExpressionEvaluator::eval( const ast::TernaryOperator *e ) {
 }
 
 void ExpressionEvaluator::eval( const ast::Call *e ) {
-    _type = &_parser.tree().findFunction( e->name() )->returnType();
+    _type = _parser.tree().findFunction( e->name() ).returnType();
 }
 
 

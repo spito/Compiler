@@ -17,9 +17,9 @@ struct Function {
         _definition( other._definition )
     {}
 
-    Function( const type::Type *t, std::string name, bool definition ) :
+    Function( TypeOf t, std::string name, bool definition ) :
         _body( false ),
-        _returnType( *t ),
+        _returnType( std::move( t ) ),
         _name( std::move( name ) ),
         _definition( definition )
     {}
@@ -38,7 +38,7 @@ struct Function {
         return _body;
     }
 
-    const type::Type &returnType() const {
+    const TypeOf &returnType() const {
         return _returnType;
     }
     const std::string &name() const {
@@ -72,7 +72,7 @@ struct Function {
 private:
     MemoryHolder _parameters;
     Block _body;
-    const type::Type &_returnType;
+    TypeOf _returnType;
     std::string _name;
     bool _definition;
 };

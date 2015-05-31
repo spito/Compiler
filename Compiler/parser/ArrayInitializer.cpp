@@ -10,14 +10,12 @@ namespace parser {
 
 void ArrayInitializer::dimensions() {
     _dimensions.clear();
-    const ast::type::Type *t = _type;
+    _baseType = &_type;
 
-    while ( t->kind() == ast::type::Kind::Array ) {
-        const ast::type::Array *a = t->as< ast::type::Array >();
-        t = &a->of();
-        _dimensions.push_back( a->count() );
+    while ( _baseType->kind() == ast::TypeOf::Kind::Array ) {
+        _dimensions.push_back( _baseType->count() );
+        _baseType = _baseType->of();
     }
-    _baseType = t;
 }
 
 auto ArrayInitializer::stStart() -> States {
@@ -82,16 +80,16 @@ void ArrayInitializer::stError() {
 auto ArrayInitializer::beString() -> States {
     if ( _dimensions.size() != 1 )
         throw exception::InternalError( "cannot assign string field to multidimensional array" );
-    if ( _baseType->size() != 1 )
+    if ( _baseType->bytes() != 1 )
         throw exception::InternalError( "cannot assign string field to not-char array" );
     if ( _dimensions.front() <= int( _it->value().size() ) )
         throw exception::InternalError( "cannot assign string field to short array" );
 
     for ( char c : _it->value() ) {
-        _values.emplace_back( new ast::Constant( _it->position(), c, _parser.tree().typeStorage().fetchType( "char" ) ) );
+        _values.emplace_back( new ast::Constant( _it->position(), c, ast::TypeStorage::type( "char" ) ) );
     }
     for ( int i = _it->value().size(); i < _dimensions.back(); ++i ) {
-        _values.emplace_back( new ast::Constant( _it->position(), 0, _parser.tree().typeStorage().fetchType( "char" ) ) );
+        _values.emplace_back( new ast::Constant( _it->position(), 0, ast::TypeStorage::type( "char" ) ) );
     }
 
     return toQuit();
@@ -139,23 +137,23 @@ auto ArrayInitializer::toStringValue() -> States {
         throw exception::InternalError( "misplaced number" );
 
     switch ( _baseType->kind() ) {
-    case ast::type::Kind::Elementary:
-        if ( _baseType->size() != 1 )
+    case ast::TypeOf::Kind::Elementary:
+        if ( _baseType->bytes() != 1 )
             throw exception::InternalError( "cannot assign string field to not-char array" );
         if ( int( _it->value().size() ) >= _dimensions.back() )
             throw exception::InternalError( "too much items in a row" );
 
         for ( char c : _it->value() ) {
-            _values.emplace_back( new ast::Constant( _it->position(), c, _parser.tree().typeStorage().fetchType( "char" ) ) );
+            _values.emplace_back( new ast::Constant( _it->position(), c, ast::TypeStorage::type( "char" ) ) );
         }
 
         for ( int i = _it->value().size(); i < _dimensions.back(); ++i ) {
-            _values.emplace_back( new ast::Constant( _it->position(), 0, _parser.tree().typeStorage().fetchType( "char" ) ) );
+            _values.emplace_back( new ast::Constant( _it->position(), 0, ast::TypeStorage::type( "char" ) ) );
         }
 
         break;
-    case ast::type::Kind::Pointer:
-        if ( _baseType->as< ast::type::Pointer >()->of().size() != 1 )
+    case ast::TypeOf::Kind::Pointer:
+        if ( _baseType->of()->bytes() != 1 )
             throw exception::InternalError( "cannot assign string constant to pointer not to char" );
 
         _values.emplace_back( Expression( _parser, _it ).obtain( true ) );
@@ -189,7 +187,7 @@ auto ArrayInitializer::toBraceClose() -> States {
         neededIndexes *= std::accumulate( begin, end, 1, []( int a, int b ) { return a * b; } );
 
         for ( ; lastIndex < neededIndexes; ++lastIndex )
-            _values.emplace_back( new ast::Constant( _it->position(), 0, _baseType ) );
+            _values.emplace_back( new ast::Constant( _it->position(), 0, *_baseType ) );
     }
     _currentIndex.pop_back();
 

@@ -14,7 +14,7 @@ struct Information {
         InfoOnly
     };
 
-    Information( common::Register r, const ast::type::Type *type ) :
+    Information( common::Register r, ast::TypeOf type ) :
         _state( State::Constant ),
         _value( r ),
         _variable( nullptr, type )
@@ -78,12 +78,8 @@ struct Information {
         return _variable;
     }
 
-    const ast::type::Type *type() const {
-        if ( lValue() )
-            return _variable.type();
-        if ( rValue() )
-            return _variable.type();
-        return nullptr;
+    const ast::TypeOf &type() const {
+        return _variable.type();
     }
 
     void remember( common::Register r ) {
@@ -95,39 +91,33 @@ struct Information {
         if ( rValue() )
             return _value;
 
-        if ( type()->kind() == ast::type::Kind::Pointer ) {
-            const auto &tOf = type()->as< ast::type::Pointer >()->of();
-            bool sign = tOf.kind() == ast::type::Kind::Elementary ?
-                tOf.as< ast::type::Elementary >()->isSigned() :
-                false;
-            return common::Register( variable().as< void * >(), tOf.size(), sign );
+        if ( type().kind() == ast::TypeOf::Kind::Pointer ) {
+            int bytes = type().of()->bytes();
+            bool sign = type().of()->isSigned();
+            return common::Register( variable().as< void * >(), bytes, sign );
         }
 
-        if ( type()->kind() == ast::type::Kind::Array ) {
-            const auto &tOf = type()->as< ast::type::Array >()->of();
-            bool sign = tOf.kind() == ast::type::Kind::Elementary ?
-                tOf.as< ast::type::Elementary >()->isSigned() :
-                false;
-            return common::Register( variable().address(), tOf.size(), sign );
+        if ( type().kind() == ast::TypeOf::Kind::Array ) {
+            int bytes = type().of()->bytes();
+            bool sign = type().of()->isSigned();
+            return common::Register( variable().address(), bytes, sign );
         }
 
-        const ast::type::Elementary *t = type()->as< ast::type::Elementary >();
-
-        switch ( t->length() ) {
+        switch ( type().bytes() ) {
         case 1:
-            if ( t->isSigned() )
+            if ( type().isSigned() )
                 return common::Register( variable().as< int8_t >() );
             return common::Register( variable().as< uint8_t >() );
         case 2:
-            if ( t->isSigned() )
+            if ( type().isSigned() )
                 return common::Register( variable().as< int16_t >() );
             return common::Register( variable().as< uint16_t >() );
         case 4:
-            if ( t->isSigned() )
+            if ( type().isSigned() )
                 return common::Register( variable().as< int32_t >() );
             return common::Register( variable().as< uint32_t >() );
         case 8:
-            if ( t->isSigned() )
+            if ( type().isSigned() )
                 return common::Register( variable().as< int64_t >() );
             return common::Register( variable().as< uint64_t >() );
         default:
@@ -139,37 +129,36 @@ struct Information {
         if ( !lValue() )
             throw exception::InternalError( "not l-value" );
 
-        if ( type()->kind() == ast::type::Kind::Pointer ) {
+        if ( type().kind() == ast::TypeOf::Kind::Pointer ) {
             variable().as< void * >() = r.getPtr();
             return;
         }
 
-        if ( type()->kind() == ast::type::Kind::Array )
+        if ( type().kind() == ast::TypeOf::Kind::Array )
             throw exception::InternalError( "not l-value" );
 
-        const ast::type::Elementary *t = type()->as< ast::type::Elementary >();
 
-        switch ( t->length() ) {
+        switch ( type().bytes() ) {
         case 1:
-            if ( t->isSigned() )
+            if ( type().isSigned() )
                 variable().as< int8_t >() = r.get8();
             else
                 variable().as< uint8_t >() = r.getu8();
             break;
         case 2:
-            if ( t->isSigned() )
+            if ( type().isSigned() )
                 variable().as< int16_t >() = r.get16();
             else
                 variable().as< uint16_t >() = r.getu16();
             break;
         case 4:
-            if ( t->isSigned() )
+            if ( type().isSigned() )
                 variable().as< int32_t >() = r.get32();
             else
                 variable().as< uint32_t >() = r.getu32();
             break;
         case 8:
-            if ( t->isSigned() )
+            if ( type().isSigned() )
                 variable().as< int64_t >() = r.get64();
             else
                 variable().as< uint64_t >() = r.getu64();

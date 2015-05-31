@@ -3,27 +3,25 @@
 namespace compiler {
 namespace interpret {
 
-static void typeCast( Information *toStore, const ast::type::Type *targetType ) {
-    common::Register r = toStore->load();
+static void typeCast( Information &toStore, const ast::TypeOf &targetType ) {
+    common::Register r = toStore.load();
     bool sign;
     bool ptr;
-    int length = targetType->size();
-    switch ( targetType->kind() ) {
-    case ast::type::Kind::Array:
+    int length = targetType.bytes();
+    switch ( targetType.kind() ) {
+    case ast::TypeOf::Kind::Array:
         throw exception::InternalError( "cannot cast to array" );
-    case ast::type::Kind::Elementary:
+    case ast::TypeOf::Kind::Elementary:
         ptr = false;
-        sign = targetType->as< ast::type::Elementary >()->isSigned();
+        sign = targetType.isSigned();
         break;
-    case ast::type::Kind::Pointer:
+    case ast::TypeOf::Kind::Pointer:
         ptr = true;
-        sign = targetType->as< ast::type::Pointer >()->of().kind() == ast::type::Kind::Elementary ?
-            targetType->as< ast::type::Pointer >()->of().as< ast::type::Elementary >()->isSigned() :
-            false;
+        sign = targetType.of()->isSigned();
         break;
     }
     r.castTo( ptr, length, sign );
-    *toStore = Information( r, targetType );
+    toStore = Information( r, targetType );
 }
 
 void Interpret::eval( const ast::BinaryOperator *e ) {

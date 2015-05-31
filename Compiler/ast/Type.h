@@ -2,54 +2,78 @@
 
 #include "Core.h"
 #include "../common/Utils.h"
+#include "../includes/exceptions.h"
+
 #include <cstdint>
+#include <memory>
 
 namespace compiler {
 namespace ast {
-namespace type {
 
-enum class Kind {
-    Elementary,
-    Array,
-    Pointer,
-};
+struct TypeOf : common::Comparable {
 
-struct Type : DynamicCast, common::Comparable {
-    Type( Kind kind ) :
-        _kind( kind )
+    enum class Kind {
+        Elementary,
+        Array,
+        Pointer,
+    };
+
+    TypeOf() :
+        _kind( Kind::Elementary ),
+        _bytes( 0 ),
+        _signed( false ),
+        _const( false ),
+        _count( 0 )
     {}
+
+    TypeOf( int bytes, bool sign, bool constness = false ) :
+        _kind( Kind::Elementary ),
+        _bytes( bytes ),
+        _signed( sign ),
+        _const( constness ),
+        _count( 1 )
+    {}
+
+    TypeOf( const TypeOf &other ) :
+        _kind( other._kind ),
+        _bytes( other._bytes ),
+        _signed( other._signed ),
+        _const( other._const ),
+        _count( other._count ),
+        _of( other._of ? new TypeOf( *other._of.get() ) : nullptr )
+    {}
+
+    TypeOf( TypeOf &&other ) :
+        _kind( other._kind ),
+        _bytes( other._bytes ),
+        _signed( other._signed ),
+        _const( other._const ),
+        _count( other._count ),
+        _of( std::move( other._of ) )
+    {}
+
+    TypeOf &operator=( TypeOf other ) {
+        swap( other );
+        return *this;
+    }
+
+    void swap( TypeOf &other ) {
+        using std::swap;
+
+        swap( _kind, other._kind );
+        swap( _bytes, other._bytes );
+        swap( _signed, other._signed );
+        swap( _const, other._const );
+        swap( _count, other._count );
+        swap( _of, other._of );
+    }
+
     Kind kind() const {
         return _kind;
     }
-    bool operator==( const Type &other ) const {
-        return equal( &other );
-    }
-    bool equal( const Type *other ) const {
-        if ( kind() != other->kind() )
-            return false;
-        return equalInherited( other );
-    }
-    virtual size_t hash() const = 0;
-    virtual size_t size() const = 0;
-private:
-    virtual bool equalInherited( const Type * ) const = 0;
-    Kind _kind;
-};
 
-struct Elementary : Type {
-
-    Elementary( int8_t length, bool s, bool c = false ) :
-        Type( Kind::Elementary ),
-        _length( length ),
-        _signed( s ),
-        _const( c )
-    {}
-
-    size_t size() const override {
-        return _length;
-    }
-    int length() const {
-        return _length;
+    int bytes() const {
+        return _bytes;
     }
     bool isSigned() const {
         return _signed;
@@ -57,91 +81,97 @@ struct Elementary : Type {
     bool isConst() const {
         return _const;
     }
-    size_t hash() const override {
-        return
-            size_t( length() ) << 2 |
-            size_t( isSigned() ) << 1 |
-            size_t( isConst() );
-    }
-private:
-    bool equalInherited( const Type *_other ) const override {
-        const Elementary *other = _other->as< Elementary >();
-        return
-            length() == other->length() &&
-            isSigned() == other->isSigned() &&
-            isConst() == other->isConst();
-    }
-
-    int8_t _length;
-    bool _signed;
-    bool _const;
-};
-
-struct Array : Type {
-    Array( const Type *of, size_t count ) :
-        Type( Kind::Array ),
-        _of( *of ),
-        _count( count )
-    {}
-
-    size_t size() const override {
-        return _count * of().size();
-    }
-    const Type &of() const {
-        return _of;
-    }
-    size_t count() const {
+    int count() const {
         return _count;
     }
-    size_t hash() const override {
-        return
-            of().hash() << 4 |
-            size();
+    const TypeOf *of() const {
+        return _of.get();
     }
+
+    static TypeOf makeArray( int count, TypeOf *of, bool constness = false ) {
+        if ( !of )
+            throw exception::InternalError( "not base type" );
+        return TypeOf( Kind::Array, count, count * of->bytes(), of, constness );
+    }
+
+    static TypeOf makePointer( TypeOf *of, bool constness = false ) {
+        if ( !of )
+            throw exception::InternalError( "not base type" );
+        return TypeOf( Kind::Pointer, 1, sizeof( void * ), of, constness );
+    }
+
+    static TypeOf makeConst( TypeOf t, bool constness = true ) {
+        t._const = constness;
+        return t;
+    }
+
+    bool operator==( const TypeOf &other ) const {
+        bool partial =
+            _kind == other._kind &&
+            _bytes == other._bytes &&
+            _signed == other._signed &&
+            _count == other._count;
+
+        if ( !partial )
+            return false;
+
+        if ( _of == other._of )
+            return true;
+
+        if ( !_of || !other._of )
+            return false;
+             
+        return *_of == *other._of;
+    }
+
 private:
-    bool equalInherited( const Type *_other ) const override {
-        const Array *other = _other->as< Array >();
-        return
-            size() == other->size() &&
-            of() == other->of();
-    }
-    const Type &_of;
-    size_t _count;
-};
-
-struct Pointer : Type {
-
-    Pointer( const Type *of, bool c = false ) :
-        Type( Kind::Pointer ),
-        _of( *of ),
-        _const( c )
+    TypeOf( Kind kind, int count, int bits, TypeOf *of, bool constness) :
+        _kind( kind ),
+        _bytes( bits ),
+        _signed( false ),
+        _const( constness ),
+        _count( count ),
+        _of( of )
     {}
 
-    size_t size() const override {
-        return sizeof( void * );
-    }
-    const Type &of() const {
-        return _of;
-    }
-    bool isConst() const {
-        return _const;
-    }
-    size_t hash() const {
-        return
-            of().hash() << 1 |
-            size_t( isConst() );
-    }
-private:
-    bool equalInherited( const Type *_other ) const override {
-        const Pointer *other = _other->as< Pointer >();
-        return
-            isConst() == other->isConst() &&
-            of() == other->of();
-    }
-    const Type &_of;
+    Kind _kind;
+    int _bytes;
+    bool _signed;
     bool _const;
+    int _count;
+    std::unique_ptr< TypeOf > _of;
 };
 
-} // namespace type
+struct ProxyType {
+
+    ProxyType( TypeOf t ) :
+        _type( std::move( t ) )
+    {}
+
+    ProxyType array( int count, bool constness = false ) const {
+        return ProxyType( TypeOf::makeArray( count, new TypeOf( _type ), constness ) );
+    }
+
+    ProxyType pointer( bool constness = false ) const {
+        return ProxyType( TypeOf::makePointer( new TypeOf( _type ), constness ) );
+    }
+
+    ProxyType constness( bool c = true ) const {
+        return ProxyType( TypeOf::makeConst( _type, c ) );
+    }
+
+    operator TypeOf() const {
+        return _type;
+    }
+
+    const TypeOf &get() const {
+        return _type;
+    }
+
+private:
+    TypeOf _type;
+};
+
+
 } // namespace ast
 } // namespace compiler

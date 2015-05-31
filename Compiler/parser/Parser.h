@@ -35,8 +35,8 @@ struct Parser {
         return _statementKeywords.find( word ) != _statementKeywords.end();
     }
 
-    bool addVariable( std::string name, const ast::type::Type *type ) {
-        return _scopes.back()->add( std::move( name ), type );
+    bool addVariable( std::string name, ast::TypeOf type ) {
+        return _scopes.back()->add( std::move( name ), std::move( type ) );
     }
 
     bool isValidVariable( const std::string &name ) {

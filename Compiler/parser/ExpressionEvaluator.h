@@ -29,7 +29,7 @@ struct ExpressionEvaluator : ast::Traversal {
         return _value;
     }
 
-    const ast::type::Type *type() const {
+    const ast::TypeOf &type() const {
         return _type;
     }
 
@@ -46,12 +46,12 @@ private:
     void eval( const ast::Call * );
 
     void deduceType() {
-        _type = _parser.typeStorage().addType< ast::type::Elementary >( _value.type().length(), _value.type().isSigned() );
+        _type = ast::TypeOf( _value.type().length(), _value.type().isSigned() );
     }
 
     Parser &_parser;
     common::Register _value;
-    const ast::type::Type *_type;
+    ast::TypeOf _type;
     bool _failed;
     bool _typeOnly;
 };

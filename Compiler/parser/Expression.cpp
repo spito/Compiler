@@ -312,15 +312,15 @@ ast::Expression *Expression::descend( Side side, Operator owner ) {
 
     switch ( _it->type() ) {
     case Type::Char:
-        self.reset( new ast::Constant( _it->position(), _it->value().front(), _parser.typeStorage().fetchType( "char" ) ) );
+        self.reset( new ast::Constant( _it->position(), _it->value().front(), ast::TypeStorage::type( "char" ) ) );
         ++_it;
         break;
     case Type::Integer:
-        self.reset( new ast::Constant( _it->position(), _it->integer(), _parser.typeStorage().fetchType( "int" ) ) );
+        self.reset( new ast::Constant( _it->position(), _it->integer(), ast::TypeStorage::type( "int" ) ) );
         ++_it;
         break;
     case Type::Real:
-        self.reset( new ast::Constant( _it->position(), int64_t( _it->real() ), _parser.typeStorage().fetchType( "int" ) ) );
+        self.reset( new ast::Constant( _it->position(), int64_t( _it->real() ), ast::TypeStorage::type( "int" ) ) );
         ++_it;
         break;
     case Type::String:
@@ -437,12 +437,12 @@ ast::Expression *Expression::sizeofExpression() {
     Declaration d( _parser, _it );
 
     if ( d.decide() == Declaration::Type::TypeOnly )
-        result.reset( new ast::Constant( d.begin()->position(), d.type()->size(), _parser.typeStorage().fetchType( "unsigned long" ) ) );
+        result.reset( new ast::Constant( d.begin()->position(), d.type().bytes(), ast::TypeStorage::type( "unsigned long" ) ) );
     else {
         _it = d.begin();
         ast::Expression::EHandle partial( descend( Side::Right, Operator::Sizeof ) );
         if ( _evaluator.start( partial.get(), true, true ) )
-            result.reset( new ast::Constant( partial->position(), _evaluator.type()->size(), _parser.typeStorage().fetchType( "unsigned long" ) ) );
+            result.reset( new ast::Constant( partial->position(), _evaluator.type().bytes(), ast::TypeStorage::type( "unsigned long" ) ) );
         else
             throw exception::InvalidToken( *d.begin() );
     }
@@ -468,9 +468,9 @@ ast::Expression *Expression::bracketExpression() {
 
     if ( d.decide() == Declaration::Type::TypeOnly ) {
 
-        switch ( d.type()->kind() ) {
-        case ast::type::Kind::Elementary:
-        case ast::type::Kind::Pointer:
+        switch ( d.type().kind() ) {
+        case ast::TypeOf::Kind::Elementary:
+        case ast::TypeOf::Kind::Pointer:
             break;
         default:
             throw exception::InternalError( "cast to not elementary or not to pointer" );

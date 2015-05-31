@@ -63,7 +63,7 @@ ast::Statement *Statement::single() {
     StatementExpression se( _parser, _it );
     std::string variableName;
     ast::Statement::Handle statement;
-    const ast::type::Type *type = nullptr;
+    ast::TypeOf type;
 
     switch ( se.decide() ) {
     case StatementExpression::Type::VariableAssignment:
@@ -372,7 +372,7 @@ ast::Return *Statement::returnStatement() {
     ++_it;
     if ( _it->isOperator( Operator::Semicolon ) ) {
         ++_it;
-        if ( &_parser.function()->returnType() != _parser.tree().typeStorage().fetchType( "void" ) )
+        if ( _parser.function()->returnType() != ast::TypeStorage::type( "void" ) )
             throw exception::InternalError( "mismatched type of return" );
         return new ast::Return( position, nullptr );
     }
@@ -384,11 +384,11 @@ ast::Return *Statement::returnStatement() {
 
     ExpressionEvaluator ee( _parser );
     ee.start( stmt->expression(), true, true );
-    if ( &_parser.function()->returnType() != ee.type() ) {
-        if ( ee.type()->kind() == ast::type::Kind::Array )
+    if ( _parser.function()->returnType() != ee.type() ) {
+        if ( ee.type().kind() == ast::TypeOf::Kind::Array )
             throw exception::InternalError( "returning array has no sense" );
 
-        if ( ee.type()->kind() != _parser.function()->returnType().kind() ) {
+        if ( ee.type().kind() != _parser.function()->returnType().kind() ) {
             // allow assignment of NULL constant
             if ( stmt->expression()->kind() != ast::Kind::Constant || stmt->as< ast::Constant >()->value() != 0 )
                 throw exception::InternalError( "mismatched kind of return type" );

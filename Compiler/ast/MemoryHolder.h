@@ -12,24 +12,24 @@ struct MemoryHolder {
 
     struct Variable {
 
-        Variable( int o, const type::Type *t ) :
+        Variable( int o, TypeOf t ) :
             _offset( o ),
-            _type( *t )
+            _type( std::move( t ) )
         {}
 
         int offset() const {
             return _offset;
         }
         int size() const {
-            return _type.size();
+            return _type.bytes();
         }
-        const type::Type &type() const {
+        const TypeOf &type() const {
             return _type;
         }
 
     private:
         int _offset;
-        const type::Type &_type;
+        TypeOf _type;
     };
 
     MemoryHolder() :
@@ -47,20 +47,21 @@ struct MemoryHolder {
         _variadic( other._variadic )
     {}
 
-    bool add( std::string name, const type::Type *type ) {
+    bool add( std::string name, TypeOf type ) {
         if ( hasVariable( name ) )
             return false;
         _ordering.push_back( name );
-        _variables.emplace( std::move( name ), Variable( _memoryLength, type ) );
-        _memoryLength += type->size();
+        int bytes = type.bytes();
+        _variables.emplace( std::move( name ), Variable( _memoryLength, std::move( type ) ) );
+        _memoryLength += bytes;
         return true;
     }
 
-    void addPrototype( const type::Type *type ) {
-        _prototypes.push_back( type );
+    void addPrototype( TypeOf type ) {
+        _prototypes.push_back( std::move ( type ) );
     }
 
-    bool namePrototypes( std::vector< const type::Type * > types, std::vector< std::string > names ) {
+    bool namePrototypes( std::vector< TypeOf > types, std::vector< std::string > names ) {
         if ( _prototypes != types )
             return false;
 
@@ -124,7 +125,7 @@ struct MemoryHolder {
         bool result = true;
         auto i = _prototypes.begin();
         other.forOrderedVariables( [&]( const std::string &, const Variable &v ) {
-            result = result && &v.type() == *i;
+            result = result && v.type() == *i;
             ++i;
         } );
         return result;
@@ -132,7 +133,7 @@ struct MemoryHolder {
 private:
     std::map< std::string, Variable > _variables;
     std::vector< std::string > _ordering;
-    std::vector< const type::Type * > _prototypes;
+    std::vector< TypeOf > _prototypes;
     int _memoryLength;
     bool _variadic;
 };

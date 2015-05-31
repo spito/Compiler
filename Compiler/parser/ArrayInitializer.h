@@ -18,14 +18,12 @@ struct ArrayInitializer {
         _parser( p )
     {}
 
-    ast::ArrayInitializer *obtain( ast::Variable *variable, const ast::type::Type *type ) {
-        _type = type->as< ast::type::Array >();
+    ast::ArrayInitializer *obtain( ast::Variable *variable, ast::TypeOf type ) {
+        _type = std::move( type );
         _variable.reset( variable );
         dimensions();
         _quit = false;
 
-        if ( !_type )
-            throw exception::InternalError( "type is not an array" );
         return descend();
     }
 
@@ -73,8 +71,8 @@ private:
     SmartIterator &_it;
     Parser &_parser;
 
-    const ast::type::Array *_type;
-    const ast::type::Type *_baseType;
+    ast::TypeOf _type;
+    const ast::TypeOf *_baseType;
     std::unique_ptr< ast::Variable > _variable;
 
     std::vector< ast::Expression::EHandle > _values;

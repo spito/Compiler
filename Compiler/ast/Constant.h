@@ -11,23 +11,23 @@ namespace ast {
 struct Constant : Expression {
     using Base = Expression;
 
-    Constant( common::Position p, long long value, const type::Type *type ) :
+    Constant( common::Position p, long long value, TypeOf type ) :
         Base( Kind::Constant, std::move( p ), common::Operator::None ),
         _value( value ),
-        _type( type )
+        _type( std::move( type ) )
     {}
 
     long long value() const {
         return _value;
     }
 
-    const type::Type *type() const {
+    const TypeOf &type() const {
         return _type;
     }
 
 private:
     long long _value;
-    const type::Type *_type;
+    TypeOf _type;
 };
 
 } // namespace ast

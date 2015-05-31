@@ -32,14 +32,14 @@ auto StatementExpression::decide( bool fullExpression ) -> Type {
             const auto &position = _it->position();
             ++_it;
 
-            switch ( d.type()->kind() ) {
-            case ast::type::Kind::Array:
+            switch ( d.type().kind() ) {
+            case ast::TypeOf::Kind::Array:
                 _expression.reset(
                     ArrayInitializer( _parser, _it ).obtain( variable.release(), _type )
                     );
                 break;
-            case ast::type::Kind::Elementary:
-            case ast::type::Kind::Pointer:
+            case ast::TypeOf::Kind::Elementary:
+            case ast::TypeOf::Kind::Pointer:
                 _expression.reset( new ast::BinaryOperator(
                     position,
                     Operator::Initialization,
