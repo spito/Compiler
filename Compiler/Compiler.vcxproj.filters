@@ -333,6 +333,24 @@
     <ClInclude Include="ast\Tree.h">
       <Filter>Header Files\ast</Filter>
     </ClInclude>
+    <ClInclude Include="code\BasicBlock.h">
+      <Filter>Header Files\code</Filter>
+    </ClInclude>
+    <ClInclude Include="code\Type.h">
+      <Filter>Header Files\code</Filter>
+    </ClInclude>
+    <ClInclude Include="code\Register.h">
+      <Filter>Header Files\code</Filter>
+    </ClInclude>
+    <ClInclude Include="common\LayeredMap.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="generator\Writer.h">
+      <Filter>Header Files\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="generator\LLVM.h">
+      <Filter>Header Files\generator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\Unicode.cpp">
@@ -420,6 +438,15 @@
       <Filter>Source Files\parser</Filter>
     </ClCompile>
     <ClCompile Include="generator\Intermediate.cpp">
+      <Filter>Source Files\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="generator\IntermediateEvalUnary.cpp">
+      <Filter>Source Files\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="generator\IntermediateEvalBinary.cpp">
+      <Filter>Source Files\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="generator\LLVM.cpp">
       <Filter>Source Files\generator</Filter>
     </ClCompile>
   </ItemGroup>
