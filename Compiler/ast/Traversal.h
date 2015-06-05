@@ -8,15 +8,8 @@ namespace compiler {
 namespace ast {
 
 template< typename Frame >
-struct Traversal : Traversal< void > {
-protected:
+struct Stack {
     using FrameHandle = std::unique_ptr < Frame >;
-    using Base = Traversal < Frame > ;
-    using Tree = ast::Tree;
-
-    Traversal( const Tree &tree ) :
-        Traversal< void >( tree )
-    {}
 
     bool emptyFrames() const {
         return _stack.empty();
@@ -71,9 +64,14 @@ private:
 };
 
 template<>
-struct Traversal< void > {
+struct Stack< void > {
+};
+
+
+template< typename Frame >
+struct Traversal : Stack< Frame > {
 protected:
-    using Base = Traversal < void >;
+    using Base = Traversal < Frame >;
     using Tree = ast::Tree;
 
     Traversal() :
@@ -91,7 +89,6 @@ private:
     const Tree *_tree;
 
 };
-
 
 } // namespace ast
 } // namespace compiler
