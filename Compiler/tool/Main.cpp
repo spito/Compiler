@@ -3,6 +3,8 @@
 #include "../preprocessor/Output.h"
 #include "../parser/Parser.h"
 #include "../interpret/Interpret.h"
+#include "../generator/Intermediate.h"
+#include "../generator/LLVM.h"
 
 int main( int argc, char **argv ) {
     return compiler::tool::Main( argc, argv ).run();
@@ -77,7 +79,19 @@ int Main::interpret(){
     return 0;
 }
 int Main::llvm(){
-    throw exception::InternalError( "not implemented" );
+    if ( _meta.input.size() != 1 )
+        throw exception::InternalError( "invalid size of options (preprocessor)" );
+
+    compiler::preprocessor::Preprocessor p( _meta.input.front() );
+    compiler::parser::Parser parser( p.store() );
+
+    compiler::generator::Intermediate i( parser.tree() );
+    i.start();
+
+    compiler::generator::LLVM g( _meta.output.c_str() );
+    g.publish( i.code() );
+    return 0;
+
 }
 int Main::assembler(){
     throw exception::InternalError( "not implemented" );
