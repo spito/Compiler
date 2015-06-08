@@ -125,8 +125,8 @@ private:
     int _globalIndex;
     int _currentBlock;
     code::Code _code;
-    std::vector< code::BasicBlock > _basicBlocks;
     std::set< std::string > _calledFunctions;
+    std::map< int, code::BasicBlock > _basicBlocks;
     std::vector< code::Register > _namedRegisters;
     std::vector< code::Instruction > _globals;
     common::LayeredMap< std::string, unsigned > _nameMapping;

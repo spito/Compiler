@@ -4,19 +4,21 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 namespace compiler {
 namespace code {
 
 struct Function {
-    using Iterator = std::vector< BasicBlock >::const_iterator;
 
     Function( Type returnType,
               std::string name,
+              std::vector< Register > arguments,
               std::vector< Register > namedRegisters,
-              std::vector< BasicBlock > basicBlocks ) :
+              std::map< int, BasicBlock > basicBlocks ) :
         _type( returnType ),
         _name( std::move( name ) ),
+        _arguments( std::move( arguments ) ),
         _namedRegisters( std::move( namedRegisters ) ),
         _basicBlocks( std::move( basicBlocks ) )
     {}
@@ -26,6 +28,7 @@ struct Function {
     Function( Function &&other ) :
         _type( std::move( other._type ) ),
         _name( std::move( other._name ) ),
+        _arguments( std::move( other._arguments ) ),
         _namedRegisters( std::move( other._namedRegisters ) ),
         _basicBlocks( std::move( other._basicBlocks ) )
     {}
@@ -38,7 +41,7 @@ struct Function {
         return _type;
     }
 
-    const std::vector< BasicBlock > &basicBlocks() const {
+    const std::map< int, BasicBlock > &basicBlocks() const {
         return _basicBlocks;
     }
 
@@ -46,21 +49,16 @@ struct Function {
         return _namedRegisters;
     }
 
-
-    Iterator begin() const {
-        return _basicBlocks.begin();
+    const std::vector< Register > &arguments() const {
+        return _arguments;
     }
-
-    Iterator end() const {
-        return _basicBlocks.end();
-    }
-
 
 private:
     Type _type;
     std::string _name;
+    std::vector< Register > _arguments;
     std::vector< Register > _namedRegisters;
-    std::vector< BasicBlock > _basicBlocks;
+    std::map< int, BasicBlock > _basicBlocks;
 };
 
 } // namespace code

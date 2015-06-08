@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Function.h"
+#include "Prototype.h"
 
 #include <map>
 
@@ -13,11 +14,18 @@ struct Code {
         _globals.swap( globals );
     }
 
-    void addFunction( code::Type type,
+    void addFunction( Type type,
                       const std::string &name,
+                      std::vector< Register > arguments,
                       std::vector< Register > namedRegisters,
-                      std::vector< BasicBlock > instructions ) {
-        _functions.emplace( name, Function( std::move( type ), name, std::move( namedRegisters ), std::move( instructions ) ) );
+                      std::map< int, BasicBlock > instructions ) {
+        _functions.emplace( name, Function( std::move( type ), name, std::move( arguments ), std::move( namedRegisters ), std::move( instructions ) ) );
+    }
+
+    void addDeclaration( Type type,
+                         std::string name,
+                         std::vector< Type > argumentTypes ) {
+        _declarations.emplace_back( std::move( type ), std::move( name ), std::move( argumentTypes ) );
     }
 
     const Function *function( const std::string &name ) {
@@ -31,12 +39,17 @@ struct Code {
         return _functions;
     }
 
+    const std::vector< Prototype > &declarations() const {
+        return _declarations;
+    }
+
     const std::vector< Instruction > &globals() const {
         return _globals;
     }
 
 private:
     std::vector< Instruction > _globals;
+    std::vector< Prototype > _declarations;
     std::map< std::string, Function > _functions;
 };
 

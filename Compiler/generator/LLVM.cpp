@@ -19,6 +19,11 @@ void LLVM::publish( const code::Code &code ) {
     for ( const auto &f : code.functions() ) {
         writeFunction( f.second );
     }
+
+
+    for ( const code::Prototype &p : code.declarations() ) {
+        writeDeclaration( p );
+    }
 }
 
 std::string LLVM::getType( const code::Type &type ) {
@@ -60,12 +65,24 @@ std::string LLVM::getValue( const code::Operand &operand ) {
 
 
 std::string LLVM::getLabel( const code::Operand &operand ) {
-    return _function->basicBlocks()[ size_t( operand.value() ) ].name();
+    return _function->basicBlocks().find( operand.value() )->second.name();
 }
 
 void LLVM::writeFunction( const code::Function &function ) {
     _function = &function;
-    writeFormattedLine( "define # @#() {", getType( function.returnType() ), function.name() );
+    writeFormatted( "define # #(", getType( function.returnType() ), function.name() );
+
+    bool first = true;
+    for ( const code::Register &r : function.arguments() ) {
+        if ( !first )
+            write() << ", ";
+        else
+            first = false;
+
+        write() << getOperand( r );
+    }
+
+    write() << ") {" << std::endl;
 
     for ( const code::Register &r : function.namedRegisters() ) {
         code::Type type( r.type() );
@@ -73,8 +90,12 @@ void LLVM::writeFunction( const code::Function &function ) {
         writeFormattedLine( "  # = alloca #", r.name(), getType( type ) );
     }
 
-    for ( const code::BasicBlock &b : function ) {
-        writeBlock( b );
+    std::map< int, int > table;
+    for ( const auto &b : function.basicBlocks() ) {
+        table[ b.second.order() ] = b.first;
+    }
+    for ( auto i : table ) {
+        writeBlock( function.basicBlocks().find( i.second )->second );
     }
 
     writeFormattedLine( "}" );
@@ -88,8 +109,12 @@ void LLVM::writeBlock( const code::BasicBlock &block ) {
     for ( int p : block.predecessors() ) {
         if ( !first )
             write() << ", ";
-        writeFormatted( "#", _function->basicBlocks()[ p ].name() );
-        first = false;
+        else
+            first = false;
+
+
+        write() << _function->basicBlocks().find( p )->second.name();
+            
     }
     write() << std::endl;
 
@@ -104,86 +129,89 @@ void LLVM::writeInstruction( const code::Instruction &instruction ) {
         break;
     case code::InstructionName::Alloc:
         writeFormattedLine( "  # = alloca #",
-                            getValue( instruction.operands().front() ),
-                            getType( instruction.operands().front().type() ) );
+                            getValue( instruction.operand( 0 ) ),
+                            getType( instruction.operand( 0 ).type() ) );
         break;
     case code::InstructionName::Load:
         writeFormattedLine( "  # = load #",
-                            getValue( instruction.operands()[ 0 ] ),
-                            getOperand( instruction.operands()[ 1 ] ) );
+                            getValue( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ) );
         break;
     case code::InstructionName::Store:
         writeFormattedLine( "  store #, #",
-                            getOperand( instruction.operands()[ 0 ] ),
-                            getOperand( instruction.operands()[ 1 ] ) );
+                            getOperand( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ) );
         break;
     case code::InstructionName::AddressOf:
     case code::InstructionName::Dereference:
     case code::InstructionName::IndexAt:
-        writeFormattedLine( "  # = getelementptr inbounds #, #",
-                            getValue( instruction.operands()[ 0 ] ),
-                            getOperand( instruction.operands()[ 1 ] ),
-                            getOperand( instruction.operands()[ 2 ] ) );
+        writeFormatted( "  # = getelementptr inbounds #",
+                            getValue( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ) );
+        for ( int i = 2; i < int( instruction.size() ); ++i )
+            writeFormatted( ", #",
+                            getOperand( instruction.operand( i ) ) );
+        write() << std::endl;
         break;
     case code::InstructionName::Multiplication:
         writeFormattedLine( "  # = mul nsw #, #",
-                            getValue( instruction.operands()[ 0 ] ),
-                            getOperand( instruction.operands()[ 1 ] ),
-                            getValue( instruction.operands()[ 2 ] ) );
+                            getValue( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ),
+                            getValue( instruction.operand( 2 ) ) );
         break;
     case code::InstructionName::Division:
         writeFormattedLine( "  # = sdiv #, #",
-                            getValue( instruction.operands()[ 0 ] ),
-                            getOperand( instruction.operands()[ 1 ] ),
-                            getValue( instruction.operands()[ 2 ] ) );
+                            getValue( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ),
+                            getValue( instruction.operand( 2 ) ) );
         break;
     case code::InstructionName::Modulo:
         writeFormattedLine( "  # = srem #, #",
-                            getValue( instruction.operands()[ 0 ] ),
-                            getOperand( instruction.operands()[ 1 ] ),
-                            getValue( instruction.operands()[ 2 ] ) );
+                            getValue( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ),
+                            getValue( instruction.operand( 2 ) ) );
         break;
     case code::InstructionName::Addition:
         writeFormattedLine( "  # = add nsw #, #",
-                            getValue( instruction.operands()[ 0 ] ),
-                            getOperand( instruction.operands()[ 1 ] ),
-                            getValue( instruction.operands()[ 2 ] ) );
+                            getValue( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ),
+                            getValue( instruction.operand( 2 ) ) );
         break;
     case code::InstructionName::Subtraction:
         writeFormattedLine( "  # = sub nsw #, #",
-                            getValue( instruction.operands()[ 0 ] ),
-                            getOperand( instruction.operands()[ 1 ] ),
-                            getValue( instruction.operands()[ 2 ] ) );
+                            getValue( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ),
+                            getValue( instruction.operand( 2 ) ) );
         break;
     case code::InstructionName::BitwiseShiftLeft:
         writeFormattedLine( "  # = shl #, #",
-                            getValue( instruction.operands()[ 0 ] ),
-                            getOperand( instruction.operands()[ 1 ] ),
-                            getValue( instruction.operands()[ 2 ] ) );
+                            getValue( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ),
+                            getValue( instruction.operand( 2 ) ) );
         break;
     case code::InstructionName::BitwiseShiftRight:
         writeFormattedLine( "  # = ashr #, #",
-                            getValue( instruction.operands()[ 0 ] ),
-                            getOperand( instruction.operands()[ 1 ] ),
-                            getValue( instruction.operands()[ 2 ] ) );
+                            getValue( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ),
+                            getValue( instruction.operand( 2 ) ) );
         break;
     case code::InstructionName::BitwiseAnd:
         writeFormattedLine( "  # = and #, #",
-                            getValue( instruction.operands()[ 0 ] ),
-                            getOperand( instruction.operands()[ 1 ] ),
-                            getValue( instruction.operands()[ 2 ] ) );
+                            getValue( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ),
+                            getValue( instruction.operand( 2 ) ) );
         break;
     case code::InstructionName::BitwiseXor:
         writeFormattedLine( "  # = xor #, #",
-                            getValue( instruction.operands()[ 0 ] ),
-                            getOperand( instruction.operands()[ 1 ] ),
-                            getValue( instruction.operands()[ 2 ] ) );
+                            getValue( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ),
+                            getValue( instruction.operand( 2 ) ) );
         break;
     case code::InstructionName::BitwiseOr:
         writeFormattedLine( "  # = xor #, #",
-                            getValue( instruction.operands()[ 0 ] ),
-                            getOperand( instruction.operands()[ 1 ] ),
-                            getValue( instruction.operands()[ 2 ] ) );
+                            getValue( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ),
+                            getValue( instruction.operand( 2 ) ) );
         break;
     case code::InstructionName::Extense:
         break;
@@ -193,49 +221,49 @@ void LLVM::writeInstruction( const code::Instruction &instruction ) {
         break;
     case code::InstructionName::CompareEqual:
         writeFormattedLine( "  # = icmp eq #, #",
-                            getValue( instruction.operands()[ 0 ] ),
-                            getOperand( instruction.operands()[ 1 ] ),
-                            getValue( instruction.operands()[ 2 ] ) );
+                            getValue( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ),
+                            getValue( instruction.operand( 2 ) ) );
         break;
     case code::InstructionName::CompareNotEqual:
         writeFormattedLine( "  # = icmp ne #, #",
-                            getValue( instruction.operands()[ 0 ] ),
-                            getOperand( instruction.operands()[ 1 ] ),
-                            getValue( instruction.operands()[ 2 ] ) );
+                            getValue( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ),
+                            getValue( instruction.operand( 2 ) ) );
         break;
     case code::InstructionName::CompareLess:
         writeFormattedLine( "  # = icmp slt #, #",
-                            getValue( instruction.operands()[ 0 ] ),
-                            getOperand( instruction.operands()[ 1 ] ),
-                            getValue( instruction.operands()[ 2 ] ) );
+                            getValue( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ),
+                            getValue( instruction.operand( 2 ) ) );
         break;
     case code::InstructionName::CompareLessEqual:
         writeFormattedLine( "  # = icmp sle #, #",
-                            getValue( instruction.operands()[ 0 ] ),
-                            getOperand( instruction.operands()[ 1 ] ),
-                            getValue( instruction.operands()[ 2 ] ) );
+                            getValue( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ),
+                            getValue( instruction.operand( 2 ) ) );
         break;
     case code::InstructionName::CompareGreater:
         writeFormattedLine( "  # = icmp sgt #, #",
-                            getValue( instruction.operands()[ 0 ] ),
-                            getOperand( instruction.operands()[ 1 ] ),
-                            getValue( instruction.operands()[ 2 ] ) );
+                            getValue( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ),
+                            getValue( instruction.operand( 2 ) ) );
         break;
     case code::InstructionName::CompareGraterEqual:
         writeFormattedLine( "  # = icmp sge #, #",
-                            getValue( instruction.operands()[ 0 ] ),
-                            getOperand( instruction.operands()[ 1 ] ),
-                            getValue( instruction.operands()[ 2 ] ) );
+                            getValue( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ),
+                            getValue( instruction.operand( 2 ) ) );
         break;
     case code::InstructionName::Jump:
         writeFormattedLine( "  br label #", 
-                            getLabel( instruction.operands()[ 0 ] ) );
+                            getLabel( instruction.operand( 0 ) ) );
         break;
     case code::InstructionName::Branch:
         writeFormattedLine( "  br #, label #, label #",
-                            getOperand( instruction.operands()[ 0 ] ),
-                            getLabel( instruction.operands()[ 1 ] ),
-                            getLabel( instruction.operands()[ 2 ] ) );
+                            getOperand( instruction.operand( 0 ) ),
+                            getLabel( instruction.operand( 1 ) ),
+                            getLabel( instruction.operand( 2 ) ) );
         break;
     case code::InstructionName::Merge:
         writeFormatted( "  # = phi # ",
@@ -251,14 +279,52 @@ void LLVM::writeInstruction( const code::Instruction &instruction ) {
         }
         write() << std::endl;
         break;
+    case code::InstructionName::Call:{
+        int start;
+        if ( instruction.operand( 0 ).type().bits() == 0 ) {
+            writeFormatted( "  call # #(",
+                            getType( instruction.operand( 0 ).type() ),
+                            getValue( instruction.operand( 0 ) ) );
+            start = 1;
         }
+        else {
+            writeFormatted( "  # = call # #(",
+                            getValue( instruction.operand( 0 ) ),
+                            getType( instruction.operand( 0 ).type() ),
+                            getValue( instruction.operand( 1 ) ) );
+            start = 2;
+        }
+        for ( int i = start; i < int( instruction.size() ); ++i ) {
+            if ( i > start )
+                write() << ", ";
+
+            write() << getOperand( instruction.operand( i ) );
+        }
+        write() << ")" << std::endl;
+    }
         break;
-    case code::InstructionName::Call:
     case code::InstructionName::Return:
-        writeFormattedLine( "  ret #", getOperand( instruction.operands()[ 0 ] ) );
+        writeFormattedLine( "  ret #", getOperand( instruction.operand( 0 ) ) );
         break;
 
     }
+}
+
+void LLVM::writeDeclaration( const code::Prototype &prototype ) {
+
+    writeFormatted( "declare # #(", 
+                    getType( prototype.returnType() ),
+                    prototype.name() );
+
+    bool first = true;
+    for ( const code::Type &t : prototype.argumentTypes() ) {
+        if ( !first )
+            write() << ", ";
+        else
+            first = false;
+        write() << getType( t );
+    }
+    write() << ")" << std::endl;
 }
 
 } // namespace generator

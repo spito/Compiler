@@ -99,7 +99,7 @@ void Intermediate::addBranch( Operand operand, int successBlock, int failBlock )
 
 int Intermediate::addBasicBlock() {
     int id = _basicBlocks.size();
-    _basicBlocks.emplace_back( id );
+    _basicBlocks.emplace( id, id );
     return id;
 }
 
@@ -109,7 +109,9 @@ code::BasicBlock &Intermediate::block( int index ) {
 
 void Intermediate::refreshBlock( int index ) {
     _currentBlock = index;
-    block( _currentBlock ).makeAlive( labelName() );
+    int id;
+    std::string name( labelName( &id ) );
+    block( _currentBlock ).makeAlive( id, std::move( name ) );
 }
 
 code::Type Intermediate::convertType( const ast::TypeOf &type ) {
@@ -137,14 +139,33 @@ code::Type Intermediate::convertType( const ast::TypeOf &type ) {
 }
 
 void Intermediate::eval( const ast::Function *f ) {
-    auto popper = addNamedRegisters( &f->parameters() );
-
     _basicBlocks.clear();
     _namedRegisters.clear();
     _registerIndex = 0;
     _nameIndex = 0;
 
+    auto popper = addNamedRegisters( &f->parameters() );
+
     refreshBlock( addBasicBlock() );
+
+    std::vector< std::string > names;
+    std::vector< code::Register > arguments;
+    f->parameters().forOrderedVariables( [&,this]( std::string s, const ast::MemoryHolder::Variable &v ) {
+        std::string name( uniqueName( namedRegisterPrefix + s + '_' ) );
+
+        code::Type type( convertType( v.type() ) );
+        names.emplace_back( namedRegisterPrefix + s );
+        arguments.emplace_back( code::Register( std::move( name ), std::move( type ) ) );
+    } );
+
+    for ( int i = 0; i < int( names.size() ); ++i ) {
+        code::Type t( arguments[ i ].type() );
+        t.addIndirection();
+        addInstruction( code::InstructionName::Store, {
+            arguments[ i ],
+            Operand( code::Register( names[ i ], t ) )
+        } );
+    }
 
     bool isReturn = eval( &f->body() );
 
@@ -154,10 +175,9 @@ void Intermediate::eval( const ast::Function *f ) {
         } );
     }
 
-    //_basicBlocks.front().
-
     _code.addFunction( convertType( f->returnType() ),
-                       f->name(),
+                       globalPrefix + f->name(),
+                       std::move( arguments ),
                        std::move( _namedRegisters ),
                        std::move( _basicBlocks ) );
 }
