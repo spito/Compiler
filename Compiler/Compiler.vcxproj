@@ -175,6 +175,7 @@
     <ClInclude Include="code\Function.h" />
     <ClInclude Include="code\Instruction.h" />
     <ClInclude Include="code\Operand.h" />
+    <ClInclude Include="code\Prototype.h" />
     <ClInclude Include="code\Register.h" />
     <ClInclude Include="code\Type.h" />
     <ClInclude Include="common\AutoCheckPointer.h" />

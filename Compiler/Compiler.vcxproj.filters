@@ -351,6 +351,9 @@
     <ClInclude Include="generator\LLVM.h">
       <Filter>Header Files\generator</Filter>
     </ClInclude>
+    <ClInclude Include="code\Prototype.h">
+      <Filter>Header Files\code</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\Unicode.cpp">
