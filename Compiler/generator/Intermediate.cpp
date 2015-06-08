@@ -699,14 +699,19 @@ auto Intermediate::eval( const ast::Call *c ) -> Operand {
 
     std::vector< Operand > operands;
     code::Type returnType( convertType( tree().findFunction( c->name() ).returnType() ) );
-    Operand result( newRegister( returnType ) );
 
-    operands.push_back( result );
-    operands.push_back( code::Register( c->name(), returnType ) );
+    operands.push_back( code::Register( globalPrefix + c->name(), returnType ) );
 
     for ( const auto &h : c->parametres() ) {
         operands.push_back( eval( h.get() ) );
     }
+
+    Operand result( returnType.bits() ?
+                    newRegister( returnType ) :
+                    Operand::Void() );
+
+    if ( returnType.bits() )
+        operands.insert( operands.begin(), result );
 
     addInstruction( code::InstructionName::Call, std::move( operands ) );
     return result;
