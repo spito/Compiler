@@ -238,14 +238,19 @@ void LLVM::writeInstruction( const code::Instruction &instruction ) {
                             getLabel( instruction.operands()[ 2 ] ) );
         break;
     case code::InstructionName::Merge:
-        writeFormatted( "  # = phi # ", instruction.operands()[ 0 ].name() );
-        for ( int i = 1; i < int( instruction.operands().size() ); i += 2 ) {
+        writeFormatted( "  # = phi # ",
+                        getValue( instruction.operand( 0 ) ),
+                        getType( instruction.operand( 0 ).type() ) );
+        for ( int i = 1; i < int( instruction.size() ); i += 2 ) {
             if ( i > 1 )
                 write() << ", ";
 
-            writeFormatted( "[ # # ]",
-                            getLabel( instruction.operands()[ i ] ),
-                            instruction.operands()[ i + 1 ].name() );
+            writeFormatted( "[ #, # ]",
+                            getValue( instruction.operand( i ) ),
+                            getLabel( instruction.operand( i + 1 ) ) );
+        }
+        write() << std::endl;
+        break;
         }
         break;
     case code::InstructionName::Call:

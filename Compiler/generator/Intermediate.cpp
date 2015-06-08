@@ -684,10 +684,10 @@ auto Intermediate::eval( const ast::TernaryOperator *e, Access access ) -> Opera
     Operand result( newRegister( middle.type() ) );
     addInstruction( code::InstructionName::Merge, {
         result,
-        Operand::label( block( success ).id() ),
         middle,
+        Operand::label( block( success ).id() ),
+        right,
         Operand::label( block( fail ).id() ),
-        right
     } );
 
     return result;
