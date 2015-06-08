@@ -96,6 +96,21 @@ struct MemoryHolder {
         }
     }
 
+    template< typename Yield >
+    void forPrototypes( Yield yield ) const {
+        if ( _prototypes.empty() ) {
+            for ( const auto &name : _ordering ) {
+                auto i = _variables.find( name );
+                yield( i->second.type() );
+            }
+        }
+        else {
+            for ( const ast::TypeOf &t : _prototypes ) {
+                yield( t );
+            }
+        }
+    }
+
     bool hasVariable( const std::string &name ) {
         return _variables.count( name ) == 1;
     }
