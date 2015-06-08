@@ -41,7 +41,8 @@ std::string Intermediate::uniqueName( std::string name ) {
 void Intermediate::start() {
     //auto popper = pushFrame( tree().global() );
     tree().forFunctions( [this]( const ast::Function *f ) {
-        eval( f );
+        if ( f->definition() )
+            eval( f );
     } );
 
     _code.addGlobals( _globals );
