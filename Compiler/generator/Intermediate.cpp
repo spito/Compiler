@@ -461,20 +461,30 @@ auto Intermediate::eval( const ast::Constant *c ) -> Operand {
 }
 
 auto Intermediate::eval( const ast::StringPlaceholder *s ) -> Operand {
-    code::Operand op( code::Register( globalName(), code::Type( CHAR_BIT, true, 1 ) ) );
+    code::Type globalType( CHAR_BIT, true );
+    globalType.addDimension( s->value().size() + 1 );
+    Operand op( code::Register( globalName(), globalType ) );
 
     std::vector< code::Operand > operands;
 
     operands.push_back( op );
 
     for ( char c : s->value() ) {
-        operands.push_back( code::Operand( c, code::Type( CHAR_BIT, true ) ) );
+        operands.push_back( Operand( c, code::Type( CHAR_BIT, true ) ) );
     }
-    operands.push_back( code::Operand( 0, code::Type( CHAR_BIT, true ) ) );
+    operands.push_back( Operand( 0, code::Type( CHAR_BIT, true ) ) );
 
     _globals.emplace_back( code::Instruction( code::InstructionName::Global, std::move( operands ) ) );
 
-    return op;
+    Operand result( newRegister( code::Type( CHAR_BIT, true, 1 ) ) );
+    addInstruction( code::InstructionName::IndexAt, {
+        result,
+        op,
+        Operand( 0, code::Type( CHAR_BIT * 4, true ) ),
+        Operand( 0, code::Type( CHAR_BIT * 4, true ) )
+    } );
+
+    return result;
 }
 
 auto Intermediate::eval( const ast::ArrayInitializer *a ) -> Operand {
