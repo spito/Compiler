@@ -451,7 +451,7 @@ auto Intermediate::eval( const ast::Expression *e, Access access ) -> Operand {
     case ast::Kind::TernaryOperator:
         return eval( e->as< ast::TernaryOperator >(), access );
     case ast::Kind::Call:
-        return eval( e->as< ast::Call >(), access );
+        return eval( e->as< ast::Call >() );
     default:
         throw exception::InternalError( "invalid ast" );
     }
