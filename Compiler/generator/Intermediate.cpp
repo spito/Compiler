@@ -347,7 +347,7 @@ bool Intermediate::eval( const ast::For *c ) {
         block( initialization ).addPredecessor( _currentBlock );
         addJump( initialization );
 
-        _currentBlock = initialization;
+        refreshBlock( initialization );
         eval( c->initialization() );
     }
 
@@ -356,13 +356,14 @@ bool Intermediate::eval( const ast::For *c ) {
     int increment = -1;
     int body = -1;
 
-    if ( c->increment() )
-        increment = addBasicBlock();
-
     if ( c->condition() )
         condition = addBasicBlock();
 
     body = addBasicBlock();
+
+    if ( c->increment() )
+        increment = addBasicBlock();
+
     if ( condition == -1 )
         condition = body;
     if ( increment == -1 )
@@ -370,7 +371,7 @@ bool Intermediate::eval( const ast::For *c ) {
 
     int next = addBasicBlock();
 
-    addJump( body );
+    addJump( condition );
 
     block( condition ).addPredecessor( _currentBlock );
     block( condition ).addPredecessor( increment == condition ? body : increment );
@@ -382,13 +383,6 @@ bool Intermediate::eval( const ast::For *c ) {
 
     auto popper = pushFrame( body, next, increment );
 
-    if ( c->increment() ) {
-        refreshBlock( increment );
-        eval( c->increment() );
-
-        addJump( condition );
-    }
-
     if ( c->condition() ) {
         refreshBlock( condition );
         auto result = eval( c->condition() );
@@ -399,6 +393,13 @@ bool Intermediate::eval( const ast::For *c ) {
     refreshBlock( body );
     bool hasReturn = eval( c->body() );
     addJump( increment );
+
+    if ( c->increment() ) {
+        refreshBlock( increment );
+        eval( c->increment() );
+
+        addJump( condition );
+    }
 
     refreshBlock( next );
 
