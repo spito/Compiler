@@ -73,6 +73,16 @@ struct Instruction {
         return _operands;
     }
 
+    size_t size() const {
+        return _operands.size();
+    }
+
+    const Operand &operand( size_t index ) const {
+        if ( index >= size() )
+            throw exception::InternalError( "index out of range" );
+        return _operands[ index ];
+    }
+
 private:
     InstructionName _name;
     std::vector< Operand > _operands;
