@@ -125,6 +125,7 @@ private:
     int _currentBlock;
     code::Code _code;
     std::vector< code::BasicBlock > _basicBlocks;
+    std::set< std::string > _calledFunctions;
     std::vector< code::Register > _namedRegisters;
     std::vector< code::Instruction > _globals;
     common::LayeredMap< std::string, unsigned > _nameMapping;

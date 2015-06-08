@@ -45,6 +45,21 @@ void Intermediate::start() {
     } );
 
     _code.addGlobals( _globals );
+
+    for ( const std::string &name : _calledFunctions ) {
+
+        const ast::Function &f = tree().findFunction( name );
+        if ( f.definition() )
+            continue;
+
+        std::vector< code::Type > arguments;
+       
+        f.parameters().forPrototypes( [&, this]( const ast::TypeOf &t ) {
+            arguments.push_back( convertType( t ) );
+        } );
+
+        _code.addDeclaration( convertType( f.returnType() ), globalPrefix + name, std::move( arguments ) );
+    }
 }
 
 common::Defer Intermediate::addNamedRegisters( const ast::MemoryHolder *block ) {
@@ -679,7 +694,8 @@ auto Intermediate::eval( const ast::TernaryOperator *e, Access access ) -> Opera
 }
 
 auto Intermediate::eval( const ast::Call *c ) -> Operand {
-#pragma message( "warning: declare used function" )
+
+    _calledFunctions.insert( c->name() );
 
     std::vector< Operand > operands;
     code::Type returnType( convertType( tree().findFunction( c->name() ).returnType() ) );
