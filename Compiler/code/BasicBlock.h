@@ -15,12 +15,17 @@ struct BasicBlock {
         _id( id )
     {}
 
-    void makeAlive( std::string name ) {
+    void makeAlive( int order, std::string name ) {
         _name.swap( name );
+        _order = order;
     }
 
     int id() const {
         return _id;
+    }
+
+    int order() const {
+        return _order;
     }
 
     const std::string &name() const {
@@ -71,6 +76,7 @@ private:
     }
 
     std::string _name;
+    int _order;
     int _id;
     std::set< int > _predecessors;
     std::vector< Instruction > _instructions;

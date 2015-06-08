@@ -42,7 +42,7 @@ private:
     }
 
     code::Register newRegister( code::Type );
-    std::string labelName();
+    std::string labelName( int * = nullptr );
     std::string globalName();
     std::string uniqueName( std::string );
 

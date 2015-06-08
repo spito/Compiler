@@ -16,9 +16,12 @@ code::Register Intermediate::newRegister( code::Type type ) {
     return code::Register( os.str(), type );
 }
 
-std::string Intermediate::labelName() {
+std::string Intermediate::labelName( int *id ) {
     std::ostringstream os;
-    os << labelPrefix << registerIndex();
+    int order = registerIndex();
+    os << labelPrefix << order;
+    if ( id )
+        *id = order;
     return os.str();
 }
 
