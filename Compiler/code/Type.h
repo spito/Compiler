@@ -37,7 +37,7 @@ struct Type : common::Comparable {
     }
 
     void addIndirection() {
-        _decoration.insert( _decoration.begin(), -1 );
+        _decoration.push_back( Pointer );
     }
     void removeIndirection() {
         if ( !_decoration.empty() && _decoration.back() == Pointer )

@@ -33,21 +33,22 @@ std::string LLVM::getType( const code::Type &type, bool dots ) {
 
     std::string result;
 
-    for ( int d : type.dimensions() ) {
-        result += "[";
-        result += std::to_string( d );
-        result += " x ";
+    for ( int d : common::revert( type.decoration() ) ) {
+        if ( d != code::Type::Pointer ) {
+            result += "[";
+            result += std::to_string( d );
+            result += " x ";
+        }
     }
 
     result += 'i';
     result += std::to_string( type.bits() );
 
-    for ( int i = 0; i < type.indirection(); ++i ) {
-        result += '*';
-    }
-
-    for ( int d : type.dimensions() ) {
-        result += ']';
+    for ( int d : type.decoration() ) {
+        if ( d == code::Type::Pointer )
+            result += '*';
+        else
+            result += ']';
     }
     return result;
 }
