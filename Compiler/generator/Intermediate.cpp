@@ -27,7 +27,7 @@ std::string Intermediate::labelName( int *id ) {
 
 std::string Intermediate::globalName() {
     std::ostringstream os;
-    os << globalPrefix << globalIndex();
+    os << globalPrefix << ".global" << globalIndex();
     return os.str();
 }
 
@@ -39,6 +39,7 @@ std::string Intermediate::uniqueName( std::string name ) {
 }
 
 void Intermediate::start() {
+    _globalIndex = 0;
     //auto popper = pushFrame( tree().global() );
     tree().forFunctions( [this]( const ast::Function *f ) {
         if ( f->definition() )
