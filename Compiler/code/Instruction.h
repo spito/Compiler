@@ -15,8 +15,6 @@ enum class InstructionName {
     Load,
     Store,
 
-    AddressOf,
-    Dereference,
     IndexAt,
 
     Multiplication,
@@ -34,6 +32,7 @@ enum class InstructionName {
 
     Extense,
     Reduce,
+    BitCast,
     PtrToInt,
 
     CompareEqual,
