@@ -289,7 +289,7 @@ bool Intermediate::eval( const ast::If *c ) {
 
     if ( c->elsePath() ) {
         refreshBlock( elsePath );
-        hasReturn = eval( c->ifPath() ) && hasReturn;
+        hasReturn = eval( c->elsePath() ) && hasReturn;
         addJump( next );
     }
     else
