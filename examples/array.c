@@ -23,8 +23,15 @@ int main() {
 
     int pole[6] = { 0,1,2,3, };
    
+    int *p = pole;
+    int a = p[2];
+    int b = pole[2];
+
     sortArray( pole, sizeof( pole ) / sizeof( *pole ) );
     printArray( pole, sizeof( pole ) / sizeof( *pole ) );
+    
+    printf( "---------\n" );
+    printf( "a: %d\nb: %d\nshould be 2\n", a, b );
 
     return 0;
 }

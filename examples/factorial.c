@@ -14,7 +14,7 @@ long factorialFor( int n ) {
 
 long factorialWhile( int n ) {
     long r = 1;
-    while ( n ) {
+    while ( n > 0 ) {
         r *= n;
         --n;
     }
@@ -36,7 +36,7 @@ long factorialWhileBreak( int n ) {
     while ( 1 ) {
         r *= n;
         --n;
-        if ( !n )
+        if ( n <= 0 )
             break;
     }
     return r;
@@ -59,21 +59,22 @@ void drawRectangle( int n ) {
 
     for ( int i = 0; i != n; ++i ) {
         for ( int j = 0; j != n; ++j )
-            putc( '*' );
-        putc( '\n' );
+            putchar( '*' );
+        putchar( '\n' );
     }
 
 }
 
 int main() {
     int a;
-
     printf( "Zadejte faktorial: " );
     scanf( "%d", &a );
-    if ( a > 10 ) {
-        printf( "%d > 10: nelze vypocitat\n", a );
+    if ( a > 10 || a < 0 ) {
+        printf( "%d > 10 || %d < 0: nelze vypocitat\n", a, a );
         return 1;
     }
+    else if ( 0 <= a && a <= 10 )
+        printf( "0 <= %d <= 10: lze vypocitat\n", a );
 
     printf( "cislo %d je %s\n", a, a % 2 ? "liche" : "sude" );
 
@@ -84,6 +85,6 @@ int main() {
     printf( "%d! = %d (cyklus while+break)\n", a, factorialWhileBreak( a ) );
     printf( "%d! = %d (cyklus do-while)\n", a, factorialDoWhile( a ) );
 
-    drawRectangle( 6 );
+    drawRectangle( a );
     return 0;
 }
