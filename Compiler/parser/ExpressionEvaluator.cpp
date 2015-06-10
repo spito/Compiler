@@ -62,9 +62,9 @@ void ExpressionEvaluator::eval( const ast::UnaryOperator *e ) {
         break;
     case Operator::Ampersand:
     case Operator::AddressOf:
-        if ( _type.count() == 0 )
-            throw exception::InternalError( "invalid ast tree" );
         _type = ast::ProxyType( _type ).pointer();
+        if ( !_typeOnly )
+            _failed = true;
         break;
     case Operator::Star:
     case Operator::Dereference:
