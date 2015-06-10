@@ -127,6 +127,15 @@ void LLVM::writeBlock( const code::BasicBlock &block ) {
 void LLVM::writeInstruction( const code::Instruction &instruction ) {
     switch ( instruction.name() ) {
     case code::InstructionName::Global:
+        writeFormatted( "# = private unnamed_addr constant # [",
+                        getValue( instruction.operand( 0 ) ),
+                        getType( instruction.operand( 0 ).type() ) );
+        for ( int i = 1; i < int( instruction.size() ); ++i ) {
+            if ( i > 1 )
+                write() << ", ";
+            write() << getOperand( instruction.operand( i ) );
+        }
+        write() << "]" << std::endl;
         break;
     case code::InstructionName::Alloc:
         writeFormattedLine( "  # = alloca #",
