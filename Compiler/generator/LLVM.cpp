@@ -66,7 +66,7 @@ std::string LLVM::getValue( const code::Operand &operand ) {
 
 
 std::string LLVM::getLabel( const code::Operand &operand ) {
-    return _function->basicBlocks().find( operand.value() )->second.name();
+    return _function->basicBlocks().find( int( operand.value() ) )->second.name();
 }
 
 void LLVM::writeFunction( const code::Function &function ) {
