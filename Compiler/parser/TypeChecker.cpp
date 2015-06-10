@@ -424,6 +424,8 @@ auto TypeChecker::eval( const ast::Call *c ) -> Type {
         checkConvertibility( eval( i->get() ), v.type() );
         ++i;
     } );
+    for ( ; i != c->parametres().end(); ++i )
+        eval( i->get() );
 
     return f.returnType();
 }
