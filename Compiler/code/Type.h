@@ -1,50 +1,63 @@
 #pragma once
 
+#include "../common/Utils.h"
+
 #include <vector>
 
 namespace compiler {
 namespace code {
 
-struct Type {
+struct Type : common::Comparable {
 
-    Type( int bits, bool sign, int indirection = 0 ) :
-        _bits( bits ),
-        _signed( sign ),
-        _indirection( indirection )
+    Type( int bits ) :
+        _bits( bits )
     {}
+
+    Type( int bits, int indirection ) :
+        _bits( bits )
+    {
+        for ( int i = 0; i < indirection; ++i )
+            addIndirection();
+    }
 
     int bits() const {
         return _bits;
     }
 
-    bool isSigned() const {
-        return _signed;
+    bool isElementary() const {
+        return _decoration.empty();
     }
 
-    int indirection() const {
-        return _indirection;
-    }
-
-    const std::vector< int > dimensions() const {
-        return _dimensions;
+    const std::vector< int > &decoration() const {
+        return _decoration;
     }
 
     void addDimension( int d ) {
-        _dimensions.push_back( d );
+        _decoration.push_back( d );
     }
 
     void addIndirection() {
-        ++_indirection;
+        _decoration.insert( _decoration.begin(), -1 );
     }
     void removeIndirection() {
-        --_indirection;
+        if ( !_decoration.empty() && _decoration.back() == Pointer )
+            _decoration.pop_back();
+    }
+
+    enum {
+        Pointer = -1
+    };
+
+    bool operator==( const Type &other ) const {
+        return
+            _bits == other._bits &&
+            _decoration == other._decoration;
     }
 
 private:
     int _bits;
-    bool _signed;
-    int _indirection;
-    std::vector< int > _dimensions;
+    // -1 means pointer
+    std::vector< int > _decoration;
 };
 
 } // namespace code
