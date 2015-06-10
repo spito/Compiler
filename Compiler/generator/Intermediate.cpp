@@ -518,7 +518,8 @@ auto Intermediate::eval( const ast::Constant *c ) -> Operand {
 auto Intermediate::eval( const ast::StringPlaceholder *s ) -> Operand {
     code::Type globalType( CHAR_BIT );
     globalType.addDimension( s->value().size() + 1 );
-    Operand op( code::Register( globalName(), globalType ) );
+    std::string name( globalName() );
+    Operand op( code::Register( name, globalType ) );
 
     std::vector< code::Operand > operands;
 
