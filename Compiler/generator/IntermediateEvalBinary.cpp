@@ -334,7 +334,9 @@ auto Intermediate::opAssignment( Operand left, Operand right ) -> Operand {
 }
 
 auto Intermediate::opCompoundAssignment( Operand left, Operand right, common::Operator op ) -> Operand {
-    Operand loaded( newRegister( left.type() ) );
+    code::Type type( left.type() );
+    type.removeIndirection();
+    Operand loaded( newRegister( type ) );
 
     addInstruction( code::InstructionName::Load, {
         loaded,
