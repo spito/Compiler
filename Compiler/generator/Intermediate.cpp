@@ -534,17 +534,8 @@ auto Intermediate::eval( const ast::Variable *v, Access access ) -> Operand {
     code::Type type( variable.type() );
     type.removeIndirection();
 
-    if ( type.isArray() ) {
-        type.removeDimension();
-        type.addIndirection();
-
-        Operand result( newRegister( type ) );
-        addInstruction( code::InstructionName::BitCast, {
-            result,
-            variable
-        } );
-        return result;
-    }
+    if ( type.isArray() )
+        return variable;
     else {
         Operand result( newRegister( type ) );
         addInstruction( code::InstructionName::Load, {

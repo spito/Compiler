@@ -58,7 +58,6 @@ private:
     void refreshBlock( int );
 
     static code::Type convertType( const ast::TypeOf & );
-    Operand castTo( Operand, const code::Type & );
 
     enum class Access : bool {
         Load,
