@@ -763,13 +763,28 @@ auto Intermediate::eval( const ast::Call *c ) -> Operand {
 
     _calledFunctions.insert( c->name() );
 
+    const ast::Function &function = tree().findFunction( c->name() );
+
     std::vector< Operand > operands;
-    code::Type returnType( convertType( tree().findFunction( c->name() ).returnType() ) );
+    code::Type returnType( convertType( function.returnType() ) );
+
+    std::vector< code::Type > argumentTypes;
+    function.parameters().forPrototypes( [&]( const ast::TypeOf &t ) {
+        argumentTypes.emplace_back( convertType( t ) );
+    } );
 
     operands.push_back( code::Register( globalPrefix + c->name(), returnType ) );
 
+    unsigned i = 0;
+    bool skip = false;
     for ( const auto &h : c->parametres() ) {
-        operands.push_back( eval( h.get() ) );
+        Operand result = eval( h.get() );
+        if ( !skip && argumentTypes[ i ].bits() == 0 )
+            skip = true;
+        if ( !skip && result.type() != argumentTypes[ i ] )
+            result = castTo( result, argumentTypes[ i ] );
+        operands.push_back( result );
+        ++i;
     }
 
     Operand result( returnType.bits() ?
