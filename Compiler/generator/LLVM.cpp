@@ -224,8 +224,16 @@ void LLVM::writeInstruction( const code::Instruction &instruction ) {
                             getValue( instruction.operand( 2 ) ) );
         break;
     case code::InstructionName::Extense:
+        writeFormattedLine( "  # = zext # to #",
+                            getValue( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ),
+                            getType( instruction.operand( 0 ).type() ) );
         break;
     case code::InstructionName::Reduce:
+        writeFormattedLine( "  # = trunc # to #",
+                            getValue( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ),
+                            getType( instruction.operand( 0 ).type() ) );
         break;
     case code::InstructionName::PtrToInt:
         break;
