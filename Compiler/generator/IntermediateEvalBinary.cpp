@@ -49,10 +49,10 @@ auto Intermediate::opLogicalOr( const ast::BinaryOperator *e, Access access ) ->
     Operand result = newRegister( code::Type( 1, false ) );
     addInstruction( code::InstructionName::Merge, {
         result,
-        Operand::label( block( original ).id() ),
         partial,
-        Operand::label( block( secondPart ).id() ),
-        full
+        Operand::label( block( original ).id() ),
+        full,
+        Operand::label( block( secondPart ).id() )
     } );
     return result;
 }
@@ -78,10 +78,10 @@ auto Intermediate::opLogicalAnd( const ast::BinaryOperator *e, Access access ) -
     Operand result = newRegister( code::Type( 1, false ) );
     addInstruction( code::InstructionName::Merge, {
         result,
-        Operand::label( block( original ).id() ),
         partial,
-        Operand::label( block( secondPart ).id() ),
-        full
+        Operand::label( block( original ).id() ),
+        full,
+        Operand::label( block( secondPart ).id() )
     } );
     return result;
 
