@@ -49,7 +49,6 @@ private:
 
 
     common::Defer addNamedRegisters( const ast::MemoryHolder * );
-    //Register addString(  )
     void addInstruction( code::InstructionName, std::vector< Operand > );
     void addJump( int );
     void addBranch( Operand, int, int );
@@ -59,6 +58,7 @@ private:
     void refreshBlock( int );
 
     static code::Type convertType( const ast::TypeOf & );
+    Operand castTo( Operand, const code::Type & );
 
     enum class Access : bool {
         Load,

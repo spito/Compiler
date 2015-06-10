@@ -148,6 +148,28 @@ code::Type Intermediate::convertType( const ast::TypeOf &type ) {
     return result;
 }
 
+auto Intermediate::castTo( Operand input, const code::Type &type ) -> Operand {
+
+    if ( input.type().isElementary() && type.isElementary() ) {
+        if ( !input.isRegister() )
+            return Operand( input.value(), type );
+
+        Operand result( newRegister( type ) );
+        code::InstructionName instruction =
+            input.type().bits() < type.bits() ?
+            code::InstructionName::Extense :
+            code::InstructionName::Reduce;
+
+        addInstruction( instruction, {
+            result,
+            input
+        } );
+        return result;
+    }
+#pragma message( "TODO: implement full Intermediate::castTo" )
+    return input;
+}
+
 void Intermediate::eval( const ast::Function *f ) {
     _basicBlocks.clear();
     _namedRegisters.clear();
