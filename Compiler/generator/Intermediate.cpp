@@ -90,6 +90,16 @@ void Intermediate::addJump( int blockIndex ) {
 }
 
 void Intermediate::addBranch( Operand operand, int successBlock, int failBlock ) {
+    if ( operand.type().bits() != 1 ) {
+        Operand reduced( newRegister( code::Type( 1 ) ) );
+        addInstruction( code::InstructionName::CompareNotEqual, {
+            reduced,
+            operand,
+            Operand( 0, operand.type() )
+        } );
+        operand = reduced;
+    }
+
     addInstruction( code::InstructionName::Branch, {
         code::Operand( std::move( operand ) ),
         code::Operand::label( block( successBlock ).id() ),
