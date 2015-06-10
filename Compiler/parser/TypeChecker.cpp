@@ -36,6 +36,9 @@ void TypeChecker::start() {
 
 void TypeChecker::eval( const ast::Function *f ) {
 
+    if ( !f->definition() )
+        return;
+
     auto popper = pushFrame( f->parameters() );
     _returnType = f->returnType();
 
