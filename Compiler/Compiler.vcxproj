@@ -248,6 +248,7 @@
     <ClCompile Include="common\Unicode.cpp" />
     <ClCompile Include="context\Context.cpp" />
     <ClCompile Include="generator\Intermediate.cpp" />
+    <ClCompile Include="generator\IntermediateEvalArray.cpp" />
     <ClCompile Include="generator\IntermediateEvalBinary.cpp" />
     <ClCompile Include="generator\IntermediateEvalUnary.cpp" />
     <ClCompile Include="generator\LLVM.cpp" />

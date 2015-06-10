@@ -452,5 +452,8 @@
     <ClCompile Include="generator\LLVM.cpp">
       <Filter>Source Files\generator</Filter>
     </ClCompile>
+    <ClCompile Include="generator\IntermediateEvalArray.cpp">
+      <Filter>Source Files\generator</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
