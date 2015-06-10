@@ -152,8 +152,6 @@ void LLVM::writeInstruction( const code::Instruction &instruction ) {
                             getOperand( instruction.operand( 0 ) ),
                             getOperand( instruction.operand( 1 ) ) );
         break;
-    case code::InstructionName::AddressOf:
-    case code::InstructionName::Dereference:
     case code::InstructionName::IndexAt:
         writeFormatted( "  # = getelementptr inbounds #",
                             getValue( instruction.operand( 0 ) ),
@@ -236,6 +234,12 @@ void LLVM::writeInstruction( const code::Instruction &instruction ) {
                             getType( instruction.operand( 0 ).type() ) );
         break;
     case code::InstructionName::PtrToInt:
+        break;
+    case code::InstructionName::BitCast:
+        writeFormattedLine( "  # = bitcast # to #",
+                            getValue( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ),
+                            getType( instruction.operand( 0 ).type() ) );
         break;
     case code::InstructionName::CompareEqual:
         writeFormattedLine( "  # = icmp eq #, #",
