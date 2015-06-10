@@ -53,3 +53,6 @@ Preprocessor only/
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# Generated files
+*.ll
