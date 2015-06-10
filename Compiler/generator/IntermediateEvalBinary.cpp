@@ -68,18 +68,11 @@ auto Intermediate::opLogicalAnd( const ast::BinaryOperator *e, Access access ) -
 auto Intermediate::opArrayAccess( Operand left, Operand right, Access access ) -> Operand {
 
     code::Type type( left.type() );
-    type.removeIndirection();
-
-    Operand address( newRegister( type ) );
-    addInstruction( code::InstructionName::Load, {
-        address,
-        left
-    } );
 
     Operand pointer( newRegister( type ) );
     addInstruction( code::InstructionName::IndexAt, {
         pointer,
-        address,
+        left,
         right
     } );
 
