@@ -548,20 +548,29 @@ auto Intermediate::eval( const ast::StringPlaceholder *s ) -> Operand {
 auto Intermediate::eval( const ast::ArrayInitializer *a ) -> Operand {
 
 #pragma message( "warning: implement array initialization" )
-    //Operand array = eval( a->variable() );
 
-    //for ( unsigned i = 0; i < a->values().size(); ++i ) {
+    int i = 0;
 
-    //    addInstruction( code::InstructionName::IndexAt, {
-    //        newRegister(  ),
-    //        array,
-    //        Operand(  )
-    //    } );
+    Operand variable( _namedRegisters[ *_nameMapping.find( a->variable()->name() ) ] );
+    code::Type type( variable.type() );
+    type.removeIndirection();
+    type.removeDimension();
+    type.addIndirection();
 
-    //}
+    for ( int i = 0; i < a->dimensions().front(); ++i ) {
 
-
-
+        Operand partial( newRegister( type ) );
+        addInstruction( code::InstructionName::IndexAt, {
+            partial,
+            variable,
+            Operand( 0, code::Type( 32 ) ),
+            Operand( i, code::Type( 32 ) )
+        } );
+        addInstruction( code::InstructionName::Store, {
+            eval( a->values()[ i ].get() ),
+            partial
+        } );
+    }
 
     return code::Operand::Void();
 }
