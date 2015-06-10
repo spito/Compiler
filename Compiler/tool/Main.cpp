@@ -54,7 +54,29 @@ int Main::run() {
 }
 
 int Main::compiler() {
-    throw exception::InternalError( "not implemented" );
+    if ( _meta.input.size() != 1 )
+        throw exception::InternalError( "invalid size of options (preprocessor)" );
+
+    compiler::preprocessor::Preprocessor p( _meta.input.front() );
+    compiler::parser::Parser parser( p.store() );
+
+    compiler::generator::Intermediate i( parser.tree() );
+    i.start();
+
+    std::string intermediate( _meta.input.front() + ".ll" );
+    compiler::generator::LLVM g( intermediate.c_str() );
+    g.publish( i.code() );
+
+    std::string cmd( "clang " );
+
+    cmd += intermediate;
+    cmd += " -o ";
+    cmd += _meta.output;
+
+
+    std::cout << "running external command:" << std::endl << '\t' << cmd << std::endl;
+    std::system( cmd.c_str() );
+    return 0;
 }
 int Main::preprocessor() {
     if ( _meta.input.size() != 1 )

@@ -58,6 +58,26 @@ void ArgumentParser::process( std::vector< std::string > cmds ) {
         else
             _meta.input.push_back( *i );
     }
+
+    if ( _meta.input.empty() )
+        throw exception::InternalError( "no input file" );
+
+    if ( _meta.output.empty() ) {
+        switch ( _meta.mode ) {
+        case Meta::Mode::EmitLLVM:
+            _meta.output = _meta.input.front() + ".ll";
+            break;
+        case Meta::Mode::EmitASM:
+            _meta.output = _meta.input.front() + ".asm";
+            break;
+        case Meta::Mode::Preprocessor:
+            _meta.output = _meta.input.front();
+            break;
+        default:
+            _meta.output = "a.out";
+            break;
+        }
+    }
 }
 
 } // namesapce tool

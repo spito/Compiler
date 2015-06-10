@@ -17,8 +17,7 @@ struct Meta {
     };
 
     Meta() :
-        mode( Mode::Compiler ),
-        output( "a.out" )
+        mode( Mode::Compiler )
     {}
 
     Mode mode;
