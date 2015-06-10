@@ -14,7 +14,7 @@ auto Intermediate::opLogicalNot( Operand input ) -> Operand {
     } );
 
     Operand result( newRegister( input.type() ) );
-    addInstruction( code::InstructionName::Extense, {
+    addInstruction( code::InstructionName::ExtenseUnsigned, {
         result,
         partial
     } );

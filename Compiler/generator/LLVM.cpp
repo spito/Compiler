@@ -162,7 +162,7 @@ void LLVM::writeInstruction( const code::Instruction &instruction ) {
         write() << std::endl;
         break;
     case code::InstructionName::Multiplication:
-        writeFormattedLine( "  # = mul nsw #, #",
+        writeFormattedLine( "  # = mul #, #",
                             getValue( instruction.operand( 0 ) ),
                             getOperand( instruction.operand( 1 ) ),
                             getValue( instruction.operand( 2 ) ) );
@@ -180,13 +180,13 @@ void LLVM::writeInstruction( const code::Instruction &instruction ) {
                             getValue( instruction.operand( 2 ) ) );
         break;
     case code::InstructionName::Addition:
-        writeFormattedLine( "  # = add nsw #, #",
+        writeFormattedLine( "  # = add #, #",
                             getValue( instruction.operand( 0 ) ),
                             getOperand( instruction.operand( 1 ) ),
                             getValue( instruction.operand( 2 ) ) );
         break;
     case code::InstructionName::Subtraction:
-        writeFormattedLine( "  # = sub nsw #, #",
+        writeFormattedLine( "  # = sub #, #",
                             getValue( instruction.operand( 0 ) ),
                             getOperand( instruction.operand( 1 ) ),
                             getValue( instruction.operand( 2 ) ) );
@@ -221,7 +221,13 @@ void LLVM::writeInstruction( const code::Instruction &instruction ) {
                             getOperand( instruction.operand( 1 ) ),
                             getValue( instruction.operand( 2 ) ) );
         break;
-    case code::InstructionName::Extense:
+    case code::InstructionName::ExtenseSigned:
+        writeFormattedLine( "  # = sext # to #",
+                            getValue( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ),
+                            getType( instruction.operand( 0 ).type() ) );
+        break;
+    case code::InstructionName::ExtenseUnsigned:
         writeFormattedLine( "  # = zext # to #",
                             getValue( instruction.operand( 0 ) ),
                             getOperand( instruction.operand( 1 ) ),
@@ -234,6 +240,10 @@ void LLVM::writeInstruction( const code::Instruction &instruction ) {
                             getType( instruction.operand( 0 ).type() ) );
         break;
     case code::InstructionName::PtrToInt:
+        writeFormattedLine( "  # = ptrtoint # to #",
+                            getValue( instruction.operand( 0 ) ),
+                            getOperand( instruction.operand( 1 ) ),
+                            getType( instruction.operand( 0 ).type() ) );
         break;
     case code::InstructionName::BitCast:
         writeFormattedLine( "  # = bitcast # to #",
