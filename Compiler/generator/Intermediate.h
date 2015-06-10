@@ -65,6 +65,11 @@ private:
         Store
     };
 
+    enum class Casting : bool {
+        Explicit,
+        Imlicit
+    };
+
     void eval( const ast::Function * );
     bool eval( const ast::Statement * );
     bool eval( const ast::Block * );
@@ -85,6 +90,8 @@ private:
     Operand eval( const ast::TernaryOperator *, Access = Access::Load );
     Operand eval( const ast::Call * );
 
+    code::Type unification( Operand &, Operand & );
+
     Operand opLogicalNot( Operand );
     Operand opAddressOf( Operand );
     Operand opDereference( Operand );
@@ -99,7 +106,7 @@ private:
     Operand opLogicalAnd( const ast::BinaryOperator *, Access = Access::Load );
 
     Operand opArrayAccess( Operand, Operand, Access = Access::Load );
-    Operand opTypeCast( code::Type, Operand );
+    Operand opTypeCast( code::Type, Operand, Casting = Casting::Imlicit );
     Operand opMultiplication( Operand, Operand );
     Operand opDivision( Operand, Operand );
     Operand opModulo( Operand, Operand );

@@ -149,28 +149,6 @@ code::Type Intermediate::convertType( const ast::TypeOf &type ) {
     return result;
 }
 
-auto Intermediate::castTo( Operand input, const code::Type &type ) -> Operand {
-
-    if ( input.type().isElementary() && type.isElementary() ) {
-        if ( !input.isRegister() )
-            return Operand( input.value(), type );
-
-        Operand result( newRegister( type ) );
-        code::InstructionName instruction =
-            input.type().bits() < type.bits() ?
-            code::InstructionName::Extense :
-            code::InstructionName::Reduce;
-
-        addInstruction( instruction, {
-            result,
-            input
-        } );
-        return result;
-    }
-#pragma message( "TODO: implement full Intermediate::castTo" )
-    return input;
-}
-
 void Intermediate::eval( const ast::Function *f ) {
     _basicBlocks.clear();
     _namedRegisters.clear();
@@ -618,7 +596,8 @@ auto Intermediate::eval( const ast::BinaryOperator *e, Access access ) -> Operan
                               access );
     case common::Operator::TypeCast:
         return opTypeCast( eval( e->left() ).type(),
-                           eval( e->right() ) );
+                           eval( e->right() ),
+                           Casting::Explicit );
     case common::Operator::Multiplication:
         return opMultiplication( eval( e->left() ),
                                  eval( e->right() ) );
@@ -777,7 +756,7 @@ auto Intermediate::eval( const ast::Call *c ) -> Operand {
         if ( !skip && argumentTypes[ i ].bits() == 0 )
             skip = true;
         if ( !skip && result.type() != argumentTypes[ i ] )
-            result = castTo( result, argumentTypes[ i ] );
+            result = opTypeCast( argumentTypes[ i ], result );
         operands.push_back( result );
         ++i;
     }
