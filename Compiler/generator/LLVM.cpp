@@ -26,10 +26,10 @@ void LLVM::publish( const code::Code &code ) {
     }
 }
 
-std::string LLVM::getType( const code::Type &type ) {
+std::string LLVM::getType( const code::Type &type, bool dots ) {
 
     if ( type.bits() == 0 )
-        return "void";
+        return dots ? "..." : "void";
 
     std::string result;
 

@@ -18,7 +18,7 @@ struct LLVM : Writer {
     void writeBlock( const code::BasicBlock & ) override;
     void writeInstruction( const code::Instruction & ) override;
     void writeDeclaration( const code::Prototype & );
-    std::string getType( const code::Type & );
+    std::string getType( const code::Type &, bool = false );
     std::string getOperand( const code::Operand & );
     std::string getValue( const code::Operand & );
     std::string getLabel( const code::Operand & );
