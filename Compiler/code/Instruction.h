@@ -30,7 +30,8 @@ enum class InstructionName {
     BitwiseXor,
     BitwiseOr,
 
-    Extense,
+    ExtenseSigned,
+    ExtenseUnsigned,
     Reduce,
     BitCast,
     PtrToInt,
@@ -48,7 +49,7 @@ enum class InstructionName {
 
     Call,
     Return,
-    Label,
+    //Label,
 };
 
 struct Instruction {
@@ -63,6 +64,18 @@ struct Instruction {
         _name( other._name ),
         _operands( std::move( other._operands ) )
     {}
+
+    Instruction &operator=( Instruction other ) {
+        swap( other );
+        return *this;
+    }
+
+    void swap( Instruction &other ) {
+        using std::swap;
+
+        swap( _name, other._name );
+        swap( _operands, other._operands );
+    }
 
     InstructionName name() const {
         return _name;
@@ -88,6 +101,14 @@ private:
 
 };
 
-
 } // namespace code
 } // namespace compiler
+
+namespace std {
+
+template<>
+inline void swap< compiler::code::Instruction >( compiler::code::Instruction &lhs, compiler::code::Instruction &rhs ) {
+    lhs.swap( rhs );
+}
+
+} // namespace std

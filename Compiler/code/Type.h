@@ -20,6 +20,24 @@ struct Type : common::Comparable {
             addIndirection();
     }
 
+    Type( const Type & ) = default;
+    Type( Type &&other ) :
+        _bits( other._bits ),
+        _decoration( std::move( other._decoration ) )
+    {}
+
+    Type &operator=( Type other ) {
+        swap( other );
+        return *this;
+    }
+
+    void swap( Type &other ) {
+        using std::swap;
+
+        swap( _bits, other._bits );
+        swap( _decoration, other._decoration );
+    }
+
     int bits() const {
         return _bits;
     }
@@ -77,3 +95,12 @@ private:
 
 } // namespace code
 } // namespace compiler
+
+namespace std {
+
+template<>
+inline void swap< compiler::code::Type >( compiler::code::Type &lhs, compiler::code::Type &rhs ) {
+    lhs.swap( rhs );
+}
+
+} // namespace std

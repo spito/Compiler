@@ -10,8 +10,15 @@ namespace code {
 
 struct Operand {
 
+    Operand() :
+        _value( 0 ),
+        _type( 0 ),
+        _register( false )
+    {}
+
     Operand( Register r ) :
         _name( r.name() ),
+        _value( 0 ),
         _type( r.type() ),
         _register( true )
     {}
@@ -30,6 +37,20 @@ struct Operand {
         _type( other._type ),
         _register( other._register )
     {}
+
+    Operand &operator=( Operand other ) {
+        swap( other );
+        return *this;
+    }
+
+    void swap( Operand &other ) {
+        using std::swap;
+
+        swap( _name, other._name );
+        swap( _value, other._value );
+        swap( _register, other._register );
+        swap( _type, other._type );
+    }
 
     const std::string &name() const {
         return _name;
@@ -77,3 +98,12 @@ private:
 
 } // namespace code
 } // namespace compiler
+
+namespace std {
+
+template<>
+inline void swap< compiler::code::Operand >( compiler::code::Operand &lhs, compiler::code::Operand &rhs ) {
+    lhs.swap( rhs );
+}
+
+} // namespace std
