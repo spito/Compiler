@@ -15,7 +15,10 @@ struct Constant : Expression {
         Base( Kind::Constant, std::move( p ), common::Operator::None ),
         _value( value ),
         _type( std::move( type ) )
-    {}
+    {
+        if ( !value )
+            _type = TypeOf::makeNull( _type );
+    }
 
     long long value() const {
         return _value;

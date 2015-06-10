@@ -325,6 +325,13 @@ auto Intermediate::opBitwiseOr( Operand left, Operand right ) -> Operand {
 }
 
 auto Intermediate::opAssignment( Operand left, Operand right ) -> Operand {
+
+    code::Type toStore( left.type() );
+    toStore.removeIndirection();
+    if ( !right.isRegister() && right.value() == 0 && !toStore.isElementary() ) {
+        right = Operand( code::Register( "null", toStore ) );
+    }
+
     addInstruction( code::InstructionName::Store, {
         right,
         left

@@ -23,14 +23,16 @@ struct TypeOf : common::Comparable {
         _bytes( 0 ),
         _signed( false ),
         _const( false ),
+        _null( false ),
         _count( 0 )
     {}
 
-    TypeOf( int bytes, bool sign, bool constness = false ) :
+    TypeOf( int bytes, bool sign, bool constness = false, bool null = false ) :
         _kind( Kind::Elementary ),
         _bytes( bytes ),
         _signed( sign ),
         _const( constness ),
+        _null( null ),
         _count( 1 )
     {}
 
@@ -39,6 +41,7 @@ struct TypeOf : common::Comparable {
         _bytes( other._bytes ),
         _signed( other._signed ),
         _const( other._const ),
+        _null( other._null ),
         _count( other._count ),
         _of( other._of ? new TypeOf( *other._of.get() ) : nullptr )
     {}
@@ -48,6 +51,7 @@ struct TypeOf : common::Comparable {
         _bytes( other._bytes ),
         _signed( other._signed ),
         _const( other._const ),
+        _null( other._null ),
         _count( other._count ),
         _of( std::move( other._of ) )
     {}
@@ -64,6 +68,7 @@ struct TypeOf : common::Comparable {
         swap( _bytes, other._bytes );
         swap( _signed, other._signed );
         swap( _const, other._const );
+        swap( _null, other._null );
         swap( _count, other._count );
         swap( _of, other._of );
     }
@@ -80,6 +85,9 @@ struct TypeOf : common::Comparable {
     }
     bool isConst() const {
         return _const;
+    }
+    bool isNull() const {
+        return _null;
     }
     int count() const {
         return _count;
@@ -102,6 +110,11 @@ struct TypeOf : common::Comparable {
 
     static TypeOf makeConst( TypeOf t, bool constness = true ) {
         t._const = constness;
+        return t;
+    }
+
+    static TypeOf makeNull( TypeOf t, bool null = true ) {
+        t._null = null;
         return t;
     }
 
@@ -130,6 +143,7 @@ private:
         _bytes( bits ),
         _signed( false ),
         _const( constness ),
+        _null( false ),
         _count( count ),
         _of( of )
     {}
@@ -138,6 +152,7 @@ private:
     int _bytes;
     bool _signed;
     bool _const;
+    bool _null;
     int _count;
     std::unique_ptr< TypeOf > _of;
 };

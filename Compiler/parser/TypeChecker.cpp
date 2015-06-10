@@ -54,7 +54,7 @@ void TypeChecker::checkConvertibility( const ast::TypeOf &from, const ast::TypeO
     checkNonVoid( to );
     switch ( from.kind() ) {
     case ast::TypeOf::Kind::Elementary:
-        if ( to.kind() == ast::TypeOf::Kind::Elementary || to.kind() == ast::TypeOf::Kind::Pointer )
+        if ( to.kind() == ast::TypeOf::Kind::Elementary || ( from.isNull() && to.kind() == ast::TypeOf::Kind::Pointer ) )
             return;
         break;
     case ast::TypeOf::Kind::Array:
@@ -367,7 +367,7 @@ auto TypeChecker::eval( const ast::BinaryOperator *e ) -> Type {
 
     case common::Operator::Initialization:
         checkConvertibility( right, left );
-        checkElementarity( left );
+        checkNonArray( left );
         left.lvalue( true );
         return left;
     case common::Operator::Assignment:
