@@ -132,7 +132,7 @@ code::Type Intermediate::convertType( const ast::TypeOf &type ) {
     if ( base->kind() != ast::TypeOf::Kind::Elementary )
         throw exception::InternalError( "invalid type" );
 
-    code::Type result( base->bytes() * CHAR_BIT, base->isSigned(), indirection );
+    code::Type result( base->bytes() * CHAR_BIT, indirection );
     for ( int d : dimensions )
         result.addDimension( d );
     return result;
@@ -483,7 +483,7 @@ auto Intermediate::eval( const ast::Constant *c ) -> Operand {
 }
 
 auto Intermediate::eval( const ast::StringPlaceholder *s ) -> Operand {
-    code::Type globalType( CHAR_BIT, true );
+    code::Type globalType( CHAR_BIT );
     globalType.addDimension( s->value().size() + 1 );
     Operand op( code::Register( globalName(), globalType ) );
 
@@ -492,18 +492,18 @@ auto Intermediate::eval( const ast::StringPlaceholder *s ) -> Operand {
     operands.push_back( op );
 
     for ( char c : s->value() ) {
-        operands.push_back( Operand( c, code::Type( CHAR_BIT, true ) ) );
+        operands.push_back( Operand( c, code::Type( CHAR_BIT ) ) );
     }
-    operands.push_back( Operand( 0, code::Type( CHAR_BIT, true ) ) );
+    operands.push_back( Operand( 0, code::Type( CHAR_BIT ) ) );
 
     _globals.emplace_back( code::Instruction( code::InstructionName::Global, std::move( operands ) ) );
 
-    Operand result( newRegister( code::Type( CHAR_BIT, true, 1 ) ) );
+    Operand result( newRegister( code::Type( CHAR_BIT, 1 ) ) );
     addInstruction( code::InstructionName::IndexAt, {
         result,
         op,
-        Operand( 0, code::Type( CHAR_BIT * 4, true ) ),
-        Operand( 0, code::Type( CHAR_BIT * 4, true ) )
+        Operand( 0, code::Type( CHAR_BIT * 4 ) ),
+        Operand( 0, code::Type( CHAR_BIT * 4 ) )
     } );
 
     return result;
