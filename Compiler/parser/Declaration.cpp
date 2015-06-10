@@ -48,8 +48,8 @@ auto Declaration::stStar() -> States {
 }
 
 auto Declaration::stArray() -> States {
-    if ( _it->isOperator( Operator::BracketIndexOpen ) )
-        return toArray();
+    //if ( _it->isOperator( Operator::BracketIndexOpen ) )
+    //    return toArray();
     if ( _it->type() == Token::Type::Operator )
         return _name.empty() ? beTypeOnly() : beVariable();
     return toError();
