@@ -281,22 +281,31 @@ void LLVM::writeInstruction( const code::Instruction &instruction ) {
         write() << std::endl;
         break;
     case code::InstructionName::Call:{
-        int start;
-        if ( instruction.operand( 0 ).type().bits() == 0 ) {
-            writeFormatted( "  call # #(",
-                            getType( instruction.operand( 0 ).type() ),
-                            getValue( instruction.operand( 0 ) ) );
+        int start = 0;
+        write() << "  ";
+        if ( instruction.operand( 0 ).type().bits() ) {
+            writeFormatted( "# = ", getValue( instruction.operand( 0 ) ) );
             start = 1;
         }
-        else {
-            writeFormatted( "  # = call # #(",
-                            getValue( instruction.operand( 0 ) ),
-                            getType( instruction.operand( 0 ).type() ),
-                            getValue( instruction.operand( 1 ) ) );
-            start = 2;
+        writeFormatted( "call # ", getType( instruction.operand( start ).type() ) );
+        if ( auto d = _code->declaration( getValue( instruction.operand( start ) ) ) ) {
+            if ( d->isVariadic() ) {
+                write() << "(";
+                bool first = true;
+                for ( const code::Type &t : d->argumentTypes() ) {
+                    if ( !first )
+                        write() << ", ";
+                    else
+                        first = false;
+                    write() << getType( t, true );
+                }
+                write() << ")* ";
+            }
         }
-        for ( int i = start; i < int( instruction.size() ); ++i ) {
-            if ( i > start )
+        writeFormatted( "#(", getValue( instruction.operand( start ) ) );
+
+        for ( int i = start + 1; i < int( instruction.size() ); ++i ) {
+            if ( i > start + 1 )
                 write() << ", ";
 
             write() << getOperand( instruction.operand( i ) );
@@ -323,7 +332,7 @@ void LLVM::writeDeclaration( const code::Prototype &prototype ) {
             write() << ", ";
         else
             first = false;
-        write() << getType( t );
+        write() << getType( t, true );
     }
     write() << ")" << std::endl;
 }
