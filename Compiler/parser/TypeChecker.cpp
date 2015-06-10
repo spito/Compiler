@@ -1,5 +1,6 @@
 #include "TypeChecker.h"
 
+#include <iostream>
 
 namespace compiler {
 namespace parser {
@@ -39,8 +40,9 @@ void TypeChecker::eval( const ast::Function *f ) {
     _returnType = f->returnType();
 
     bool allPathHaveReturn = eval( &f->body() );
-    //if ( !allPathHaveReturn )
-    //    warning
+    if ( !allPathHaveReturn && f->returnType().bytes() ) {
+        std::cerr << f->name() << ": Not all paths have return." << std::endl;
+    }
 
 }
 
