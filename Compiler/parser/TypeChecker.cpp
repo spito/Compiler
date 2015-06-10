@@ -149,6 +149,8 @@ bool TypeChecker::eval( const ast::Statement *s ) {
     case ast::Kind::Call:
         eval( s->as< ast::Call >() );
         break;
+    default:
+        break;
     }
     return false;
 }
