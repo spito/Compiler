@@ -577,7 +577,7 @@ auto Intermediate::eval( const ast::ArrayInitializer *a ) -> Operand {
 
 auto Intermediate::eval( const ast::Variable *v, Access access ) -> Operand {
 
-    code::Operand variable( _namedRegisters[ *_nameMapping.find( v->name() ) ] );
+    Operand variable( _namedRegisters[ *_nameMapping.find( v->name() ) ] );
 
     if ( access == Access::Store )
         return Operand( variable );
@@ -585,13 +585,26 @@ auto Intermediate::eval( const ast::Variable *v, Access access ) -> Operand {
     code::Type type( variable.type() );
     type.removeIndirection();
 
-    code::Operand result( newRegister( type ) );
-    addInstruction( code::InstructionName::Load, {
-        result,
-        variable
-    } );
+    if ( type.isArray() ) {
+        type.removeDimension();
+        type.addIndirection();
 
-    return result;
+        Operand result( newRegister( type ) );
+        addInstruction( code::InstructionName::BitCast, {
+            result,
+            variable
+        } );
+        return result;
+    }
+    else {
+        Operand result( newRegister( type ) );
+        addInstruction( code::InstructionName::Load, {
+            result,
+            variable
+        } );
+
+        return result;
+    }
 }
 
 auto Intermediate::eval( const ast::UnaryOperator *e, Access access ) -> Operand {
