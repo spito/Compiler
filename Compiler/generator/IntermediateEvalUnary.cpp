@@ -15,7 +15,7 @@ auto Intermediate::opLogicalNot( Operand input ) -> Operand {
 
     Operand result( newRegister( input.type() ) );
     addInstruction( code::InstructionName::Extense, {
-        result, 
+        result,
         partial
     } );
 
@@ -43,6 +43,14 @@ auto Intermediate::opPrefixDecrement( Operand input ) -> Operand {
 
     code::Type type( input.type() );
     type.removeIndirection();
+
+    code::Type opType( type.isElementary() ?
+                   type :
+                   code::Type( 32 ) );
+    code::InstructionName instruction = type.isElementary() ?
+        code::InstructionName::Addition :
+        code::InstructionName::IndexAt;
+
     Operand partial( newRegister( type ) );
 
     addInstruction( code::InstructionName::Load, {
@@ -51,10 +59,10 @@ auto Intermediate::opPrefixDecrement( Operand input ) -> Operand {
     } );
 
     Operand result( newRegister( type ) );
-    addInstruction( code::InstructionName::Subtraction, {
+    addInstruction( instruction, {
         result,
         partial,
-        Operand( 1, type )
+        Operand( -1, opType )
     } );
 
     addInstruction( code::InstructionName::Store, {
@@ -69,6 +77,14 @@ auto Intermediate::opPrefixIncrement( Operand input ) -> Operand {
 
     code::Type type( input.type() );
     type.removeIndirection();
+
+    code::Type opType( type.isElementary() ?
+                   type :
+                        code::Type( 32 ) );
+    code::InstructionName instruction = type.isElementary() ?
+        code::InstructionName::Addition :
+        code::InstructionName::IndexAt;
+
     Operand partial( newRegister( type ) );
 
     addInstruction( code::InstructionName::Load, {
@@ -77,10 +93,10 @@ auto Intermediate::opPrefixIncrement( Operand input ) -> Operand {
     } );
 
     Operand result( newRegister( type ) );
-    addInstruction( code::InstructionName::Addition, {
+    addInstruction( instruction, {
         result,
         partial,
-        Operand( 1, type )
+        Operand( 1, opType )
     } );
 
     addInstruction( code::InstructionName::Store, {
@@ -96,6 +112,13 @@ auto Intermediate::opSuffixDecrement( Operand input ) -> Operand {
     code::Type type( input.type() );
     type.removeIndirection();
 
+    code::Type opType( type.isElementary() ?
+                   type :
+                        code::Type( 32 ) );
+    code::InstructionName instruction = type.isElementary() ?
+        code::InstructionName::Addition :
+        code::InstructionName::IndexAt;
+
     Operand result( newRegister( type ) );
     addInstruction( code::InstructionName::Load, {
         result,
@@ -103,10 +126,10 @@ auto Intermediate::opSuffixDecrement( Operand input ) -> Operand {
     } );
 
     Operand partial( newRegister( type ) );
-    addInstruction( code::InstructionName::Subtraction, {
+    addInstruction( instruction, {
         partial,
         result,
-        Operand( 1, type )
+        Operand( -1, type )
     } );
 
     addInstruction( code::InstructionName::Store, {
@@ -121,6 +144,13 @@ auto Intermediate::opSuffixIncrement( Operand input ) -> Operand {
     code::Type type( input.type() );
     type.removeIndirection();
 
+    code::Type opType( type.isElementary() ?
+                   type :
+                        code::Type( 32 ) );
+    code::InstructionName instruction = type.isElementary() ?
+        code::InstructionName::Addition :
+        code::InstructionName::IndexAt;
+
     Operand result( newRegister( type ) );
     addInstruction( code::InstructionName::Load, {
         result,
@@ -128,7 +158,7 @@ auto Intermediate::opSuffixIncrement( Operand input ) -> Operand {
     } );
 
     Operand partial( newRegister( type ) );
-    addInstruction( code::InstructionName::Addition, {
+    addInstruction( instruction, {
         partial,
         result,
         Operand( 1, type )
