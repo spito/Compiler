@@ -508,6 +508,8 @@ auto Intermediate::eval( const ast::StringPlaceholder *s ) -> Operand {
 
     _globals.emplace_back( code::Instruction( code::InstructionName::Global, std::move( operands ) ) );
 
+    globalType.addIndirection();
+    op = Operand( code::Register( name, globalType ) );
     Operand result( newRegister( code::Type( CHAR_BIT, 1 ) ) );
     addInstruction( code::InstructionName::IndexAt, {
         result,
