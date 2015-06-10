@@ -37,7 +37,7 @@ enum class Kind {
     DoWhile,
     While,
     For,
-    Switch,
+//    Switch,
     Break,
     Continue,
     Return,
