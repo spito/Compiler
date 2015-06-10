@@ -4,6 +4,7 @@
 #include "Prototype.h"
 
 #include <map>
+#include <algorithm>
 
 namespace compiler {
 namespace code {
@@ -45,6 +46,15 @@ struct Code {
 
     const std::vector< Instruction > &globals() const {
         return _globals;
+    }
+
+    const Prototype *declaration( const std::string &name ) const {
+        auto i = std::find_if( _declarations.begin(), _declarations.end(), [&]( const Prototype &p ) {
+            return p.name() == name;
+        } );
+        if ( i == _declarations.end() )
+            return nullptr;
+        return &*i;
     }
 
 private:
