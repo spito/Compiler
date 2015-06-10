@@ -28,6 +28,11 @@ struct Prototype {
         return _argumentTypes;
     }
 
+    bool isVariadic() const {
+        return
+            !_argumentTypes.empty() &&
+            _argumentTypes.back().bits() == 0;
+    }
 private:
     std::string _name;
     Type _returnType;
