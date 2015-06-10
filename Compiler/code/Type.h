@@ -28,6 +28,18 @@ struct Type : common::Comparable {
         return _decoration.empty();
     }
 
+    bool isArray() const {
+        return
+            !isElementary() &&
+            _decoration.back() != Pointer;
+    }
+
+    bool isPointer() const {
+        return
+            !isElementary() &&
+            _decoration.back() == Pointer;
+    }
+
     const std::vector< int > &decoration() const {
         return _decoration;
     }
@@ -35,12 +47,16 @@ struct Type : common::Comparable {
     void addDimension( int d ) {
         _decoration.push_back( d );
     }
+    void removeDimension() {
+        if ( isArray() )
+            _decoration.pop_back();
+    }
 
     void addIndirection() {
         _decoration.push_back( Pointer );
     }
     void removeIndirection() {
-        if ( !_decoration.empty() && _decoration.back() == Pointer )
+        if ( isPointer() )
             _decoration.pop_back();
     }
 
@@ -56,7 +72,6 @@ struct Type : common::Comparable {
 
 private:
     int _bits;
-    // -1 means pointer
     std::vector< int > _decoration;
 };
 
