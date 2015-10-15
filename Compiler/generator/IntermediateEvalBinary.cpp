@@ -253,6 +253,8 @@ auto Intermediate::opTypeCast( code::Type targetType, Operand input, Casting cas
         }
         break;
     case PtoP:
+        if ( input.type() == targetType )
+            return input;
         if ( casting == Casting::Explicit ) {
             Operand result( newRegister( targetType ) );
             addInstruction( code::InstructionName::BitCast, {
